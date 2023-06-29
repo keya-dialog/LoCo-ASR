@@ -8,7 +8,7 @@ import kaldiio
 import numpy as np
 import librosa
 
-_DATA_PREFIX = "dump/extracted"
+_DATA_PREFIX = "data_topic_split"
 _FILEPATHS = {
     "train": {
         "feats": f"{_DATA_PREFIX}/train/wav.scp",
