@@ -34,4 +34,4 @@ cd $WORK_DIR || {
   exit
 }
 
-python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR
+HF_HOME="${WORK_DIR}/../huggingface_cache" python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR
