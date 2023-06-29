@@ -4,6 +4,7 @@
 #$ -q long.q@@stable
 #$ -l ram_free=16G,mem_free=16G
 #$ -l matylda5=2,matylda2=2
+#$ -pe smp  4
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/joinning_enc_dec/fisher.o
 #$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/joinning_enc_dec/fisher.e
 
@@ -34,4 +35,4 @@ cd $WORK_DIR || {
   exit
 }
 
-HF_HOME="${WORK_DIR}/../huggingface_cache" python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR
+HF_HOME="${WORK_DIR}/../huggingface_cache" python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR --num_proc 4
