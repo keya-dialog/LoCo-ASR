@@ -1,0 +1,41 @@
+0 Not Labelled.
+1 Professional Sports on TV.
+2 Pets.
+3 Life Partners.
+4 Minimum Wage.
+5 Comedy.
+6 Hypothetical Situations. Perjury.
+7 Hypothetical Situations. One Million Dollars to leave the US.
+8 Hypothetical Situations. Opening your own business
+9 Hypothetical Situations. Time Travel.
+10 Hypothetical Situations. An Anonymous Benefactor
+11 US Public Schools.
+12 Affirmative Action.
+13 Movies.
+14 Computer games.
+15 Current Events.
+16 Hobbies.
+17 Smoking.
+18 Terrorism.
+19 Televised Criminal Trials.
+20 Drug testing.
+21 Family Values.
+22 Censorship.
+23 Health and Fitness.
+24 September 11.
+25 Strikes by Professional Athletes.
+26 Airport Security.
+27 Issues in the Middle East.
+28 Foreign Relations.
+29 Education.
+30 Family.
+31 Corporate Conduct in the US.
+32 Outdoor Activities.
+33 Friends.
+34 Food.
+35 Illness.
+36 Personal Habits.
+37 Reality TV.
+38 Arms Inspections in Iraq.
+39 Holidays.
+40 Bioterrorism.
