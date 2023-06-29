@@ -16,6 +16,12 @@ _FILEPATHS = {
         "transcripts": f"{_DATA_PREFIX}/train/text",
         "channels2recordings": f"{_DATA_PREFIX}/train/reco2file_and_channel"
     },
+    "train_500": {
+        "feats": f"{_DATA_PREFIX}/train_500/wav.scp",
+        "segments": f"{_DATA_PREFIX}/train_500/segments",
+        "transcripts": f"{_DATA_PREFIX}/train_500/text",
+        "channels2recordings": f"{_DATA_PREFIX}/train_500/reco2file_and_channel"
+    },
     "validation": {
         "feats": f"{_DATA_PREFIX}/dev/wav.scp",
         "segments": f"{_DATA_PREFIX}/dev/segments",
@@ -71,6 +77,10 @@ class Fisher(datasets.GeneratorBasedBuilder):
             datasets.SplitGenerator(
                 name=datasets.Split.TRAIN,
                 gen_kwargs=self._fetch_split_meta("train"),
+            ),
+            datasets.SplitGenerator(
+                name="train_500",
+                gen_kwargs=self._fetch_split_meta("train_500"),
             ),
             datasets.SplitGenerator(
                 name=datasets.Split.VALIDATION,
