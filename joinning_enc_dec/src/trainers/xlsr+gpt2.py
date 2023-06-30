@@ -326,7 +326,7 @@ if __name__ == '__main__':
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
     # 1. Load dataset
-    dataset = load_from_disk(data_args.dataset_name)
+    dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     dataset[data_args.train_split] = filter_out_sequence_from_dataset(dataset[data_args.train_split],
                                                                       max_input_len=data_args.max_duration_in_seconds,
                                                                       min_input_len=data_args.min_duration_in_seconds)

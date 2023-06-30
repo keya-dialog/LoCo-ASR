@@ -2,7 +2,7 @@
 #PBS -q qgpu
 #PBS -A OPEN-28-58
 #PBS -l select=1:ncpus=16:ngpus=1
-#PBS -l walltime=24:00:00
+#PBS -l walltime=2:00:00
 #PBS -N seq2seq_fisher
 
 source /apps/all/Anaconda3/2022.05/bin/activate ~/.conda/envs/loco_asr/
@@ -10,8 +10,8 @@ source /apps/all/Anaconda3/2022.05/bin/activate ~/.conda/envs/loco_asr/
 SRC_DIR=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/joinning_enc_dec
 cd $SRC_DIR
 
-export HF_HOME="${SRC_DIR}/../huggingface_cache"
-EXPERIMENT="XLS-R300m+warm_decoder+decoder_initial_freeze"
+export HF_HOME="${SRC_DIR}/huggingface_cache"
+EXPERIMENT="XLS-R300m+cold_decoder_test"
 
 WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" \
   python src/trainers/xlsr+gpt2.py \
@@ -25,11 +25,9 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" \
   --tokenizer_name="gpt2" \
   --enc_layers_to_freeze="24" \
   --steps_to_freeze_enc="-1" \
-  --dec_layers_to_freeze="12" \
-  --steps_to_freeze_dec="5000" \
   --output_dir=$EXPERIMENT \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-5" \
+  --learning_rate="1e-4" \
   --logging_steps="10" \
   --save_strategy="steps" \
   --save_steps="1000" \
@@ -50,5 +48,6 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" \
   --predict_with_generate="True" \
   --save_total_limit="5" \
   --num_train_epochs=10 \
+  --decoder_cold_start="True" \
   --num_beams="5" \
   --greater_is_better="False"

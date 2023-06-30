@@ -5,7 +5,7 @@
 #PBS -l walltime=24:00:00
 #PBS -N seq2seq_fisher
 
-source /apps/all/Anaconda3/2022.05/bin/activate ~/.conda/envs/ec_asr/
+source /apps/all/Anaconda3/2022.05/bin/activate ~/.conda/envs/loco_asr/
 
 SRC_DIR=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/joinning_enc_dec
 cd $SRC_DIR
@@ -15,7 +15,7 @@ EXPERIMENT="XLS-R300m+warm_decoder+decoder_different_lr"
 
 WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" \
   python src/trainers/xlsr+gpt2.py \
-  --dataset_name="${SRC_DIR}/datasets/fisher" \
+  --dataset_name="${SRC_DIR}/../datasets/fisher" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
   --train_split="train_500" \
