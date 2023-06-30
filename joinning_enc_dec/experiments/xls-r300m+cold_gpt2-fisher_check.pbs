@@ -11,7 +11,7 @@ SRC_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/joinning_enc_dec"
 SCRATCH_DIR="/scratch/project/open-28-58/lakoc"
 DATASET_DIR="${SCRATCH_DIR}/fisher"
 VAL_IDS="${SCRATCH_DIR}/val_ids"
-EXPERIMENT="XLS-R300m+cold_decoder_test2"
+EXPERIMENT="XLS-R300m+cold_decoder_test3"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -29,15 +29,15 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" \
   --enc_layers_to_freeze="24" \
   --steps_to_freeze_enc="-1" \
   --output_dir="${SCRATCH_DIR}/${EXPERIMENT}" \
-  --gradient_accumulation_steps="1" \
+  --gradient_accumulation_steps="2" \
   --learning_rate="1e-4" \
   --logging_steps="10" \
   --save_strategy="steps" \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="128" \
-  --per_device_eval_batch_size="128" \
+  --per_device_train_batch_size="64" \
+  --per_device_eval_batch_size="64" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
