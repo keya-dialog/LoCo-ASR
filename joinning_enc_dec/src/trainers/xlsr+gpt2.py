@@ -110,12 +110,17 @@ class DataTrainingArguments:
     min_duration_in_seconds: float = field(
         default=0.0, metadata={"help": "Filter audio files that are shorter than `min_duration_in_seconds` seconds"}
     )
-
-    train_subset: float = field(
-        default=1.0, metadata={"help": "Part of the training split to be used."}
-    )
     train_split: str = field(
         default="train", metadata={"help": "Training split to be used."}
+    )
+    validation_split: str = field(
+        default="validation", metadata={"help": "Validation split to be used."}
+    )
+    test_split: str = field(
+        default="test", metadata={"help": "Test split to be used."}
+    )
+    val_indexes_to_use: str = field(
+        default="", metadata={"help": "Part of the validation split to be used."}
     )
 
 
@@ -327,12 +332,16 @@ if __name__ == '__main__':
 
     # 1. Load dataset
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
-    dataset[data_args.train_split] = filter_out_sequence_from_dataset(dataset[data_args.train_split],
-                                                                      max_input_len=data_args.max_duration_in_seconds,
-                                                                      min_input_len=data_args.min_duration_in_seconds)
-    if data_args.train_subset:
-        dataset[data_args.train_split] = dataset[data_args.train_split].select(
-            range(int(data_args.train_subset * len(dataset[data_args.train_split]))))
+    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
+        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
+                                                          max_input_len=data_args.max_duration_in_seconds,
+                                                          min_input_len=data_args.min_duration_in_seconds)
+
+    if data_args.val_indexes_to_use:
+        indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
+        indexes_to_select = [index for index, id in enumerate(dataset[data_args.validation_split]['uttid']) if
+                             id in indexes]
+        dataset[data_args.validation_split] = dataset[data_args.validation_split].select(indexes_to_select)
 
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
@@ -389,7 +398,7 @@ if __name__ == '__main__':
         model=model,
         callbacks=[layer_training_manager, early_stooping],
         train_dataset=dataset[data_args.train_split],
-        eval_dataset=dataset['validation'],
+        eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         optimizers=(optimizer, None)
@@ -399,5 +408,5 @@ if __name__ == '__main__':
     trainer.train()
 
     # 6. Eval on test
-    metrics = trainer.evaluate(dataset['test'])
+    metrics = trainer.evaluate(dataset[data_args.test_split])
     logging.info(str(metrics))

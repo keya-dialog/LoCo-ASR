@@ -28,6 +28,12 @@ _FILEPATHS = {
         "transcripts": f"{_DATA_PREFIX}/dev/text",
         "channels2recordings": f"{_DATA_PREFIX}/dev/reco2file_and_channel"
     },
+    "dev_6": {
+        "feats": f"{_DATA_PREFIX}/dev_6/wav.scp",
+        "segments": f"{_DATA_PREFIX}/dev_6/segments",
+        "transcripts": f"{_DATA_PREFIX}/dev_6/text",
+        "channels2recordings": f"{_DATA_PREFIX}/dev_6/reco2file_and_channel"
+    },
     "test": {
         "feats": f"{_DATA_PREFIX}/test/wav.scp",
         "segments": f"{_DATA_PREFIX}/test/segments",
@@ -85,6 +91,10 @@ class Fisher(datasets.GeneratorBasedBuilder):
             datasets.SplitGenerator(
                 name=datasets.Split.VALIDATION,
                 gen_kwargs=self._fetch_split_meta("validation"),
+            ),
+            datasets.SplitGenerator(
+                name="dev_6",
+                gen_kwargs=self._fetch_split_meta("dev_6"),
             ),
             datasets.SplitGenerator(
                 name=datasets.Split.TEST,
