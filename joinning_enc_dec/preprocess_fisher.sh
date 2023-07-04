@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #$ -N XLSR_data
-#$ -q long.q@@stable
-#$ -l ram_free=16G,mem_free=16G
-#$ -l matylda5=2,matylda2=2
-#$ -pe smp 4
+#$ -q long.q@@blade
+#$ -l ram_free=0.2G,mem_free=0.2G
+#$ -l matylda5=0.05,matylda2=0.05
+#$ -pe smp 32
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/joinning_enc_dec/fisher.o
 #$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/joinning_enc_dec/fisher.e
 
@@ -35,4 +35,4 @@ cd $WORK_DIR || {
   exit
 }
 
-HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 HF_HOME="${WORK_DIR}/../huggingface_cache" python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR --num_proc 4
+HF_DATASETS_OFFLINE=1 HF_HUB_OFFLINE=1 HF_HOME="${WORK_DIR}/../huggingface_cache" python $WORK_DIR/src/hf_dataset_builders/preprocess_fisher.py $WORK_DIR/src/hf_dataset_builders/fisher $METADATA_DIR $OUT_DIR --num_proc 32

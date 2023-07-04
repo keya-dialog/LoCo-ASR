@@ -80,18 +80,18 @@ class Fisher(datasets.GeneratorBasedBuilder):
     def _split_generators(self, _):
         """Generate dataset splits"""
         return [
-            datasets.SplitGenerator(
-                name=datasets.Split.TRAIN,
-                gen_kwargs=self._fetch_split_meta("train"),
-            ),
+            # datasets.SplitGenerator(
+            #     name=datasets.Split.TRAIN,
+            #     gen_kwargs=self._fetch_split_meta("train"),
+            # ),
             datasets.SplitGenerator(
                 name="train_500",
                 gen_kwargs=self._fetch_split_meta("train_500"),
             ),
-            datasets.SplitGenerator(
-                name=datasets.Split.VALIDATION,
-                gen_kwargs=self._fetch_split_meta("validation"),
-            ),
+            # datasets.SplitGenerator(
+            #     name=datasets.Split.VALIDATION,
+            #     gen_kwargs=self._fetch_split_meta("validation"),
+            # ),
             datasets.SplitGenerator(
                 name="dev_6",
                 gen_kwargs=self._fetch_split_meta("dev_6"),
@@ -145,7 +145,7 @@ class Fisher(datasets.GeneratorBasedBuilder):
                 audio = librosa.resample(audio, orig_sr=sr, target_sr=self.sampling_rate)
             sorted_segments = sorted(segments, key=lambda x: x[1])
             for index, (_, start, end, uttid, transcript) in enumerate(sorted_segments):
-                audio_cropped = self._crop_audio(audio, sr, start, end)
+                audio_cropped = self._crop_audio(audio, self.sampling_rate, start, end)
                 text = self.preprocess_text(transcript)
                 yield f'{recording}_{index}', {"input_values": audio_cropped, "labels": text, "topic": topic,
                                                "uttid": uttid, "recording": recording, "turn_index": index,
