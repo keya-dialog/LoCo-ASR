@@ -4,8 +4,8 @@
 #$ -l ram_free=16G,mem_free=16G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/frozen_XLS-R300m+adpt+frozen_GPT2+adpt.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/frozen_XLS-R300m+adpt+frozen_GPT2+adpt.e
 
 # Job should finish in 10 days - 432000 seconds
 ulimit -t 432000
@@ -27,7 +27,7 @@ source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/env
 SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
-EXPERIMENT="XLS-R300m+GPT2"
+EXPERIMENT="frozen_XLS-R300m+adpt+frozen_GPT2+adpt"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
