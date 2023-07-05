@@ -14,10 +14,10 @@ from transformers import AutoTokenizer, PreTrainedTokenizerFast, Seq2SeqTrainer,
 from torch.optim import AdamW
 from transformers.trainer_pt_utils import get_parameter_names
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
-
-PAD_TOKEN = '¬'
-BOS_TOKEN = '@'
-EOS_TOKEN = '<|endoftext|>'
+import pickle
+PAD_TOKEN = '|'
+BOS_TOKEN = '<'
+EOS_TOKEN = '>'
 SAMPLING_RATE = 16000
 
 
@@ -346,8 +346,8 @@ if __name__ == '__main__':
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
-        indexes_to_select = [index for index, id in enumerate(dataset[data_args.validation_split]['uttid']) if
-                             id in indexes]
+        indexes_to_select = [index for index, utt_id in enumerate(dataset[data_args.validation_split]['uttid']) if
+                             utt_id in indexes]
         dataset[data_args.validation_split] = dataset[data_args.validation_split].select(indexes_to_select)
 
     # 2. Create feature extractor and tokenizer
@@ -388,6 +388,7 @@ if __name__ == '__main__':
 
     if model_args.dec_adapters:
         model.decoder.add_adapter("gpt2_fisher")
+        model.decoder.train_adapter("gpt2_fisher")
 
     # 4. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
@@ -407,13 +408,21 @@ if __name__ == '__main__':
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
-        compute_metrics=compute_metrics,
         optimizers=(optimizer, None)
     )
 
     # 5. Train
     trainer.train()
 
-    # 6. Eval on test
-    metrics = trainer.evaluate(dataset[data_args.test_split])
-    logging.info(str(metrics))
+    # 6. Eval on dev
+    trainer.args.predict_with_generate = True
+    predictions = trainer.predict(dataset[data_args.validation_split].select([1]))
+    logging.info(compute_metrics(predictions))
+    with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
+        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
+
+    # # 6. Eval on test
+    predictions = trainer.predict(dataset[data_args.test_split])
+    logging.info(compute_metrics(predictions))
+    with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
+        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
