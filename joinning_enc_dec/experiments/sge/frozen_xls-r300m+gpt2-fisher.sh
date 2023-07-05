@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N XLSR_DeePsy
+#$ -N LoCo-ASR
 #$ -q long.q@@gpu
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=10
