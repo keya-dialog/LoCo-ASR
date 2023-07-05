@@ -27,7 +27,7 @@ source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/env
 SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
-EXPERIMENT="XLS-R300m+cold_decoder"
+EXPERIMENT="XLS-R300m+cold_decoder_no_grouping"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
