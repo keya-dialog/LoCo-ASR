@@ -4,8 +4,8 @@
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2_no_grouping.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2_no_grouping.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2_dec_adapters.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2_dec_adapters.e
 
 # Job should finish in 10 days - 432000 seconds
 ulimit -t 432000
@@ -27,7 +27,7 @@ source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/env
 SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
-EXPERIMENT="XLS-R300m+decoder_no_grouping"
+EXPERIMENT="XLS-R300m+decoder_adapters"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -42,6 +42,9 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" HF_DATASETS_OFFLINE=1 HF_HUB_O
   --tokenizer_name="gpt2" \
   --enc_layers_to_freeze="24" \
   --steps_to_freeze_enc="-1" \
+  --dec_layers_to_freeze="24" \
+  --steps_to_freeze_dec="-1" \
+  --dec_adapters="True" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
   --gradient_accumulation_steps="8" \
   --learning_rate="1e-5" \
@@ -66,6 +69,7 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" HF_DATASETS_OFFLINE=1 HF_HUB_O
   --num_train_epochs=10 \
   --num_beams="1" \
   --max_len="512" \
+  --group_by_length="True" \
   --greater_is_better="False" \
   --train_split="train_500" \
   --validation_split="dev_6" \
