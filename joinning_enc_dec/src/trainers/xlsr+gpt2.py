@@ -2,7 +2,7 @@ import logging
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Union
-
+from safe_gpu import safe_gpu
 import numpy as np
 import pandas as pd
 import torch
@@ -46,7 +46,7 @@ class ModelArguments:
 @dataclass
 class CustomTrainingArguments(Seq2SeqTrainingArguments):
     early_stopping_patience: int = field(
-        default=False, metadata={"help": "Patience for early stopping."}
+        default=1, metadata={"help": "Patience for early stopping."}
     )
     decoder_cold_start: bool = field(
         default=False, metadata={"help": "Whenever to reinitialize decoder weights"}
@@ -68,6 +68,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     )
     cross_attention_scaling_factor: float = field(
         default=1, metadata={"help": "Custom scaling factor for cross attention weights"}
+    )
+    n_gpus: int = field(
+        default=1, metadata={"help": "Number of gpus to be used"}
     )
 
 
@@ -202,7 +205,6 @@ class FrozenLayersManager(TrainerCallback):
         curr_model.train()
         curr_model.encoder.train()
         curr_model.decoder.train()
-        curr_model.freeze_feature_encoder()
         if self.enc_layers_to_freeze > 0:
             for name, param in curr_model.encoder.named_parameters():
                 if name.startswith("encoder.layers"):
@@ -211,10 +213,12 @@ class FrozenLayersManager(TrainerCallback):
                         param.requires_grad = False
                     else:
                         param.requires_grad = True
+                elif self.enc_layers_to_freeze > 0 and name.startswith("encoder"):
+                    param.requires_grad = False
                 elif 'adapter' in name:
                     param.requires_grad = True
                 else:
-                    param.requires_grad = False
+                    param.requires_grad = True
 
         if self.dec_layers_to_freeze > 0:
             for name, param in curr_model.decoder.named_parameters():
@@ -230,6 +234,7 @@ class FrozenLayersManager(TrainerCallback):
                 else:
                     param.requires_grad = True
 
+        curr_model.freeze_feature_encoder()
         curr_model.decoder.lm_head.weight.requires_grad = True
         logging.debug([n for n, p in curr_model.named_parameters() if p.requires_grad])
         logging.info(
@@ -330,6 +335,8 @@ if __name__ == '__main__':
 
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
+    safe_gpu.claim_gpus(training_args.n_gpus)
+
     # 1. Load dataset
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
@@ -385,7 +392,7 @@ if __name__ == '__main__':
     # 4. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
                                                  training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec)
-    early_stooping = EarlyStoppingCallback(training_args.early_stopping_patience)
+    early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    decoder_tokenizer=decoder_tokenizer,
                                                    padding=True)
@@ -396,7 +403,7 @@ if __name__ == '__main__':
     trainer = Seq2SeqTrainer(
         args=training_args,
         model=model,
-        callbacks=[layer_training_manager, early_stooping],
+        callbacks=[layer_training_manager, early_stopping],
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
