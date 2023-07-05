@@ -1,11 +1,11 @@
 #!/bin/bash
-#$ -N XLSR_DeePsy
+#$ -N LoCo-ASR
 #$ -q long.q@@gpu
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+gpt2.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+cold_gpt2.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/xlsr+cold_gpt2.e
 
 # Job should finish in 10 days - 432000 seconds
 ulimit -t 432000
@@ -27,7 +27,7 @@ source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/env
 SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
-EXPERIMENT="XLS-R300m+cold_decoder"
+EXPERIMENT="XLS-R300m+cold1_decoder"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -70,4 +70,5 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR" HF_DATASETS_OFFLINE=1 HF_HUB_O
   --greater_is_better="False" \
   --train_split="train_500" \
   --validation_split="dev_6" \
-  --n_gpus="1"
+  --n_gpus="1" \
+  --decoder_cold_start="True"
