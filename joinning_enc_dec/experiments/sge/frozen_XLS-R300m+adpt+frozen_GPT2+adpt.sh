@@ -27,7 +27,7 @@ source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/env
 SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
-EXPERIMENT="frozen_XLS-R300m+adpt+frozen_GPT2+adpt"
+EXPERIMENT="frozen_XLS-R300m+adpt+frozen_GPT2+adpt_v2"
 
 cd $SRC_DIR
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -49,19 +49,19 @@ WANDB_RUN_ID=$EXPERIMENT WANDB_PROJECT="LoCo-ASR_v2" HF_DATASETS_OFFLINE=1 HF_HU
   --learning_rate="1e-4" \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="1000" \
+  --save_steps="5000" \
   --evaluation_strategy="steps" \
-  --eval_steps="1000" \
+  --eval_steps="5000" \
   --auto_find_batch_size="True" \
   --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="32" \
+  --per_device_eval_batch_size="16" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
-  --early_stopping_patience="5" \
+  --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
   --num_train_epochs=10 \
