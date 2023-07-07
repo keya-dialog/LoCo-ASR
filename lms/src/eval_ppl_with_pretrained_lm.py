@@ -12,53 +12,62 @@
 import os
 import sys
 import logging
+import pickle
+import json
 import argparse
+from functools import partial
+from time import time
 import numpy as np
 import torch
-from tqdm import tqdm
-from utils import load_text, create_logger
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
+from utils import (
+    load_key_text_file,
+    create_logger,
+    compute_ppl_per_recording,
+)
 
-def prepare_indep_utt_dataset(texts, tokenizer):
-    """Prepare dataset that treats utterances independently"""
+
+def yield_indep_sent_batches(text_ids, lengths, bsize):
+    """Return batches of independent sentences"""
 
     logger = logging.getLogger()
+    # smart batching:
+    # create batches based on sentence lengths
+    diff_ixs = np.diff(lengths)
+    bnd_ixs = np.where(diff_ixs > 0)[0]
 
-    bsize = 32
+    j = 0
     start = 0
     end = start + bsize
-    input_ids = []
-    # input_lens = []
-    target_ids = []
+    total = 0
+    bno = 1  # batch number
 
-    ign = 0
+    while start < len(text_ids):
+        logger.info(
+            """batch {bno:5d} length bin {lengths[start]:3d}
+start ix {start:8d} : {end:8d} / {len(text_ids):8d}"""
+        )
+        batch_text_ids = text_ids[start:end]
 
-    while start < len(texts):
-
-        if end > len(texts):
-            end = len(texts)
-
-        encodings = tokenizer(texts[start:end])
-
-        for inp in encodings.input_ids:
-            if len(inp) == 1:
-                ign += 1
-                continue
-            input_ids.append(torch.LongTensor(inp))
-            target_ids.append(torch.LongTensor(inp))
-            # input_lens.append(len(inp))
+        total += len(batch_text_ids)
+        bno += 1
 
         start = end
         end += bsize
 
-    if ign > 0:
-        logger.info("Ignoring single word utterances %d", ign)
+        if j < len(bnd_ixs):
+            if end >= bnd_ixs[j] + 1:
+                end = bnd_ixs[j] + 1
+                j += 1
+        else:
+            if end > len(text_ids):
+                end = len(text_ids)
 
-    return input_ids, target_ids
+        yield batch_text_ids
 
 
-def prepare_max_seq_len_dataset(texts: list, tokenizer, max_seq_len):
+def yield_max_input_len_batches(text_ids, lengths, bsize):
     """Prepare input seqs and targets based on max seq length of the model"""
 
     pass
@@ -81,57 +90,83 @@ def main():
     pfx = f"{model_id}_{context}_{base}"
 
     # Create logger
-
     logger = create_logger(os.path.join(args.out_dir, f"{pfx}"), args.verbose)
-    logger.info("CUDA_VISIBLE_DEVICES=" + os.environ.get("CUDA_VISIBLE_DEVICES"))
-
-    # out file to save negative LLHs for each input - can be used later to compute PPL
-    out_nll_file = os.path.join(args.out_dir, f"{pfx}_nlls.txt")
-
-    # Load the input text line-by-line
-    texts = load_text(args.in_file)
-    logger.info("In text lines in %s: %d", args.in_file, len(texts))
+    logger.info(
+        "CUDA_VISIBLE_DEVICES=%s", os.environ.get("CUDA_VISIBLE_DEVICES", "NONE")
+    )
 
     # Load pre-trained model and tokenizer
     model = GPT2LMHeadModel.from_pretrained(model_id).to(device)
     tokenizer = GPT2TokenizerFast.from_pretrained(model_id)
 
+    # Load the input text line-by-line
     # Tokenize the input text and convert to torch Tensors
+    sorted_text_ids, sorted_lengths, sorted_utt_ids = load_key_text_file(
+        args.in_file, tokenizer, ignore_one_tok=True
+    )
+
+    logger.info("In text lines in %s: %d", args.in_file, len(sorted_lengths))
+
     if context == "indep":
         logger.info(
             "Treating each sentence independently. Sentences with 1 word will be ignored."
         )
-        all_input_ids, all_target_ids = prepare_indep_utt_dataset(texts, tokenizer)
+        batcher = partial(
+            yield_indep_sent_batches, sorted_text_ids, sorted_lengths, args.bsize
+        )
 
     elif context == "max_len":
         max_len = model.config.n_positions
         logger.info("Max seq length of the model is %d", max_len)
-        all_input_ids, all_target_ids = prepare_max_seq_len_dataset(texts, tokenizer)
+
+        batcher = partial(
+            yield_max_input_len_batches, sorted_text_ids, sorted_lengths, args.bsize
+        )
+
     else:
         print("Context type", context, "not implemented", file=sys.stderr)
         sys.exit()
 
+    stime = time()
     # forward and get negative llh for each input sequence
     nlls = []
-    for i in tqdm(range(len(all_input_ids))):
+    for input_ids in batcher():
+        # input ids shape: B x T  (batch, num_tokens)
+        input_ids = torch.LongTensor(input_ids).to(device=device)
 
-        input_ids = all_input_ids[i].to(device=device)
-        target_ids = all_target_ids[i].to(device=device)
+        # target ids shape: B X T (batch, num_tokens) - same as input
+        target_ids = input_ids.clone()
 
         with torch.no_grad():
-            outputs = model(input_ids, labels=target_ids)
+            outputs = model(input_ids)
 
-            # loss is calculated using CrossEntropyLoss which averages over
-            # valid labels
-            # N.B. the model only calculates loss over trg_len - 1 labels,
-            # because it internally shifts the labels to the left by 1.
-            neg_llh = outputs.loss
+            xen_loss = torch.nn.CrossEntropyLoss(reduction="none")
 
-        nlls.append(neg_llh)
+            # ignore the logits for the last token
+            shifted_logits = outputs.logits[..., :-1, :].contiguous()
 
-    ppl = torch.exp(torch.stack(nlls).mean())
-    np.savetxt(out_nll_file, torch.stack(nlls).cpu().numpy())
-    logger.info("PPL: %.2f", ppl.cpu().item())
+            # ignore the targets for the first token
+            shifted_targets = target_ids[..., 1:].contiguous()
+
+            # compute cross entropy loss and return it for every token
+            neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
+
+        # extend the list of nlls
+        nlls.extend(neg_llh.cpu().numpy().tolist())
+
+    compute_ppl_per_recording(nlls, sorted_utt_ids)
+
+    rec_id2nlls, rec_id2ppl = compute_ppl_per_recording(nlls, sorted_utt_ids)
+
+    with open(os.path.join(args.out_dir, f"{pfx}_rec_id2nlls.pkl"), "wb") as fpw:
+        pickle.dump(rec_id2nlls, fpw)
+
+    with open(
+        os.path.join(args.out_dir, f"{pfx}_rec_id2ppl.json"), "w", encoding="utf-8"
+    ) as fpw:
+        json.dump(rec_id2ppl, fpw, indent=2, ensure_ascii=False)
+
+    print(f"Saved in {args.out_dir}. Time taken {(time()-stime):.2f} sec")
 
 
 def parse_arguments():
@@ -145,12 +180,15 @@ def parse_arguments():
         required=True,
         help="path to input text file on which PPL shall be computed",
     )
-    parser.add_argument("--ftype", choices=['text', 'key'], required=True,
-                        help="""input file type. text is plain text line by line,
+    parser.add_argument(
+        "--ftype",
+        choices=["key"],
+        required=True,
+        help="""input file type. text is plain text line by line,
                         key is where first column in utterance with time_stamp (kaldi format)
                         which will help in figuring out the chronology of utterances in
-                        in a recording"""
-                        )
+                        in a recording""",
+    )
     parser.add_argument(
         "--out_dir", required=True, help="path to out dir where results are stored"
     )
@@ -166,9 +204,11 @@ def parse_arguments():
         choices=["indep", "max_len"],
         default="indep",
         type=str,
-        help="""How much context to use? indep is independent utterances, max_len is
-                        max length constrained by the pretrained model which could be 512 or 1024 tokens""",
+        help="""How much context to use? indep is independent utterances,
+max_len is max length constrained by the pretrained model which could be
+512 or 1024 tokens""",
     )
+    parser.add_argument("--bsize", type=int, default=128, help="max batch size")
     parser.add_argument(
         "--no_cuda",
         action="store_true",
@@ -183,8 +223,8 @@ def parse_arguments():
 
     if args.context_type == "max_len":
         if args.ftype != "key":
-             print("Input ftype must be 'key' when using 'max_len' context")
-             sys.exit()
+            print("Input ftype must be 'key' when using 'max_len' context")
+            sys.exit()
 
     return args
 
