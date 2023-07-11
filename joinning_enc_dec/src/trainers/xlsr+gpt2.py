@@ -2,7 +2,6 @@ import logging
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Union
-from safe_gpu import safe_gpu
 import numpy as np
 import pandas as pd
 import torch
@@ -200,7 +199,7 @@ class FrozenLayersManager(TrainerCallback):
         self.steps_to_freeze_enc = steps_to_freeze_enc
         self.steps_to_freeze_dec = steps_to_freeze_dec
 
-    def on_train_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+    def on_init_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         curr_model: SpeechEncoderDecoderModel = kwargs['model']
         curr_model.train()
         curr_model.encoder.train()
@@ -335,8 +334,6 @@ if __name__ == '__main__':
 
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
-    safe_gpu.claim_gpus(training_args.n_gpus)
-
     # 1. Load dataset
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
@@ -387,7 +384,7 @@ if __name__ == '__main__':
     model.config.pad_token_id = decoder_tokenizer.pad_token_id
 
     if model_args.dec_adapters:
-        model.decoder.add_adapter("gpt2_fisher")
+        model.decoder.add_adapter("gpt2_fisher", set_active=True)
         model.decoder.train_adapter("gpt2_fisher")
 
     # 4. Init trainer
@@ -416,13 +413,13 @@ if __name__ == '__main__':
 
     # 6. Eval on dev
     trainer.args.predict_with_generate = True
-    predictions = trainer.predict(dataset[data_args.validation_split].select([1]))
-    logging.info(compute_metrics(predictions))
+    predictions = trainer.predict(dataset[data_args.validation_split])
+    print(compute_metrics(predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
     # # 6. Eval on test
     predictions = trainer.predict(dataset[data_args.test_split])
-    logging.info(compute_metrics(predictions))
+    print(compute_metrics(predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
