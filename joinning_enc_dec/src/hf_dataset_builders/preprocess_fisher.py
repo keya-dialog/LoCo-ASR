@@ -16,4 +16,4 @@ if __name__ == '__main__':
     args = parse_args()
     dataset = datasets.load_dataset(args.dataset, keep_in_memory=False,
                                     metadata_dir=args.metadata_dir, num_proc=args.num_proc)
-    dataset.save_to_disk(args.output_dir)
+    dataset.save_to_disk(args.output_dir, num_proc=args.num_proc)
