@@ -2,7 +2,7 @@
 
 #$ -N XLSR_data
 #$ -q long.q@@blade
-#$ -l ram_free=0.2G,mem_free=0.2G
+#$ -l ram_free=0.1G,mem_free=0.1G
 #$ -l matylda5=0.05,matylda2=0.05
 #$ -pe smp 32
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/joinning_enc_dec/fisher_conv.o
