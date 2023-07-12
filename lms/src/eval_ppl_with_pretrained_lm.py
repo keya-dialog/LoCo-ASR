@@ -24,6 +24,11 @@ from utils import (
     create_logger,
     compute_ppl_per_recording)
 
+from utils import (
+    load_key_text_file,
+    create_logger,
+    compute_ppl_per_recording,
+)
 
 def main():
     """main method"""
@@ -166,7 +171,6 @@ def main():
 
     return 0
 
-
 def parse_arguments():
     """parse command line arguments"""
 
@@ -213,6 +217,7 @@ def parse_arguments():
         help="""How much context to use? indep is independent utterances, max_len is
         max length constrained by the pretrained model which could be 512 or 1024 tokens""",
     )
+    parser.add_argument("--bsize", type=int, default=128, help="max batch size")
     parser.add_argument(
         "--no_cuda",
         action="store_true",
