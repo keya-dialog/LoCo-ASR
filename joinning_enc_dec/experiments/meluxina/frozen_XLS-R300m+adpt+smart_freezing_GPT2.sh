@@ -7,7 +7,7 @@
 
 EXPERIMENT="frozen_XLS-R300m+adpt+smart_freezing_GPT2_MELUXINA"
 PROJECT="LoCo-ASR_v2"
-SRC_DIR="/home/users/u100959/projects/LoCo-ASR/joinning_enc_dec"
+SRC_DIR="/home/users/u100959/projects/LoCo-ASR"
 WORK_DIR="/project/home/p200186"
 DATASET_DIR="${WORK_DIR}/data/fisher"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
