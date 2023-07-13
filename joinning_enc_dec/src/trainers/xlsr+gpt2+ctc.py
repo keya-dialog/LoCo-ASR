@@ -375,7 +375,7 @@ class CustomTrainer(Seq2SeqTrainer):
             labels = None
         outputs = model(**inputs)
 
-        self.state.additional_logs.append([outputs.enc_loss, outputs.dec_loss])
+        self.state.additional_logs.append([outputs.enc_loss.mean(), outputs.dec_loss.mean()])
 
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
