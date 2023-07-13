@@ -349,7 +349,7 @@ class PrinterCallback(TrainerCallback):
         state.additional_logs = []
 
     def on_log(self, args, state, control, logs=None, **kwargs):
-        if state.additional_logs:
+        if hasattr(state, 'additional_logs'):
             enc_loss, dec_loss = torch.tensor(state.additional_logs).mean(axis=0)
             if state.is_local_process_zero:
                 logs['enc_loss'] = float(enc_loss)
@@ -375,7 +375,8 @@ class CustomTrainer(Seq2SeqTrainer):
             labels = None
         outputs = model(**inputs)
 
-        self.state.additional_logs.append([outputs.enc_loss.mean(), outputs.dec_loss.mean()])
+        if hasattr(self.state, 'additional_logs'):
+            self.state.additional_logs.append([outputs.enc_loss.mean(), outputs.dec_loss.mean()])
 
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
@@ -712,6 +713,8 @@ if __name__ == '__main__':
 
     # 6. Eval on dev
     trainer.args.predict_with_generate = True
+    model.config.output_hidden_states = True
+
     predictions = trainer.predict(dataset[data_args.validation_split])
     logger.info(compute_metrics(predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
