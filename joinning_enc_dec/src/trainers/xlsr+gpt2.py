@@ -1,19 +1,21 @@
 import logging
 import os
+import pickle
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 import torch
-from datasets import load_from_disk, Dataset
+from datasets import Dataset, load_from_disk
 from jiwer import cer, compute_measures
-from transformers import AutoTokenizer, PreTrainedTokenizerFast, Seq2SeqTrainer, Seq2SeqTrainingArguments, \
-    SpeechEncoderDecoderModel, TrainerCallback, TrainerControl, TrainerState, TrainingArguments, BatchFeature, \
-    logging as tfs_logging, Wav2Vec2FeatureExtractor, HfArgumentParser, AutoFeatureExtractor, EarlyStoppingCallback
 from torch.optim import AdamW
-from transformers.trainer_pt_utils import get_parameter_names
+from transformers import AutoFeatureExtractor, AutoTokenizer, BatchFeature, EarlyStoppingCallback, HfArgumentParser, \
+    PreTrainedTokenizerFast, Seq2SeqTrainer, Seq2SeqTrainingArguments, SpeechEncoderDecoderModel, TrainerCallback, \
+    TrainerControl, TrainerState, TrainingArguments, Wav2Vec2FeatureExtractor, logging as tfs_logging
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
-import pickle
+from transformers.trainer_pt_utils import get_parameter_names
+
 PAD_TOKEN = '|'
 BOS_TOKEN = '<'
 EOS_TOKEN = '>'
@@ -410,6 +412,9 @@ if __name__ == '__main__':
 
     # 5. Train
     trainer.train()
+
+    decoder_tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
+    feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))
 
     # 6. Eval on dev
     trainer.args.predict_with_generate = True

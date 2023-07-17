@@ -1,30 +1,30 @@
 import os
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union, Tuple
+import pickle
+from dataclasses import dataclass, field, make_dataclass
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
 import torch
-from datasets import load_from_disk, Dataset
+from datasets import Dataset, load_from_disk
 from jiwer import cer, compute_measures
-from transformers import AutoTokenizer, PreTrainedTokenizerFast, Seq2SeqTrainer, Seq2SeqTrainingArguments, \
-    SpeechEncoderDecoderModel, TrainerCallback, TrainerControl, TrainerState, TrainingArguments, BatchFeature, \
-    AutoConfig, Wav2Vec2FeatureExtractor, HfArgumentParser, AutoFeatureExtractor, \
-    EarlyStoppingCallback, PretrainedConfig, PreTrainedModel, AutoModelForCausalLM, Wav2Vec2ForCTC, \
-    SpeechEncoderDecoderConfig
-from torch.optim import AdamW
-from transformers.trainer_pt_utils import get_parameter_names
-from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
-from transformers.models.speech_encoder_decoder.modeling_speech_encoder_decoder import shift_tokens_right
-from transformers.modeling_outputs import BaseModelOutput, Seq2SeqLMOutput
 from torch.nn import CrossEntropyLoss
-from dataclasses import make_dataclass
-import pickle
+from torch.optim import AdamW
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoTokenizer, BatchFeature, \
+    EarlyStoppingCallback, HfArgumentParser, PreTrainedModel, PreTrainedTokenizerFast, PretrainedConfig, Seq2SeqTrainer, \
+    Seq2SeqTrainingArguments, SpeechEncoderDecoderConfig, SpeechEncoderDecoderModel, TrainerCallback, TrainerControl, \
+    TrainerState, TrainingArguments, Wav2Vec2FeatureExtractor, Wav2Vec2ForCTC
+from transformers.modeling_outputs import BaseModelOutput, Seq2SeqLMOutput
+from transformers.models.speech_encoder_decoder.modeling_speech_encoder_decoder import shift_tokens_right
+from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
+from transformers.trainer_pt_utils import get_parameter_names
 from transformers.utils import logging
 
 PAD_TOKEN = '|'
 BOS_TOKEN = '<'
 EOS_TOKEN = '>'
 SAMPLING_RATE = 16000
+
 
 @dataclass
 class ModelArguments:
@@ -710,6 +710,9 @@ if __name__ == '__main__':
 
     # 5. Train
     trainer.train()
+
+    decoder_tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
+    feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))
 
     # 6. Eval on dev
     trainer.args.predict_with_generate = True
