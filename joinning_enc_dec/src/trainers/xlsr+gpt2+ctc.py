@@ -9,7 +9,7 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallb
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from models import JointCTCAttentionEncoderDecoder
+from per_utterance_models import JointCTCAttentionEncoderDecoder
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
     Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
 
