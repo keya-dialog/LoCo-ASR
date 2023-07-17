@@ -1,14 +1,14 @@
 #!/bin/bash
 #$ -N LoCo-ASR
-#$ -q long.q@@gpu
+#$ -q all.q@@gpu
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=2
 #$ -l gpu=1,gpu_ram=20G
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.o
 #$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.e
 
-# Job should finish in 10 days - 432000 seconds
-ulimit -t 432000
+# Job should finish in 5 hours
+ulimit -t 18000
 
 # Enable opening multiple files
 ulimit -n 4096
