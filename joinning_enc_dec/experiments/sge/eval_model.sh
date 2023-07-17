@@ -1,8 +1,8 @@
 #!/bin/bash
 #$ -N LoCo-ASR
 #$ -q long.q@@gpu
-#$ -l ram_free=16G,mem_free=16G
-#$ -l matylda5=10
+#$ -l ram_free=8G,mem_free=8G
+#$ -l matylda5=2
 #$ -l gpu=1,gpu_ram=20G
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.o
 #$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.e
