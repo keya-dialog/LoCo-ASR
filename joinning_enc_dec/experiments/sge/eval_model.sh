@@ -31,10 +31,11 @@ export HF_HOME="${SRC_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
 export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
-export $(/mnt/matylda4/kesiraju/bin/gpus) || exit 1
+export $(/mnt/matylda4/kesiraju/bin/gpus 1) || exit 1
 
 cd $SRC_DIR
-torchrun --nproc_per_node=1 joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
+
+python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataset_name="${DATASET_DIR}" \
   --model="checkpoint-27000" \
   --output_dir="test_xx" \

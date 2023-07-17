@@ -1,3 +1,5 @@
+import os
+import pickle
 from dataclasses import dataclass, field
 
 from datasets import load_from_disk
@@ -63,6 +65,10 @@ if __name__ == '__main__':
 
     predictions = trainer.predict(dataset[data_args.validation_split])
     logger.info(compute_metrics(tokenizer, predictions))
+    with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
+        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
     predictions = trainer.predict(dataset[data_args.test_split])
     logger.info(compute_metrics(tokenizer, predictions))
+    with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
+        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
