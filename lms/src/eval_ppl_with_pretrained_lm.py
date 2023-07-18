@@ -21,7 +21,7 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 from pathlib import Path
 from time import time
 from utils import (
-    Processor, FisherTextDataset, FisherTextDatasetIndep, FisherTextDatasetMaxLen,
+    Processor, FisherTextDataset, FisherTextDatasetIndep,
     create_logger,
     compute_ppl_per_recording
 )

@@ -11,7 +11,7 @@ from torch.utils.data import IterableDataset
 
 
 class Processor:
-    def __init__(self, model, dataloader, device, checkpoint):
+    def __init__(self, model, dataloader, device, checkpoint, ):
         self.model = model
         self.dataloader = dataloader
         self.device = device
@@ -49,7 +49,7 @@ class Processor:
             pbar.update(batch_text_ids.shape[0])
             pbar.set_postfix({'Recordings': f"{i_record}/{self.dataloader.nrecording}"})
 
-            if i % 10 == 0:
+            if i % 100 == 0:
                 self.save_checkpoint()
 
     def save_checkpoint(self):
