@@ -13,6 +13,7 @@
 import os
 import sys
 import json
+# from typing import Any
 import torch
 import pickle
 import argparse
@@ -20,12 +21,14 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 from pathlib import Path
 from time import time
 from utils import (
-    FisherTextDatasetIndep, FisherTextDatasetMaxLen,
+    Processor, FisherTextDataset, FisherTextDatasetIndep, FisherTextDatasetMaxLen,
     create_logger,
-    compute_ppl_per_recording)
+    compute_ppl_per_recording
+)
+from tqdm import tqdm
 
 def main():
-    """main method"""
+    """Main method"""
 
     args = parse_arguments()
 
@@ -34,12 +37,6 @@ def main():
         _ = GPT2LMHeadModel.from_pretrained(model_id)
         _ = GPT2TokenizerFast.from_pretrained(model_id)
         sys.exit(0)
-
-    # if args.offline:
-    #     os.environ["HF_HUB_OFFLINE"] = "1"
-    #     os.environ["HF_DATASETS_OFFLINE"] = "1"
-    #     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    #     os.environ["HF_EVALUATE_OFFLINE"] = "1"
 
     os.makedirs(args.out_dir, exist_ok=True)
 
@@ -68,92 +65,49 @@ def main():
         dataset = FisherTextDatasetIndep(args.in_file, tokenizer, batch_size=args.bsize)
         utt_ids = dataset.utt_ids
     elif args.context_type == "max_len":
-        dataset = FisherTextDatasetMaxLen(args.in_file, tokenizer, max_len=model.config.n_positions, batch_size=args.bsize)
+        # dataset = FisherTextDatasetMaxLen(args.in_file, tokenizer, max_len=model.config.n_positions, batch_size=args.bsize)
+        dataset = FisherTextDataset(args.in_file, tokenizer,
+                                    max_len=model.config.n_positions,
+                                    batch_size=args.bsize,
+        )
     else:
         raise ValueError(f"Wrong set 'context_type' as {args.context_type}")
 
-    nlls = []
-    stime = time()
+
+    proc = Processor(model, dataset, device, path_out_dir / f"dataset.pt")
+
+    # nlls = []
+    # stime = time()
     with torch.no_grad():
         if args.context_type == "indep":
-            for batch_text_ids in dataset:
-                batch_text_ids = torch.LongTensor(batch_text_ids).to(device=device)
-                target_ids = batch_text_ids.clone()
+            ...
+        #     for batch_text_ids in dataset:
+        #         batch_text_ids = torch.LongTensor(batch_text_ids).to(device=device)
+        #         target_ids = batch_text_ids.clone()
 
-                outputs = model(batch_text_ids)
+        #         outputs = model(batch_text_ids)
 
-                xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
+        #         xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
 
-                # ignore the logits for the last token
-                shifted_logits = outputs.logits[..., :-1, :].contiguous()
+        #         # ignore the logits for the last token
+        #         shifted_logits = outputs.logits[..., :-1, :].contiguous()
 
-                # ignore the targets for the first token
-                shifted_targets = target_ids[..., 1:].contiguous()
+        #         # ignore the targets for the first token
+        #         shifted_targets = target_ids[..., 1:].contiguous()
 
-                # compute cross entropy loss and return it for every token
-                neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
+        #         # compute cross entropy loss and return it for every token
+        #         neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
 
-                # append to the list of nlls
-                nlls.extend(neg_llh.cpu().numpy().tolist())
+        #         # append to the list of nlls
+        #         nlls.extend(neg_llh.cpu().numpy().tolist())
         elif args.context_type == "max_len":
-            i_recording = 0
-            rec_ids = []
-            nsamples = 0
-            act_rec = None
-            for i, (batch_text_ids, rec_id, first_batch, last_batch) in enumerate(dataset):
-                print(f"\r Batch: {i} , Actual rec: {act_rec} ({i_recording}/{dataset.nrecording}), Procesed sentences: {nsamples} / {dataset.nsentence}", end=" ", file=sys.stderr)
-                nsamples += len(batch_text_ids)
-
-                batch_text_ids = torch.LongTensor(batch_text_ids).to(device=device)
-                target_ids = batch_text_ids.clone()
-
-                outputs = model(batch_text_ids)
-
-                xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
-                if first_batch:
-                    xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
-                    print()
-                    act_rec = rec_id[0]
-                    i_recording += 1
-
-                    # ignore the logits for the last token
-                    shifted_logits = outputs.logits[..., :-1, :].contiguous()
-
-                    # ignore the targets for the first token
-                    shifted_targets = target_ids[..., 1:].contiguous()
-
-                    # compute cross entropy loss and return it for every token
-                    neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
-
-                    # append to the list of nlls
-                    nlls.extend(neg_llh.cpu().numpy().tolist())
-                    rec_ids.extend(rec_id)
-                else:
-                    xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
-                    # ignore the logits for the last token
-                    shifted_logits = outputs.logits[..., :-1, :].contiguous()
-
-                    # ignore the targets for the first token
-                    shifted_targets = target_ids[..., 1:].contiguous()
-
-                    # compute cross entropy loss and return it for every token
-                    neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
-
-                    # append to the list of nlls
-                    nlls.extend([[_v] for _v in neg_llh[:,-1].cpu().numpy().tolist()])
-                    rec_ids.extend(rec_id)
+            proc.fwd()
         else:
             raise NotImplementedError
-        print()
 
-    if args.context_type == "indep":
-        ids = utt_ids
-    elif args.context_type == "max_len":
-        ids = rec_ids
+    assert len(proc.nlls) == len(proc.ids), f"nlls {len(proc.nlls)} != utt_ids {len(proc.ids)}"
 
-    assert len(nlls) == len(ids), f"nlls {len(nlls)} != utt_ids {len(ids)}"
-
-    rec_id2nlls, rec_id2ppl = compute_ppl_per_recording(nlls, ids)
+    rec_id2nlls, rec_id2ppl = compute_ppl_per_recording(proc.nlls, proc.ids)
 
     with open(path_out_dir / "rec_id2nlls.pkl", "wb") as fpw:
         pickle.dump(rec_id2nlls, fpw)
@@ -161,7 +115,7 @@ def main():
     with open(path_out_dir / "rec_id2ppl.json", "w", encoding="utf-8") as fpw:
         json.dump(rec_id2ppl, fpw, indent=2, ensure_ascii=False)
 
-    logger.info(f"Saved in {args.out_dir} Time taken {time() - stime:.2f} sec")
+    # logger.info(f"Saved in {args.out_dir} Time taken {time() - stime:.2f} sec")
 
     return 0
 
@@ -177,8 +131,8 @@ def parse_arguments():
         help="path to input text file on which PPL shall be computed",
     )
     # parser.add_argument(
-    #     "--ftype",
-    #     choices=['text', 'key'],
+    #     "--ftype", "-ftype",
+    #     choices=['text', 'kaldi-text'],
     #     required=True,
     #     help="""input file type. text is plain text line by line,
     #     key is where first column in utterance with time_stamp (kaldi format)

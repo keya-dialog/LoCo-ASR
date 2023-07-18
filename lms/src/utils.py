@@ -1,10 +1,170 @@
 import logging
 import sys
+import os
+import torch
 import numpy as np
-from typing import List, Tuple
+from tqdm import tqdm
+from typing import Iterator, List, Tuple
 from datetime import datetime
 from collections import defaultdict
 from torch.utils.data import IterableDataset
+
+
+class Processor:
+    def __init__(self, model, dataloader, device, checkpoint):
+        self.model = model
+        self.dataloader = dataloader
+        self.device = device
+        self.checkpoint = checkpoint
+
+        self.nlls = []
+        self.ids = []
+
+        self.load_checkpoint()
+
+    def fwd(self):
+        # stime = time()
+        pbar = tqdm(self.dataloader, initial=self.dataloader.sentence_done)
+        # pbar.update(self.dataloader.sentence_done)
+        for i, (batch_text_ids, batch_ids, i_record) in enumerate(pbar):
+            batch_text_ids = torch.LongTensor(batch_text_ids).to(device=self.device)
+            target_ids = batch_text_ids.clone()
+
+            outputs = self.model(batch_text_ids)
+
+            xen_loss = torch.nn.CrossEntropyLoss(reduction='none')
+
+            # ignore the logits for the last token
+            shifted_logits = outputs.logits[..., :-1, :].contiguous()
+
+            # ignore the targets for the first token
+            shifted_targets = target_ids[..., 1:].contiguous()
+
+            # compute cross entropy loss and return it for every token
+            neg_llh = xen_loss(torch.transpose(shifted_logits, 1, 2), shifted_targets)
+
+            self.nlls.extend(neg_llh.cpu().numpy().tolist())
+            self.ids.extend(batch_ids)
+
+            pbar.update(batch_text_ids.shape[0])
+            pbar.set_postfix({'Recordings': f"{i_record}/{self.dataloader.nrecording}"})
+
+            if i % 10 == 0:
+                self.save_checkpoint()
+
+    def save_checkpoint(self):
+        # print("(save) nlls_score", len(self.nlls))
+        # print("(save) ids_score", len(self.ids))
+        # print("(save) sentence_processed", self.dataloader.sentence_done)
+        torch.save({
+            "id_processed": self.dataloader.ids_done,
+            "sentence_processed": self.dataloader.sentence_done,
+            "nlls_score": self.nlls,
+            "ids_score": self.ids,
+        }, self.checkpoint)
+
+    def load_checkpoint(self):
+        if os.path.isfile(self.checkpoint):
+            checkpoint = torch.load(self.checkpoint)
+            self.dataloader.ids_done = checkpoint["id_processed"]
+            self.dataloader.sentence_done = checkpoint["sentence_processed"]
+            self.nlls = checkpoint["nlls_score"]
+            self.ids = checkpoint["ids_score"]
+            # print("(load) nlls_score", len(self.nlls))
+            # print("(load) ids_score", len(self.ids))
+            # print("(load) sentence_processed", self.dataloader.sentence_done)
+
+class FisherTextDataset(IterableDataset):
+    """ Dataset """
+
+    def __init__(self,
+                 fname: str, tokenizer, batch_size: int = 128,
+                 context_type: str = "indep", max_len: int = 128):
+        """ Init """
+        self.tokenizer = tokenizer
+        self.max_len = max_len
+        self.batch_size = batch_size
+        self.context_type = context_type
+        self.utt_id2text, self.rec_id2tokens = self._load_text(fname)
+        self.nrecording = len(self.rec_id2tokens)
+
+        self.ids_done = []
+        self.sentence_done = 0
+
+    def __iter__(self):
+        return iter(self._next_batch())
+
+    def _load_text(self, fname):
+
+        def recid_time(x):
+            rec, _, start, end = x[0].split("-")
+            return "-".join((rec, start, end))
+
+        utt_id2text = {}
+        rec_id2tokens = defaultdict(list)
+
+        with open(fname, "r", encoding="utf-8") as fd:
+            for line in fd:
+                utt_id, text = line.strip().split(None, maxsplit=1)
+                if utt_id in utt_id2text:
+                    print(f"Duplicate utt id: {utt_id} ignoring", file=sys.stderr)
+                else:
+                    utt_id2text[utt_id] = text
+
+        utt_ids_sorted = sorted(utt_id2text.items(), key=lambda x: recid_time(x))
+
+        for utt_id, text in utt_ids_sorted:
+            rec_id = utt_id.split("-", maxsplit=1)[0]
+            rec_id2tokens[rec_id].extend(self.tokenizer(text)['input_ids'])
+            rec_id2tokens[rec_id].append(self.tokenizer.eos_token_id)
+
+        return utt_id2text, rec_id2tokens
+
+    def __len__(self):
+        nsentence = 0
+        for _, v in self.rec_id2tokens.items():
+            if len(v) < self.max_len:
+                nsentence += 1
+            else:
+                nsentence += (1 + (len(v) - self.max_len))
+
+        return nsentence
+
+    def _next_batch(self):
+        for i, (k, v) in enumerate(self.rec_id2tokens.items(), start=1):
+
+            if k in self.ids_done:
+                continue
+
+            if len(v) < self.max_len:
+                yield [v], [k], i
+                self.sentence_done += 1
+                continue
+
+            buffer = v[:self.max_len]
+            batch = []
+            rec_ids = []
+            for ii in range(self.max_len, len(v)):
+                output_seq = buffer[:]
+
+                batch.append(output_seq)
+                rec_ids.append(k)
+
+                if len(batch) == self.batch_size:
+                    yield batch, rec_ids, i
+                    self.sentence_done += len(batch)
+                    batch.clear()
+                    rec_ids.clear()
+                buffer.pop(0)
+                buffer.append(v[ii])
+
+            # Non-complete batch
+            if batch:
+                yield batch, rec_ids, i
+                self.sentence_done += len(batch)
+
+            self.ids_done.append(k)
+
 
 class FisherTextDatasetIndep(IterableDataset):
     """ Dataset """
@@ -63,7 +223,6 @@ class FisherTextDatasetIndep(IterableDataset):
                         utt_id2text[utt_id] = tok_ids
                         text_ids.append(tok_ids)
                         lengths.append(len(tok_ids))
-
                     else:
                         ign += 1
 
@@ -91,92 +250,6 @@ class FisherTextDatasetIndep(IterableDataset):
         return recid2tokens
 
 
-class FisherTextDatasetMaxLen(IterableDataset):
-    """ Dataset """
-
-    def __init__(self, fname: str, tokenizer, max_len: int = 128, batch_size: int = 5):
-        """ Init """
-        self.max_len = max_len
-        self.batch_size = batch_size
-        self.tokenizer = tokenizer
-        self.rec_id2text, self.nsentence = self._load_key_text_as_rec(fname)
-        self.nrecording = len(self.rec_id2text)
-
-    def __iter__(self):
-        return iter(self._next_batch())
-
-    def _load_key_text_as_rec(self, fname):
-
-        def recid_time(x):
-            rec, _, start, end = x[0].split("-")
-            return "-".join((rec, start, end))
-
-        utt_ids = {}
-        rec_id2text = defaultdict(list)
-
-        with open(fname, "r", encoding="utf-8") as fd:
-            for line in fd:
-                utt_id, text = line.strip().split(None, maxsplit=1)
-                if utt_id in utt_ids:
-                    print(f"Duplicate utt id: {utt_id} ignoring", file=sys.stderr)
-                else:
-                    utt_ids[utt_id] = text
-
-        utt_ids_sorted = sorted(utt_ids.items(), key=lambda x: recid_time(x))
-
-        for utt_id, text in utt_ids_sorted:
-            rec_id = utt_id.split("-", maxsplit=1)[0]
-            rec_id2text[rec_id].extend(self.tokenizer(text)['input_ids'])
-            rec_id2text[rec_id].append(self.tokenizer.eos_token_id)
-
-        nsentence = 0
-        for _, v in rec_id2text.items():
-            if len(v) < self.max_len:
-                nsentence += 1
-            else:
-                nsentence += (1 + (len(v) - self.max_len))
-
-        return rec_id2text, nsentence
-
-    def _next_batch(self):
-        for k, v in self.rec_id2text.items():
-            first_batch = True
-            last_batch = False
-            if len(v) < self.max_len:
-                last_batch = True
-                yield [v], [k], first_batch, last_batch
-                continue
-
-            buffer = v[:self.max_len]
-            batch = []
-            rec_ids = []
-            for i, ii in enumerate(range(self.max_len, len(v))):
-                output_seq = buffer[:]
-
-                if first_batch and i != 0:
-                    first_batch = False
-
-                if ii == len(v) - 1:
-                    last_batch = True
-
-                batch.append(output_seq)
-                rec_ids.append(k)
-
-                if first_batch:
-                    yield batch, rec_ids, first_batch, last_batch
-                    batch.clear()
-                    rec_ids.clear()
-                elif len(batch) == self.batch_size:
-                    yield batch, rec_ids, first_batch, last_batch
-                    batch.clear()
-                    rec_ids.clear()
-                elif last_batch:
-                    yield batch, rec_ids, first_batch, last_batch
-                    batch.clear()
-                    rec_ids.clear()
-                buffer.pop(0)
-                buffer.append(v[ii])
-
 def create_logger(log_file_base, verbose: bool):
     """Create logger"""
 
@@ -191,6 +264,7 @@ def create_logger(log_file_base, verbose: bool):
     if verbose:
         logger.addHandler(logging.StreamHandler())
     return logger
+
 
 def compute_ppl_per_recording(nlls: list, utt_ids: list) -> Tuple[dict, dict]:
     """Compute perplexity (PPL) per recording, given the token-level nlls,
