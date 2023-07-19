@@ -222,7 +222,7 @@ if __name__ == '__main__':
         model=model,
         callbacks=[layer_training_manager, early_stopping, printing_callback],
         train_dataset=dataset[data_args.train_split],
-        # eval_dataset=dataset[data_args.validation_split],
+        eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
         optimizers=(optimizer, None)
     )
