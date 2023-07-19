@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, make_dataclass
+from itertools import zip_longest
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -32,12 +33,14 @@ def compute_metrics(tokenizer, pred):
 
 
 class FrozenLayersManager(TrainerCallback):
-    def __init__(self, enc_layers_to_freeze, dec_layers_to_freeze, steps_to_freeze_enc, steps_to_freeze_dec):
+    def __init__(self, enc_layers_to_freeze, dec_layers_to_freeze, steps_to_freeze_enc, steps_to_freeze_dec,
+                 freeze_cross_attention=False):
         super().__init__()
         self.enc_layers_to_freeze = enc_layers_to_freeze
         self.dec_layers_to_freeze = dec_layers_to_freeze
         self.steps_to_freeze_enc = steps_to_freeze_enc
         self.steps_to_freeze_dec = steps_to_freeze_dec
+        self.freeze_cross_attention = freeze_cross_attention
 
     def on_init_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         curr_model: SpeechEncoderDecoderModel = kwargs['model']
@@ -62,7 +65,9 @@ class FrozenLayersManager(TrainerCallback):
         if self.dec_layers_to_freeze > 0:
             for name, param in curr_model.decoder.named_parameters():
                 if name.startswith("transformer.h."):
-                    if 'cross' in name or 'adapter' in name:
+                    if 'cross' in name and not self.freeze_cross_attention:
+                        param.requires_grad = True
+                    if 'adapter' in name:
                         param.requires_grad = True
                     else:
                         layer = int(name.split('.')[2])
@@ -159,7 +164,7 @@ class Seq2SeqDataCollatorWithPadding:
     Args:
         feature_extractor (:class:`~transformers.Wav2Vec2FeatureExtractor`)
             The feature extractor used for processing the data.
-        decoder_tokenizer (:class:`~transformers.PreTrainedTokenizerFast`)
+        tokenizer (:class:`~transformers.PreTrainedTokenizerFast`)
             The processor used for processing the text data.
         padding (:obj:`bool`, :obj:`str` or :class:`~transformers.tokenization_utils_base.PaddingStrategy`, `optional`,
         defaults to :obj:`True`):
@@ -184,7 +189,7 @@ class Seq2SeqDataCollatorWithPadding:
     """
 
     feature_extractor: Wav2Vec2FeatureExtractor
-    decoder_tokenizer: PreTrainedTokenizerFast
+    tokenizer: PreTrainedTokenizerFast
     padding: Union[bool, str] = True
     max_length: Optional[int] = None
     max_length_labels: Optional[int] = None
@@ -193,14 +198,14 @@ class Seq2SeqDataCollatorWithPadding:
     sampling_rate: Optional[int] = 16_000
 
     def _encapsulate_utterance(self, utterance):
-        return self.decoder_tokenizer.bos_token + utterance + self.decoder_tokenizer.eos_token
+        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
         input_features = self.feature_extractor([feature["input_values"] for feature in features], padding=True,
                                                 sampling_rate=self.sampling_rate)
-        labels = self.decoder_tokenizer.batch_encode_plus(
+        labels = self.tokenizer.batch_encode_plus(
             [self._encapsulate_utterance(feature['labels']) for feature in features], return_attention_mask=True,
             padding='longest', return_tensors='pt')
 
@@ -216,6 +221,71 @@ class Seq2SeqDataCollatorWithPadding:
         batch["labels"] = labels
 
         return batch
+
+
+@dataclass
+class Seq2SeqDataCollatorWithPaddingContext:
+    """
+    Data collator that will dynamically pad the inputs received.
+    Args:
+        feature_extractor (:class:`~transformers.Wav2Vec2FeatureExtractor`)
+            The feature extractor used for processing the data.
+        tokenizer (:class:`~transformers.PreTrainedTokenizerFast`)
+            The processor used for processing the text data.
+        padding (:obj:`bool`, :obj:`str` or :class:`~transformers.tokenization_utils_base.PaddingStrategy`, `optional`,
+        defaults to :obj:`True`):
+            Select a strategy to pad the returned sequences
+            (according to the model's padding side and padding index) among:
+            * :obj:`True` or :obj:`'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
+              sequence if provided).
+            * :obj:`'max_length'`: Pad to a maximum length specified with the argument :obj:`max_length` or to the
+              maximum acceptable input length for the model if that argument is not provided.
+            * :obj:`False` or :obj:`'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+              different lengths).
+        max_length (:obj:`int`, `optional`):
+            Maximum length of the ``input_values`` of the returned list and optionally padding length (see above).
+        max_length_labels (:obj:`int`, `optional`):
+            Maximum length of the ``labels`` returned list and optionally padding length (see above).
+        pad_to_multiple_of (:obj:`int`, `optional`):
+            If set will pad the sequence to a multiple of the provided value.
+            This is especially useful to enable the use of Tensor Cores on NVIDIA hardware with compute capability >=
+            7.5 (Volta).
+    Based upon: https://colab.research.google.com/github/patrickvonplaten/notebooks/blob/master/
+                /Fine_tuning_Wav2Vec2_for_English_ASR.ipynb
+    """
+
+    feature_extractor: Wav2Vec2FeatureExtractor
+    tokenizer: PreTrainedTokenizerFast
+    padding: Union[bool, str] = True
+    max_length: Optional[int] = None
+    max_length_labels: Optional[int] = None
+    pad_to_multiple_of: Optional[int] = None
+    pad_to_multiple_of_labels: Optional[int] = None
+    sampling_rate: Optional[int] = 16_000
+
+    def _encapsulate_utterance(self, utterance):
+        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
+
+    def __call__(self, conversations: List[Dict[str, Union[List[List[int]], List[torch.Tensor]]]]) -> List[
+        BatchFeature]:
+        # split inputs and labels since they have to be of different lengths and need
+        # different padding methods
+
+        audios = zip_longest(*[conv['audio'] for conv in conversations], fillvalue=[])
+        labels = zip_longest(*[conv['text'] for conv in conversations], fillvalue="")
+
+        input_features = [self.feature_extractor(utterance, padding=True, return_tensors='pt',
+                                                 sampling_rate=self.sampling_rate) for utterance in audios]
+        labels = [self.tokenizer.batch_encode_plus(
+            [self._encapsulate_utterance(item) for item in utterance], return_attention_mask=True,
+            padding='longest', return_tensors='pt') for utterance in labels]
+
+        batches = []
+        for audio_batch, text_batch in zip(input_features, labels):
+            text_batch = text_batch["input_ids"].masked_fill(text_batch.attention_mask.ne(1), -100)
+            audio_batch["labels"] = text_batch
+            batches.append(audio_batch)
+        return batches
 
 
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,

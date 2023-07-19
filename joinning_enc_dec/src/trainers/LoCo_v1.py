@@ -9,9 +9,10 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallb
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
-from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
+from context_aware.models import JointCTCAttentionEncoderDecoderWithContext
+from context_aware.trainer import ContextAwareTrainer
+from utils import AdditionalLossPrinterCallback, FrozenLayersManager, Seq2SeqDataCollatorWithPaddingContext, \
+    compute_metrics, group_params
 
 
 @dataclass
@@ -67,6 +68,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     )
     steps_to_freeze_dec: int = field(
         default=0, metadata={"help": "Steps to freeze decoder"}
+    )
+    freeze_cross_attention: bool = field(
+        default=False, metadata={"help": "Wherever to freeze cross attentions"}
     )
     custom_optimizer: bool = field(
         default=False, metadata={"help": "Custom optimizer for decoder"}
@@ -144,10 +148,6 @@ if __name__ == '__main__':
 
     # 1. Load dataset
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
-    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
-        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
-                                                          max_input_len=data_args.max_duration_in_seconds,
-                                                          min_input_len=data_args.min_duration_in_seconds)
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
@@ -166,8 +166,8 @@ if __name__ == '__main__':
         "additional_special_tokens": [model_args.pad_token, model_args.bos_token, model_args.eos_token]
     })
 
-    # 3. Initialize seq2seq model
-    model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
+    # # 3. Initialize seq2seq model
+    model = JointCTCAttentionEncoderDecoderWithContext.from_encoder_decoder_pretrained(
         encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
         decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
         bos_token_id=decoder_tokenizer.bos_token_id,
@@ -201,29 +201,34 @@ if __name__ == '__main__':
 
     # 4. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
-                                                 training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec)
+                                                 training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec,
+                                                 training_args.freeze_cross_attention)
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
-    data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
-                                                   tokenizer=decoder_tokenizer,
-                                                   padding=True, sampling_rate=model_args.sampling_rate)
+
+    for n, p in model.named_parameters():
+        if 'context_pool' not in n and 'utterance_pool' not in n:
+            p.requires_grad = False
+    data_collator = Seq2SeqDataCollatorWithPaddingContext(feature_extractor=feature_extractor,
+                                                          tokenizer=decoder_tokenizer,
+                                                          padding=True, sampling_rate=model_args.sampling_rate)
     optimizer = None
     if training_args.custom_optimizer:
         optimizer = AdamW(group_params(model, training_args.weight_decay, training_args.learning_rate,
                                        model_args.cross_attention_scaling_factor), lr=training_args.learning_rate)
 
-    trainer = AdditionalLossTrackerTrainer(
+    trainer = ContextAwareTrainer(
         args=training_args,
         model=model,
         callbacks=[layer_training_manager, early_stopping, printing_callback],
         train_dataset=dataset[data_args.train_split],
-        eval_dataset=dataset[data_args.validation_split],
+        # eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
         optimizers=(optimizer, None)
     )
 
     # 5. Train
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
 
     decoder_tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
     feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))
@@ -237,7 +242,7 @@ if __name__ == '__main__':
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    # # 6. Eval on test
+    # 6. Eval on test
     predictions = trainer.predict(dataset[data_args.test_split])
     logger.info(compute_metrics(decoder_tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
