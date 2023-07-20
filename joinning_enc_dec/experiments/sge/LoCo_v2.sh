@@ -4,8 +4,8 @@
 #$ -l ram_free=16G,mem_free=16G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v1.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v1.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v2.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v2.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="LoCo_v1"
+EXPERIMENT="LoCo+cross_attention"
 
 cd $SRC_DIR
 
@@ -85,6 +85,4 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --train_split="train_500" \
   --validation_split="dev_6" \
   --length_column_name="n_turns" \
-  --resume_from_checkpoint=$MODEL_CHECKPOINT \
-  --freeze_cross_attention
-
+  --resume_from_checkpoint=$MODEL_CHECKPOINT
