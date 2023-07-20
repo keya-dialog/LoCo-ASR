@@ -184,6 +184,7 @@ if __name__ == '__main__':
         encoder_add_adapter=model_args.enc_adapters,
         ctc_weight=training_args.ctc_weight,
         encoder_ctc_loss_reduction="mean",
+        encoder_ctc_zero_infinity=True,
         encoder_pad_token_id=decoder_tokenizer.pad_token_id,
         encoder_vocab_size=len(decoder_tokenizer),
     )
