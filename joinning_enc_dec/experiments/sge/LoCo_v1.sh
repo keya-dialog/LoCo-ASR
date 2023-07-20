@@ -4,11 +4,11 @@
 #$ -l ram_free=16G,mem_free=16G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/frozen_XLS-R300m+adpt+GPT2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/frozen_XLS-R300m+adpt+GPT2.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v1.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v1.e
 
-# Job should finish in 10 days - 432000 seconds
-ulimit -t 432000
+# Job should finish in 2 days - 172800 seconds
+ulimit -t 172800
 
 # Enable opening multiple files
 ulimit -n 4096
@@ -18,6 +18,8 @@ ulimit -f unlimited
 
 # Enable more threads per process by increasing virtual memory (https://stackoverflow.com/questions/344203/maximum-number-of-threads-per-process-in-linux)
 ulimit -v unlimited
+
+ulimit -u 4096
 
 # Initialize environment
 unset PYTHONPATH
@@ -65,7 +67,7 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --eval_steps="1000" \
   --auto_find_batch_size="True" \
   --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="16" \
+  --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
