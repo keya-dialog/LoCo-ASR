@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="XLSR_GPT2+CTC_low_rank_v1"
+EXPERIMENT="LoCo_v1"
 
 cd $SRC_DIR
 
@@ -43,7 +43,7 @@ export HF_HUB_OFFLINE=1
 
 export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
-export WANDB_PROJECT="LoCo-ASR_v3"
+export WANDB_PROJECT="LoCo-ASR_v2"
 
 python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --dataset_name="${DATASET_DIR}" \
