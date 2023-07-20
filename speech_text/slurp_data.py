@@ -12,8 +12,10 @@ class SLURPDataset(Dataset):
         self.data_path = data_path
         self.mode = mode
         self.task = task
+        self.intents = []
+        #self.intents_before = []
         self.dataset = self.prepare_data()
-        
+
     def prepare_data(self):
         text_path = os.path.join(self.data_path, "dataset/slurp")
         audio_path = os.path.join(self.data_path, "audio")
@@ -30,6 +32,7 @@ class SLURPDataset(Dataset):
         audio_files_list = os.listdir(audio_files_path)
         
         slurp_dataset = {}
+        intents = []
         with jsonlines.open(text_file_path) as file:
             for i,item in enumerate(file):
                 #!!!!! For now only retrieve one recording file from the sample !!!!!
@@ -38,7 +41,12 @@ class SLURPDataset(Dataset):
                     audio_example = os.path.join(audio_files_path, recording_file)
                     audio_data, sample_rate = librosa.load(audio_example)
                     slurp_dataset[i] = {"slurp_id":item['slurp_id'], "text":item, "audio":{"array":audio_data, "sample_rate":sample_rate, "path":audio_example}}
-        
+                    intents.append(item["intent"])
+
+        if self.task == "intent":
+            self.intents = list(set(intents))
+            #self.intents_before = intents
+
         return slurp_dataset
     
     def __len__(self):
