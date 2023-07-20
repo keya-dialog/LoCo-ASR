@@ -62,12 +62,12 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --learning_rate="1e-6" \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="1000" \
+  --save_steps="5000" \
   --evaluation_strategy="steps" \
-  --eval_steps="1000" \
+  --eval_steps="5000" \
   --auto_find_batch_size="True" \
   --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="2" \
+  --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
