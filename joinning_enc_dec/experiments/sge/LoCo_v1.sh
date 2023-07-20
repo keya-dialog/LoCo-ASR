@@ -67,7 +67,7 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --eval_steps="1000" \
   --auto_find_batch_size="True" \
   --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="4" \
+  --per_device_eval_batch_size="2" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
