@@ -1,5 +1,7 @@
 #Large files
 data/
+extracted/
+model/
 
 #Audio files
 *.wav

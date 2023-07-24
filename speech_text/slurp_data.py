@@ -35,12 +35,13 @@ class SLURPDataset(Dataset):
         intents = []
         with jsonlines.open(text_file_path) as file:
             for i,item in enumerate(file):
-                #!!!!! For now only retrieve one recording file from the sample !!!!!
+                #!!!!! For now only retrieve one recording file from the sample LOOK FOR HEADSET!!!!!
                 recording_file = item["recordings"][0]['file']
                 if recording_file in audio_files_list:
                     audio_example = os.path.join(audio_files_path, recording_file)
-                    audio_data, sample_rate = librosa.load(audio_example)
-                    slurp_dataset[i] = {"slurp_id":item['slurp_id'], "text":item, "audio":{"array":audio_data, "sample_rate":sample_rate, "path":audio_example}}
+                    audio_data, sample_rate = librosa.load(audio_example, sr=16000) #Originally 22050 Hz but now 16k
+
+                    slurp_dataset[i] = {"slurp_id":item['slurp_id'], "text":item, "audio":{"array":audio_data, "sample_rate":16000, "path":audio_example}}
                     intents.append(item["intent"])
 
         if self.task == "intent":
