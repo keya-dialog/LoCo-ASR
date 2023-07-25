@@ -1,8 +1,9 @@
 import os
 import pickle
 import argparse
+import librosa
 
-from slurp_data import SLURPDataset
+from slurp_data_v2 import SLURPDataset
 from intent_classes import ALL_CLASSES
 
 import torch
@@ -24,9 +25,7 @@ print("Running on", device)
 
 data_path = "slurp"
 
-print("STARTED!!!")
 slurp_dataset = SLURPDataset(data_path, mode=split, task="intent")
-print("DATA IS NOT CAUSING OUT OF MEMORY!!!!!!!!!!!!!!")
 
 print(f"{split} set size: {len(slurp_dataset)}")
 
@@ -39,8 +38,13 @@ onehot_labels = label_binarizer.fit_transform(numerical_labels)
 processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_asr")
 
 def collate_fn(batch):
-    slurp_ids, texts, audios, sample_rates, tasks = zip(*batch)
+    slurp_ids, texts, audio_paths, sample_rates, tasks = zip(*batch)
     
+    audios = []
+    for audio in audio_paths:
+        audio_np, _= librosa.load(audio, sr=16000)
+        audios.append(audio_np)
+
     input_texts = processor(text=texts, return_tensors='pt', padding="longest").to(device)
     input_audios = processor(audio=audios, sampling_rate=sample_rates[0], return_tensors="pt", padding="longest").to(device)
 
@@ -94,9 +98,11 @@ else:
         for data in data_loader:
             slurp_ids, _, audios, sample_rates, targets = data
             
-            predicted_ids_speech = model.generate(**audios, max_length=450)
-            out = model(**audios, decoder_input_ids=predicted_ids_speech)
-            embeddings = out.encoder_last_hidden_state.cpu().detach().numpy()
+            #predicted_ids_speech = model.generate(**audios, max_length=450)
+            #out = model(**audios, decoder_input_ids=predicted_ids_speech)
+            out = model.speecht5.encoder(**audios)
+            #embeddings = out.encoder_last_hidden_state.cpu().detach().numpy()
+            embeddings = out.last_hidden_state.cpu().detach().numpy()
             
             for slurp_id, speech_embedding, target in zip(slurp_ids, embeddings, targets):
                 with open(os.path.join(save_folder, f'{slurp_id}_embedding_and_target.pickle'), 'wb') as handle:

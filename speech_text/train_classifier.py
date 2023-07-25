@@ -59,6 +59,7 @@ patience = 5 #For early stopping
 print_every = 200
 
 criterion = nn.CrossEntropyLoss()
+criterion_val = nn.CrossEntropyLoss(reduction="sum")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
 
 model_folder = "model"
@@ -74,7 +75,7 @@ if not os.path.exists(plots_folder):
 if not os.path.exists(logs_folder):
     os.makedirs(logs_folder)
 
-def train(model, train_loader, val_loader, criterion, optimizer, num_epochs, patience=5, print_every=200):
+def train(model, train_loader, val_loader, criterion, criterion_val, optimizer, num_epochs, patience=5, print_every=200):
     text_to_write = "Results\n"
     
     total_loss = []
@@ -110,18 +111,18 @@ def train(model, train_loader, val_loader, criterion, optimizer, num_epochs, pat
             
             epoch_loss += loss.item()
 
-            acc = round(float((torch.argmax(pred, 1) == torch.argmax(target, 1)).float().mean())*100,2)
+            acc = float((torch.argmax(pred, 1) == torch.argmax(target, 1)).float().sum())
             acc_train += acc
             
             # Print the loss every specified number of iterations
             if (i + 1) % print_every == 0:
-                print(f"Epoch [{epoch+1}/{num_epochs}], Iteration [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}, Accuracy: {acc}")
-                text_to_write += f"Epoch [{epoch+1}/{num_epochs}], Iteration [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}, Accuracy: {acc}\n"
+                print(f"Epoch [{epoch+1}/{num_epochs}], Iteration [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}")
+                text_to_write += f"Epoch [{epoch+1}/{num_epochs}], Iteration [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}\n"
                 
         epoch_loss /= len(train_loader)
         total_loss.append(epoch_loss)
-        acc_train /= len(train_loader)
-        acc_train = round(acc_train, 2)
+        acc_train /= len(train_set)
+        #acc_train = round(acc_train, 2)
         acc_list.append(acc_train)
         torch.save(model.state_dict(), os.path.join(save_folder, f'speecht5_{pooling}_{modality}_epoch_{epoch+1}.pth'))
         
@@ -137,17 +138,17 @@ def train(model, train_loader, val_loader, criterion, optimizer, num_epochs, pat
                 pred_eval = model(data_eval)
                 pred_eval = pred_eval.squeeze(1)
                 
-                val_loss += criterion(pred_eval, target_eval.float()).item()
-                acc_val += round(float((torch.argmax(pred, 1) == torch.argmax(target, 1)).float().mean())*100,2)
-            val_loss /= len(val_loader)
+                val_loss += criterion_val(pred_eval, target_eval.float()).item()
+                acc_val += float((torch.argmax(pred_eval, 1) == torch.argmax(target_eval, 1)).float().sum()) #mean and remove round *100
+            val_loss /= len(val_set)
             val_loss_list.append(val_loss)
-            acc_val /= len(val_loader)
-            acc_val = round(acc_val,2)
+            acc_val /= len(val_set)
+            #acc_val = round(acc_val,2)
             acc_val_list.append(acc_val)
 
         # Print the epoch loss and validation loss
-        print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {epoch_loss:.4f}, Training accuracy: {acc_train}, Validation Loss: {val_loss:.4f}, Validation accuracy: {acc_val}")
-        text_to_write += f"###### Epoch [{epoch+1}/{num_epochs}], Training Loss: {epoch_loss:.4f}, Training accuracy: {acc_train}, Validation Loss: {val_loss:.4f}, Validation accuracy: {acc_val} ######\n\n"
+        print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {epoch_loss:.4f}, Training accuracy: {round(acc_train*100,2)}, Validation Loss: {val_loss:.4f}, Validation accuracy: {acc_val*100:.2f}")
+        text_to_write += f"###### Epoch [{epoch+1}/{num_epochs}], Training Loss: {epoch_loss:.4f}, Training accuracy: {round(acc_train*100,2)}, Validation Loss: {val_loss:.4f}, Validation accuracy: {acc_val*100:.2f} ######\n\n"
 
         # Check for early stopping
         if val_loss < best_val_loss:
@@ -189,7 +190,7 @@ def train(model, train_loader, val_loader, criterion, optimizer, num_epochs, pat
     #plt.show(block=True)
     plt.savefig(os.path.join(plots_folder, "accuracies.png"))
 
-def evaluate(model, test_loader, criterion):
+def evaluate(model, test_loader, criterion_val):
     model.eval()
     test_loss = 0.0
     acc = 0.0
@@ -199,22 +200,22 @@ def evaluate(model, test_loader, criterion):
             target_test = target_test.to(device)
             pred_test = model(data_test)
             pred_test = pred_test.squeeze(1)
-            test_loss += criterion(pred_test, target_test.float()).item()
-            acc += float((torch.argmax(pred_test, 1) == torch.argmax(target_test, 1)).float().mean())
+            test_loss += criterion_val(pred_test, target_test.float()).item()
+            acc += float((torch.argmax(pred_test, 1) == torch.argmax(target_test, 1)).float().sum())
 
-        test_loss /= len(test_loader)
-        acc /= len(test_loader)
+        test_loss /= len(test_set)
+        acc /= len(test_set)
 
     print(f"Test Loss: {test_loss:.4f}")
     print(f"Test Accuracy: {acc*100:.2f}")
 
 print("Training started...")
-train(model, train_loader, val_loader, criterion, optimizer, num_epochs, patience=patience, print_every=print_every)
+train(model, train_loader, val_loader, criterion, criterion_val, optimizer, num_epochs, patience=patience, print_every=print_every)
 print("Training done!")
 
 model = IntentClassifier(method=pooling, embedding_size=768, num_heads=1).to(device)
 model.load_state_dict(torch.load(os.path.join(save_folder, f'speecht5_{pooling}_{modality}_best.pth')))
 
 print("Evaluating model on test set")
-evaluate(model, test_loader, criterion)
+evaluate(model, test_loader, criterion_val)
 print("Evaluation done!")

@@ -41,6 +41,11 @@ processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_asr")
 def collate_fn(batch):
     slurp_ids, texts, audios, sample_rates, tasks = zip(*batch)
     
+    print(type(audios))
+    print(type(audios[0]))
+    print(audios[0].shape)
+    print(audios.shape)
+    print(aaddd)
     input_texts = processor(text=texts, return_tensors='pt', padding="longest").to(device)
     input_audios = processor(audio=audios, sampling_rate=sample_rates[0], return_tensors="pt", padding="longest").to(device)
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class IntentClassifier(nn.Module):
-    def __init__(self, method="average", embedding_size=768, num_heads=1):
+    def __init__(self, method="average", embedding_size=768):
         """
         Method can be:
         - average: mean of all values from frames / tokens
@@ -13,7 +13,6 @@ class IntentClassifier(nn.Module):
 
         self.method = method
         self.embedding_size = embedding_size
-        self.num_heads = num_heads
 
         self.q = nn.Parameter(torch.randn(1, embedding_size, requires_grad=True) * 0.001)
         self.softmax = nn.Softmax(dim=1)
