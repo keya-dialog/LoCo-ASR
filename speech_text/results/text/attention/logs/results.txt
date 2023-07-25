@@ -1,0 +1,419 @@
+Results
+Epoch [1/100], Iteration [200/1952], Loss: 2.6546, Accuracy: 50.0
+Epoch [1/100], Iteration [400/1952], Loss: 1.7582, Accuracy: 75.0
+Epoch [1/100], Iteration [600/1952], Loss: 0.7995, Accuracy: 87.5
+Epoch [1/100], Iteration [800/1952], Loss: 1.0350, Accuracy: 68.75
+Epoch [1/100], Iteration [1000/1952], Loss: 1.3052, Accuracy: 56.25
+Epoch [1/100], Iteration [1200/1952], Loss: 0.8986, Accuracy: 81.25
+Epoch [1/100], Iteration [1400/1952], Loss: 1.2823, Accuracy: 62.5
+Epoch [1/100], Iteration [1600/1952], Loss: 1.1695, Accuracy: 68.75
+Epoch [1/100], Iteration [1800/1952], Loss: 0.5747, Accuracy: 81.25
+###### Epoch [1/100], Training Loss: 1.5587, Training accuracy: 64.09, Validation Loss: 1.1711, Validation accuracy: 66.67 ######
+
+Epoch [2/100], Iteration [200/1952], Loss: 0.5754, Accuracy: 87.5
+Epoch [2/100], Iteration [400/1952], Loss: 0.7133, Accuracy: 87.5
+Epoch [2/100], Iteration [600/1952], Loss: 0.8497, Accuracy: 81.25
+Epoch [2/100], Iteration [800/1952], Loss: 1.1578, Accuracy: 75.0
+Epoch [2/100], Iteration [1000/1952], Loss: 0.9507, Accuracy: 81.25
+Epoch [2/100], Iteration [1200/1952], Loss: 0.5984, Accuracy: 87.5
+Epoch [2/100], Iteration [1400/1952], Loss: 1.0259, Accuracy: 62.5
+Epoch [2/100], Iteration [1600/1952], Loss: 1.1848, Accuracy: 81.25
+Epoch [2/100], Iteration [1800/1952], Loss: 1.1733, Accuracy: 68.75
+###### Epoch [2/100], Training Loss: 0.8428, Training accuracy: 78.96, Validation Loss: 0.9631, Validation accuracy: 88.89 ######
+
+Epoch [3/100], Iteration [200/1952], Loss: 0.9972, Accuracy: 68.75
+Epoch [3/100], Iteration [400/1952], Loss: 0.8081, Accuracy: 68.75
+Epoch [3/100], Iteration [600/1952], Loss: 0.5036, Accuracy: 87.5
+Epoch [3/100], Iteration [800/1952], Loss: 0.1990, Accuracy: 100.0
+Epoch [3/100], Iteration [1000/1952], Loss: 1.0277, Accuracy: 75.0
+Epoch [3/100], Iteration [1200/1952], Loss: 0.9183, Accuracy: 75.0
+Epoch [3/100], Iteration [1400/1952], Loss: 0.4374, Accuracy: 87.5
+Epoch [3/100], Iteration [1600/1952], Loss: 0.3728, Accuracy: 87.5
+Epoch [3/100], Iteration [1800/1952], Loss: 0.5502, Accuracy: 93.75
+###### Epoch [3/100], Training Loss: 0.6798, Training accuracy: 82.81, Validation Loss: 0.8506, Validation accuracy: 88.89 ######
+
+Epoch [4/100], Iteration [200/1952], Loss: 0.5106, Accuracy: 87.5
+Epoch [4/100], Iteration [400/1952], Loss: 0.5433, Accuracy: 87.5
+Epoch [4/100], Iteration [600/1952], Loss: 0.3201, Accuracy: 87.5
+Epoch [4/100], Iteration [800/1952], Loss: 0.6106, Accuracy: 93.75
+Epoch [4/100], Iteration [1000/1952], Loss: 0.4223, Accuracy: 87.5
+Epoch [4/100], Iteration [1200/1952], Loss: 0.7307, Accuracy: 75.0
+Epoch [4/100], Iteration [1400/1952], Loss: 0.7874, Accuracy: 68.75
+Epoch [4/100], Iteration [1600/1952], Loss: 1.0934, Accuracy: 81.25
+Epoch [4/100], Iteration [1800/1952], Loss: 0.6276, Accuracy: 87.5
+###### Epoch [4/100], Training Loss: 0.5885, Training accuracy: 85.07, Validation Loss: 0.8065, Validation accuracy: 100.0 ######
+
+Epoch [5/100], Iteration [200/1952], Loss: 0.2432, Accuracy: 87.5
+Epoch [5/100], Iteration [400/1952], Loss: 0.6790, Accuracy: 68.75
+Epoch [5/100], Iteration [600/1952], Loss: 0.2411, Accuracy: 93.75
+Epoch [5/100], Iteration [800/1952], Loss: 0.5473, Accuracy: 87.5
+Epoch [5/100], Iteration [1000/1952], Loss: 0.3839, Accuracy: 93.75
+Epoch [5/100], Iteration [1200/1952], Loss: 0.3089, Accuracy: 100.0
+Epoch [5/100], Iteration [1400/1952], Loss: 0.7239, Accuracy: 81.25
+Epoch [5/100], Iteration [1600/1952], Loss: 0.3458, Accuracy: 93.75
+Epoch [5/100], Iteration [1800/1952], Loss: 1.0336, Accuracy: 81.25
+###### Epoch [5/100], Training Loss: 0.5292, Training accuracy: 86.79, Validation Loss: 0.7506, Validation accuracy: 66.67 ######
+
+Epoch [6/100], Iteration [200/1952], Loss: 0.5330, Accuracy: 87.5
+Epoch [6/100], Iteration [400/1952], Loss: 0.4204, Accuracy: 87.5
+Epoch [6/100], Iteration [600/1952], Loss: 0.4518, Accuracy: 87.5
+Epoch [6/100], Iteration [800/1952], Loss: 0.1452, Accuracy: 100.0
+Epoch [6/100], Iteration [1000/1952], Loss: 0.4863, Accuracy: 87.5
+Epoch [6/100], Iteration [1200/1952], Loss: 0.5785, Accuracy: 87.5
+Epoch [6/100], Iteration [1400/1952], Loss: 1.1327, Accuracy: 75.0
+Epoch [6/100], Iteration [1600/1952], Loss: 0.4007, Accuracy: 87.5
+Epoch [6/100], Iteration [1800/1952], Loss: 0.6054, Accuracy: 87.5
+###### Epoch [6/100], Training Loss: 0.4860, Training accuracy: 87.93, Validation Loss: 0.7365, Validation accuracy: 100.0 ######
+
+Epoch [7/100], Iteration [200/1952], Loss: 0.4284, Accuracy: 87.5
+Epoch [7/100], Iteration [400/1952], Loss: 0.3109, Accuracy: 93.75
+Epoch [7/100], Iteration [600/1952], Loss: 0.4714, Accuracy: 81.25
+Epoch [7/100], Iteration [800/1952], Loss: 0.4729, Accuracy: 87.5
+Epoch [7/100], Iteration [1000/1952], Loss: 0.1833, Accuracy: 100.0
+Epoch [7/100], Iteration [1200/1952], Loss: 0.3942, Accuracy: 93.75
+Epoch [7/100], Iteration [1400/1952], Loss: 0.4483, Accuracy: 87.5
+Epoch [7/100], Iteration [1600/1952], Loss: 0.5555, Accuracy: 81.25
+Epoch [7/100], Iteration [1800/1952], Loss: 0.3405, Accuracy: 87.5
+###### Epoch [7/100], Training Loss: 0.4532, Training accuracy: 89.01, Validation Loss: 0.7049, Validation accuracy: 77.78 ######
+
+Epoch [8/100], Iteration [200/1952], Loss: 0.3232, Accuracy: 93.75
+Epoch [8/100], Iteration [400/1952], Loss: 0.1974, Accuracy: 93.75
+Epoch [8/100], Iteration [600/1952], Loss: 0.5430, Accuracy: 81.25
+Epoch [8/100], Iteration [800/1952], Loss: 0.6963, Accuracy: 81.25
+Epoch [8/100], Iteration [1000/1952], Loss: 0.7874, Accuracy: 75.0
+Epoch [8/100], Iteration [1200/1952], Loss: 0.3956, Accuracy: 81.25
+Epoch [8/100], Iteration [1400/1952], Loss: 0.2994, Accuracy: 93.75
+Epoch [8/100], Iteration [1600/1952], Loss: 0.2987, Accuracy: 93.75
+Epoch [8/100], Iteration [1800/1952], Loss: 0.2238, Accuracy: 100.0
+###### Epoch [8/100], Training Loss: 0.4278, Training accuracy: 89.65, Validation Loss: 0.6879, Validation accuracy: 100.0 ######
+
+Epoch [9/100], Iteration [200/1952], Loss: 0.4890, Accuracy: 93.75
+Epoch [9/100], Iteration [400/1952], Loss: 0.3444, Accuracy: 87.5
+Epoch [9/100], Iteration [600/1952], Loss: 0.3387, Accuracy: 87.5
+Epoch [9/100], Iteration [800/1952], Loss: 0.6389, Accuracy: 87.5
+Epoch [9/100], Iteration [1000/1952], Loss: 0.3614, Accuracy: 87.5
+Epoch [9/100], Iteration [1200/1952], Loss: 0.6415, Accuracy: 81.25
+Epoch [9/100], Iteration [1400/1952], Loss: 0.5083, Accuracy: 87.5
+Epoch [9/100], Iteration [1600/1952], Loss: 0.3873, Accuracy: 93.75
+Epoch [9/100], Iteration [1800/1952], Loss: 0.3218, Accuracy: 87.5
+###### Epoch [9/100], Training Loss: 0.4081, Training accuracy: 90.21, Validation Loss: 0.6771, Validation accuracy: 100.0 ######
+
+Epoch [10/100], Iteration [200/1952], Loss: 0.4559, Accuracy: 87.5
+Epoch [10/100], Iteration [400/1952], Loss: 0.1861, Accuracy: 93.75
+Epoch [10/100], Iteration [600/1952], Loss: 0.2013, Accuracy: 100.0
+Epoch [10/100], Iteration [800/1952], Loss: 0.2996, Accuracy: 93.75
+Epoch [10/100], Iteration [1000/1952], Loss: 0.8319, Accuracy: 68.75
+Epoch [10/100], Iteration [1200/1952], Loss: 0.3404, Accuracy: 87.5
+Epoch [10/100], Iteration [1400/1952], Loss: 0.4432, Accuracy: 87.5
+Epoch [10/100], Iteration [1600/1952], Loss: 0.2611, Accuracy: 93.75
+Epoch [10/100], Iteration [1800/1952], Loss: 0.1393, Accuracy: 100.0
+###### Epoch [10/100], Training Loss: 0.3915, Training accuracy: 90.73, Validation Loss: 0.6658, Validation accuracy: 88.89 ######
+
+Epoch [11/100], Iteration [200/1952], Loss: 0.2447, Accuracy: 93.75
+Epoch [11/100], Iteration [400/1952], Loss: 0.2787, Accuracy: 93.75
+Epoch [11/100], Iteration [600/1952], Loss: 0.4175, Accuracy: 93.75
+Epoch [11/100], Iteration [800/1952], Loss: 0.1320, Accuracy: 100.0
+Epoch [11/100], Iteration [1000/1952], Loss: 0.5338, Accuracy: 87.5
+Epoch [11/100], Iteration [1200/1952], Loss: 0.5047, Accuracy: 93.75
+Epoch [11/100], Iteration [1400/1952], Loss: 0.2266, Accuracy: 100.0
+Epoch [11/100], Iteration [1600/1952], Loss: 0.1590, Accuracy: 100.0
+Epoch [11/100], Iteration [1800/1952], Loss: 0.5711, Accuracy: 87.5
+###### Epoch [11/100], Training Loss: 0.3786, Training accuracy: 91.14, Validation Loss: 0.6591, Validation accuracy: 88.89 ######
+
+Epoch [12/100], Iteration [200/1952], Loss: 0.1644, Accuracy: 100.0
+Epoch [12/100], Iteration [400/1952], Loss: 0.3777, Accuracy: 93.75
+Epoch [12/100], Iteration [600/1952], Loss: 0.1640, Accuracy: 100.0
+Epoch [12/100], Iteration [800/1952], Loss: 0.6954, Accuracy: 62.5
+Epoch [12/100], Iteration [1000/1952], Loss: 0.2124, Accuracy: 100.0
+Epoch [12/100], Iteration [1200/1952], Loss: 0.2102, Accuracy: 100.0
+Epoch [12/100], Iteration [1400/1952], Loss: 0.0644, Accuracy: 100.0
+Epoch [12/100], Iteration [1600/1952], Loss: 0.7023, Accuracy: 75.0
+Epoch [12/100], Iteration [1800/1952], Loss: 0.2743, Accuracy: 93.75
+###### Epoch [12/100], Training Loss: 0.3687, Training accuracy: 91.46, Validation Loss: 0.6417, Validation accuracy: 100.0 ######
+
+Epoch [13/100], Iteration [200/1952], Loss: 0.3483, Accuracy: 93.75
+Epoch [13/100], Iteration [400/1952], Loss: 0.2924, Accuracy: 87.5
+Epoch [13/100], Iteration [600/1952], Loss: 0.2300, Accuracy: 93.75
+Epoch [13/100], Iteration [800/1952], Loss: 0.2995, Accuracy: 87.5
+Epoch [13/100], Iteration [1000/1952], Loss: 0.3485, Accuracy: 87.5
+Epoch [13/100], Iteration [1200/1952], Loss: 0.3265, Accuracy: 87.5
+Epoch [13/100], Iteration [1400/1952], Loss: 0.3847, Accuracy: 93.75
+Epoch [13/100], Iteration [1600/1952], Loss: 0.2465, Accuracy: 100.0
+Epoch [13/100], Iteration [1800/1952], Loss: 0.4442, Accuracy: 81.25
+###### Epoch [13/100], Training Loss: 0.3583, Training accuracy: 91.75, Validation Loss: 0.6316, Validation accuracy: 77.78 ######
+
+Epoch [14/100], Iteration [200/1952], Loss: 0.1973, Accuracy: 93.75
+Epoch [14/100], Iteration [400/1952], Loss: 0.3004, Accuracy: 93.75
+Epoch [14/100], Iteration [600/1952], Loss: 0.5537, Accuracy: 93.75
+Epoch [14/100], Iteration [800/1952], Loss: 0.2523, Accuracy: 93.75
+Epoch [14/100], Iteration [1000/1952], Loss: 0.4430, Accuracy: 93.75
+Epoch [14/100], Iteration [1200/1952], Loss: 0.3524, Accuracy: 93.75
+Epoch [14/100], Iteration [1400/1952], Loss: 0.2848, Accuracy: 93.75
+Epoch [14/100], Iteration [1600/1952], Loss: 0.1538, Accuracy: 93.75
+Epoch [14/100], Iteration [1800/1952], Loss: 0.4081, Accuracy: 87.5
+###### Epoch [14/100], Training Loss: 0.3501, Training accuracy: 92.02, Validation Loss: 0.6356, Validation accuracy: 77.78 ######
+
+Epoch [15/100], Iteration [200/1952], Loss: 0.5087, Accuracy: 75.0
+Epoch [15/100], Iteration [400/1952], Loss: 0.5406, Accuracy: 87.5
+Epoch [15/100], Iteration [600/1952], Loss: 0.2990, Accuracy: 87.5
+Epoch [15/100], Iteration [800/1952], Loss: 0.3913, Accuracy: 87.5
+Epoch [15/100], Iteration [1000/1952], Loss: 0.4557, Accuracy: 81.25
+Epoch [15/100], Iteration [1200/1952], Loss: 0.1558, Accuracy: 100.0
+Epoch [15/100], Iteration [1400/1952], Loss: 0.3184, Accuracy: 93.75
+Epoch [15/100], Iteration [1600/1952], Loss: 0.2647, Accuracy: 87.5
+Epoch [15/100], Iteration [1800/1952], Loss: 0.4140, Accuracy: 93.75
+###### Epoch [15/100], Training Loss: 0.3433, Training accuracy: 92.21, Validation Loss: 0.6250, Validation accuracy: 88.89 ######
+
+Epoch [16/100], Iteration [200/1952], Loss: 0.3350, Accuracy: 87.5
+Epoch [16/100], Iteration [400/1952], Loss: 0.3712, Accuracy: 93.75
+Epoch [16/100], Iteration [600/1952], Loss: 0.1567, Accuracy: 93.75
+Epoch [16/100], Iteration [800/1952], Loss: 0.2650, Accuracy: 93.75
+Epoch [16/100], Iteration [1000/1952], Loss: 0.3082, Accuracy: 81.25
+Epoch [16/100], Iteration [1200/1952], Loss: 0.6346, Accuracy: 93.75
+Epoch [16/100], Iteration [1400/1952], Loss: 0.2526, Accuracy: 93.75
+Epoch [16/100], Iteration [1600/1952], Loss: 0.5140, Accuracy: 81.25
+Epoch [16/100], Iteration [1800/1952], Loss: 0.3359, Accuracy: 100.0
+###### Epoch [16/100], Training Loss: 0.3375, Training accuracy: 92.35, Validation Loss: 0.6291, Validation accuracy: 88.89 ######
+
+Epoch [17/100], Iteration [200/1952], Loss: 0.2190, Accuracy: 93.75
+Epoch [17/100], Iteration [400/1952], Loss: 0.2106, Accuracy: 100.0
+Epoch [17/100], Iteration [600/1952], Loss: 0.4351, Accuracy: 81.25
+Epoch [17/100], Iteration [800/1952], Loss: 0.4725, Accuracy: 87.5
+Epoch [17/100], Iteration [1000/1952], Loss: 0.2764, Accuracy: 87.5
+Epoch [17/100], Iteration [1200/1952], Loss: 0.7417, Accuracy: 68.75
+Epoch [17/100], Iteration [1400/1952], Loss: 0.6890, Accuracy: 87.5
+Epoch [17/100], Iteration [1600/1952], Loss: 0.1699, Accuracy: 100.0
+Epoch [17/100], Iteration [1800/1952], Loss: 0.3214, Accuracy: 87.5
+###### Epoch [17/100], Training Loss: 0.3311, Training accuracy: 92.52, Validation Loss: 0.6293, Validation accuracy: 100.0 ######
+
+Epoch [18/100], Iteration [200/1952], Loss: 0.3291, Accuracy: 93.75
+Epoch [18/100], Iteration [400/1952], Loss: 0.4792, Accuracy: 81.25
+Epoch [18/100], Iteration [600/1952], Loss: 0.3041, Accuracy: 93.75
+Epoch [18/100], Iteration [800/1952], Loss: 0.2472, Accuracy: 93.75
+Epoch [18/100], Iteration [1000/1952], Loss: 0.6163, Accuracy: 87.5
+Epoch [18/100], Iteration [1200/1952], Loss: 0.3194, Accuracy: 87.5
+Epoch [18/100], Iteration [1400/1952], Loss: 0.2537, Accuracy: 93.75
+Epoch [18/100], Iteration [1600/1952], Loss: 0.1249, Accuracy: 93.75
+Epoch [18/100], Iteration [1800/1952], Loss: 0.9948, Accuracy: 81.25
+###### Epoch [18/100], Training Loss: 0.3275, Training accuracy: 92.56, Validation Loss: 0.6178, Validation accuracy: 100.0 ######
+
+Epoch [19/100], Iteration [200/1952], Loss: 0.3948, Accuracy: 93.75
+Epoch [19/100], Iteration [400/1952], Loss: 0.3272, Accuracy: 87.5
+Epoch [19/100], Iteration [600/1952], Loss: 0.8560, Accuracy: 87.5
+Epoch [19/100], Iteration [800/1952], Loss: 0.5206, Accuracy: 81.25
+Epoch [19/100], Iteration [1000/1952], Loss: 0.2011, Accuracy: 93.75
+Epoch [19/100], Iteration [1200/1952], Loss: 0.1616, Accuracy: 100.0
+Epoch [19/100], Iteration [1400/1952], Loss: 0.2695, Accuracy: 93.75
+Epoch [19/100], Iteration [1600/1952], Loss: 0.3578, Accuracy: 93.75
+Epoch [19/100], Iteration [1800/1952], Loss: 0.1840, Accuracy: 100.0
+###### Epoch [19/100], Training Loss: 0.3231, Training accuracy: 92.87, Validation Loss: 0.6302, Validation accuracy: 88.89 ######
+
+Epoch [20/100], Iteration [200/1952], Loss: 0.8661, Accuracy: 81.25
+Epoch [20/100], Iteration [400/1952], Loss: 0.2686, Accuracy: 87.5
+Epoch [20/100], Iteration [600/1952], Loss: 0.1723, Accuracy: 100.0
+Epoch [20/100], Iteration [800/1952], Loss: 0.1364, Accuracy: 100.0
+Epoch [20/100], Iteration [1000/1952], Loss: 0.2758, Accuracy: 93.75
+Epoch [20/100], Iteration [1200/1952], Loss: 0.5160, Accuracy: 81.25
+Epoch [20/100], Iteration [1400/1952], Loss: 0.2841, Accuracy: 93.75
+Epoch [20/100], Iteration [1600/1952], Loss: 0.3403, Accuracy: 87.5
+Epoch [20/100], Iteration [1800/1952], Loss: 0.1346, Accuracy: 100.0
+###### Epoch [20/100], Training Loss: 0.3207, Training accuracy: 92.78, Validation Loss: 0.6056, Validation accuracy: 88.89 ######
+
+Epoch [21/100], Iteration [200/1952], Loss: 0.2311, Accuracy: 93.75
+Epoch [21/100], Iteration [400/1952], Loss: 0.6573, Accuracy: 81.25
+Epoch [21/100], Iteration [600/1952], Loss: 0.1658, Accuracy: 93.75
+Epoch [21/100], Iteration [800/1952], Loss: 0.4058, Accuracy: 93.75
+Epoch [21/100], Iteration [1000/1952], Loss: 0.2848, Accuracy: 93.75
+Epoch [21/100], Iteration [1200/1952], Loss: 0.4720, Accuracy: 87.5
+Epoch [21/100], Iteration [1400/1952], Loss: 0.7344, Accuracy: 81.25
+Epoch [21/100], Iteration [1600/1952], Loss: 0.5222, Accuracy: 81.25
+Epoch [21/100], Iteration [1800/1952], Loss: 0.3836, Accuracy: 93.75
+###### Epoch [21/100], Training Loss: 0.3159, Training accuracy: 93.03, Validation Loss: 0.6082, Validation accuracy: 88.89 ######
+
+Epoch [22/100], Iteration [200/1952], Loss: 0.3411, Accuracy: 93.75
+Epoch [22/100], Iteration [400/1952], Loss: 0.1481, Accuracy: 100.0
+Epoch [22/100], Iteration [600/1952], Loss: 0.1785, Accuracy: 93.75
+Epoch [22/100], Iteration [800/1952], Loss: 0.5356, Accuracy: 93.75
+Epoch [22/100], Iteration [1000/1952], Loss: 0.2053, Accuracy: 93.75
+Epoch [22/100], Iteration [1200/1952], Loss: 0.3364, Accuracy: 93.75
+Epoch [22/100], Iteration [1400/1952], Loss: 0.2427, Accuracy: 93.75
+Epoch [22/100], Iteration [1600/1952], Loss: 0.4678, Accuracy: 81.25
+Epoch [22/100], Iteration [1800/1952], Loss: 0.2906, Accuracy: 93.75
+###### Epoch [22/100], Training Loss: 0.3141, Training accuracy: 93.09, Validation Loss: 0.6142, Validation accuracy: 88.89 ######
+
+Epoch [23/100], Iteration [200/1952], Loss: 0.2657, Accuracy: 93.75
+Epoch [23/100], Iteration [400/1952], Loss: 0.2706, Accuracy: 100.0
+Epoch [23/100], Iteration [600/1952], Loss: 0.1015, Accuracy: 100.0
+Epoch [23/100], Iteration [800/1952], Loss: 0.4814, Accuracy: 93.75
+Epoch [23/100], Iteration [1000/1952], Loss: 0.3021, Accuracy: 87.5
+Epoch [23/100], Iteration [1200/1952], Loss: 0.4106, Accuracy: 93.75
+Epoch [23/100], Iteration [1400/1952], Loss: 0.1758, Accuracy: 100.0
+Epoch [23/100], Iteration [1600/1952], Loss: 0.2203, Accuracy: 93.75
+Epoch [23/100], Iteration [1800/1952], Loss: 0.1168, Accuracy: 100.0
+###### Epoch [23/100], Training Loss: 0.3110, Training accuracy: 93.19, Validation Loss: 0.6041, Validation accuracy: 88.89 ######
+
+Epoch [24/100], Iteration [200/1952], Loss: 0.4271, Accuracy: 87.5
+Epoch [24/100], Iteration [400/1952], Loss: 0.2307, Accuracy: 87.5
+Epoch [24/100], Iteration [600/1952], Loss: 0.1929, Accuracy: 100.0
+Epoch [24/100], Iteration [800/1952], Loss: 0.2571, Accuracy: 100.0
+Epoch [24/100], Iteration [1000/1952], Loss: 0.2325, Accuracy: 93.75
+Epoch [24/100], Iteration [1200/1952], Loss: 0.1291, Accuracy: 100.0
+Epoch [24/100], Iteration [1400/1952], Loss: 0.2555, Accuracy: 93.75
+Epoch [24/100], Iteration [1600/1952], Loss: 0.2211, Accuracy: 100.0
+Epoch [24/100], Iteration [1800/1952], Loss: 0.2558, Accuracy: 100.0
+###### Epoch [24/100], Training Loss: 0.3087, Training accuracy: 93.37, Validation Loss: 0.6068, Validation accuracy: 100.0 ######
+
+Epoch [25/100], Iteration [200/1952], Loss: 0.2705, Accuracy: 93.75
+Epoch [25/100], Iteration [400/1952], Loss: 0.5811, Accuracy: 81.25
+Epoch [25/100], Iteration [600/1952], Loss: 0.3145, Accuracy: 87.5
+Epoch [25/100], Iteration [800/1952], Loss: 0.3684, Accuracy: 93.75
+Epoch [25/100], Iteration [1000/1952], Loss: 0.3077, Accuracy: 81.25
+Epoch [25/100], Iteration [1200/1952], Loss: 0.2073, Accuracy: 87.5
+Epoch [25/100], Iteration [1400/1952], Loss: 0.3392, Accuracy: 87.5
+Epoch [25/100], Iteration [1600/1952], Loss: 0.6122, Accuracy: 87.5
+Epoch [25/100], Iteration [1800/1952], Loss: 0.1802, Accuracy: 100.0
+###### Epoch [25/100], Training Loss: 0.3061, Training accuracy: 93.19, Validation Loss: 0.6021, Validation accuracy: 100.0 ######
+
+Epoch [26/100], Iteration [200/1952], Loss: 0.1744, Accuracy: 100.0
+Epoch [26/100], Iteration [400/1952], Loss: 0.1490, Accuracy: 100.0
+Epoch [26/100], Iteration [600/1952], Loss: 0.3638, Accuracy: 93.75
+Epoch [26/100], Iteration [800/1952], Loss: 0.1809, Accuracy: 100.0
+Epoch [26/100], Iteration [1000/1952], Loss: 0.2718, Accuracy: 93.75
+Epoch [26/100], Iteration [1200/1952], Loss: 0.2091, Accuracy: 100.0
+Epoch [26/100], Iteration [1400/1952], Loss: 0.2353, Accuracy: 93.75
+Epoch [26/100], Iteration [1600/1952], Loss: 0.3211, Accuracy: 100.0
+Epoch [26/100], Iteration [1800/1952], Loss: 0.2300, Accuracy: 100.0
+###### Epoch [26/100], Training Loss: 0.3045, Training accuracy: 93.27, Validation Loss: 0.6091, Validation accuracy: 100.0 ######
+
+Epoch [27/100], Iteration [200/1952], Loss: 0.2276, Accuracy: 93.75
+Epoch [27/100], Iteration [400/1952], Loss: 0.2189, Accuracy: 100.0
+Epoch [27/100], Iteration [600/1952], Loss: 0.3867, Accuracy: 93.75
+Epoch [27/100], Iteration [800/1952], Loss: 0.3783, Accuracy: 87.5
+Epoch [27/100], Iteration [1000/1952], Loss: 0.0934, Accuracy: 100.0
+Epoch [27/100], Iteration [1200/1952], Loss: 0.3276, Accuracy: 93.75
+Epoch [27/100], Iteration [1400/1952], Loss: 0.2723, Accuracy: 100.0
+Epoch [27/100], Iteration [1600/1952], Loss: 0.2579, Accuracy: 100.0
+Epoch [27/100], Iteration [1800/1952], Loss: 0.4145, Accuracy: 87.5
+###### Epoch [27/100], Training Loss: 0.3030, Training accuracy: 93.43, Validation Loss: 0.6041, Validation accuracy: 100.0 ######
+
+Epoch [28/100], Iteration [200/1952], Loss: 0.6895, Accuracy: 87.5
+Epoch [28/100], Iteration [400/1952], Loss: 0.5463, Accuracy: 81.25
+Epoch [28/100], Iteration [600/1952], Loss: 0.1075, Accuracy: 100.0
+Epoch [28/100], Iteration [800/1952], Loss: 0.1273, Accuracy: 100.0
+Epoch [28/100], Iteration [1000/1952], Loss: 0.0738, Accuracy: 100.0
+Epoch [28/100], Iteration [1200/1952], Loss: 0.1517, Accuracy: 100.0
+Epoch [28/100], Iteration [1400/1952], Loss: 0.2964, Accuracy: 100.0
+Epoch [28/100], Iteration [1600/1952], Loss: 0.3467, Accuracy: 93.75
+Epoch [28/100], Iteration [1800/1952], Loss: 0.3966, Accuracy: 81.25
+###### Epoch [28/100], Training Loss: 0.3009, Training accuracy: 93.48, Validation Loss: 0.6078, Validation accuracy: 100.0 ######
+
+Epoch [29/100], Iteration [200/1952], Loss: 0.4222, Accuracy: 81.25
+Epoch [29/100], Iteration [400/1952], Loss: 0.1550, Accuracy: 100.0
+Epoch [29/100], Iteration [600/1952], Loss: 0.1706, Accuracy: 100.0
+Epoch [29/100], Iteration [800/1952], Loss: 0.2321, Accuracy: 93.75
+Epoch [29/100], Iteration [1000/1952], Loss: 0.2956, Accuracy: 93.75
+Epoch [29/100], Iteration [1200/1952], Loss: 0.4409, Accuracy: 87.5
+Epoch [29/100], Iteration [1400/1952], Loss: 0.3478, Accuracy: 87.5
+Epoch [29/100], Iteration [1600/1952], Loss: 0.2439, Accuracy: 93.75
+Epoch [29/100], Iteration [1800/1952], Loss: 0.3771, Accuracy: 87.5
+###### Epoch [29/100], Training Loss: 0.2996, Training accuracy: 93.4, Validation Loss: 0.6049, Validation accuracy: 100.0 ######
+
+Epoch [30/100], Iteration [200/1952], Loss: 0.0668, Accuracy: 100.0
+Epoch [30/100], Iteration [400/1952], Loss: 0.4137, Accuracy: 87.5
+Epoch [30/100], Iteration [600/1952], Loss: 0.2498, Accuracy: 87.5
+Epoch [30/100], Iteration [800/1952], Loss: 0.2324, Accuracy: 100.0
+Epoch [30/100], Iteration [1000/1952], Loss: 0.1183, Accuracy: 100.0
+Epoch [30/100], Iteration [1200/1952], Loss: 0.3733, Accuracy: 93.75
+Epoch [30/100], Iteration [1400/1952], Loss: 0.7280, Accuracy: 87.5
+Epoch [30/100], Iteration [1600/1952], Loss: 0.2991, Accuracy: 93.75
+Epoch [30/100], Iteration [1800/1952], Loss: 0.3221, Accuracy: 93.75
+###### Epoch [30/100], Training Loss: 0.2976, Training accuracy: 93.54, Validation Loss: 0.6008, Validation accuracy: 100.0 ######
+
+Epoch [31/100], Iteration [200/1952], Loss: 0.3938, Accuracy: 93.75
+Epoch [31/100], Iteration [400/1952], Loss: 0.5037, Accuracy: 87.5
+Epoch [31/100], Iteration [600/1952], Loss: 0.2439, Accuracy: 93.75
+Epoch [31/100], Iteration [800/1952], Loss: 0.2299, Accuracy: 93.75
+Epoch [31/100], Iteration [1000/1952], Loss: 0.4277, Accuracy: 81.25
+Epoch [31/100], Iteration [1200/1952], Loss: 0.0914, Accuracy: 100.0
+Epoch [31/100], Iteration [1400/1952], Loss: 0.2579, Accuracy: 93.75
+Epoch [31/100], Iteration [1600/1952], Loss: 0.3525, Accuracy: 87.5
+Epoch [31/100], Iteration [1800/1952], Loss: 0.1124, Accuracy: 100.0
+###### Epoch [31/100], Training Loss: 0.2972, Training accuracy: 93.67, Validation Loss: 0.5971, Validation accuracy: 100.0 ######
+
+Epoch [32/100], Iteration [200/1952], Loss: 0.3903, Accuracy: 87.5
+Epoch [32/100], Iteration [400/1952], Loss: 0.1267, Accuracy: 93.75
+Epoch [32/100], Iteration [600/1952], Loss: 0.0930, Accuracy: 100.0
+Epoch [32/100], Iteration [800/1952], Loss: 0.3068, Accuracy: 93.75
+Epoch [32/100], Iteration [1000/1952], Loss: 0.4891, Accuracy: 87.5
+Epoch [32/100], Iteration [1200/1952], Loss: 0.3227, Accuracy: 100.0
+Epoch [32/100], Iteration [1400/1952], Loss: 0.2776, Accuracy: 93.75
+Epoch [32/100], Iteration [1600/1952], Loss: 0.0846, Accuracy: 100.0
+Epoch [32/100], Iteration [1800/1952], Loss: 0.3249, Accuracy: 93.75
+###### Epoch [32/100], Training Loss: 0.2958, Training accuracy: 93.62, Validation Loss: 0.6031, Validation accuracy: 100.0 ######
+
+Epoch [33/100], Iteration [200/1952], Loss: 0.2601, Accuracy: 100.0
+Epoch [33/100], Iteration [400/1952], Loss: 0.5024, Accuracy: 81.25
+Epoch [33/100], Iteration [600/1952], Loss: 0.1814, Accuracy: 100.0
+Epoch [33/100], Iteration [800/1952], Loss: 0.2851, Accuracy: 93.75
+Epoch [33/100], Iteration [1000/1952], Loss: 0.4914, Accuracy: 87.5
+Epoch [33/100], Iteration [1200/1952], Loss: 0.3271, Accuracy: 81.25
+Epoch [33/100], Iteration [1400/1952], Loss: 0.1507, Accuracy: 93.75
+Epoch [33/100], Iteration [1600/1952], Loss: 0.2878, Accuracy: 93.75
+Epoch [33/100], Iteration [1800/1952], Loss: 0.3019, Accuracy: 93.75
+###### Epoch [33/100], Training Loss: 0.2943, Training accuracy: 93.63, Validation Loss: 0.5911, Validation accuracy: 88.89 ######
+
+Epoch [34/100], Iteration [200/1952], Loss: 0.2782, Accuracy: 100.0
+Epoch [34/100], Iteration [400/1952], Loss: 0.2461, Accuracy: 87.5
+Epoch [34/100], Iteration [600/1952], Loss: 0.2686, Accuracy: 93.75
+Epoch [34/100], Iteration [800/1952], Loss: 0.4413, Accuracy: 81.25
+Epoch [34/100], Iteration [1000/1952], Loss: 0.1494, Accuracy: 100.0
+Epoch [34/100], Iteration [1200/1952], Loss: 0.7031, Accuracy: 81.25
+Epoch [34/100], Iteration [1400/1952], Loss: 0.2128, Accuracy: 100.0
+Epoch [34/100], Iteration [1600/1952], Loss: 0.1053, Accuracy: 100.0
+Epoch [34/100], Iteration [1800/1952], Loss: 0.1597, Accuracy: 100.0
+###### Epoch [34/100], Training Loss: 0.2921, Training accuracy: 93.65, Validation Loss: 0.6022, Validation accuracy: 88.89 ######
+
+Epoch [35/100], Iteration [200/1952], Loss: 0.3473, Accuracy: 100.0
+Epoch [35/100], Iteration [400/1952], Loss: 0.2090, Accuracy: 93.75
+Epoch [35/100], Iteration [600/1952], Loss: 0.2830, Accuracy: 100.0
+Epoch [35/100], Iteration [800/1952], Loss: 0.2291, Accuracy: 100.0
+Epoch [35/100], Iteration [1000/1952], Loss: 0.1129, Accuracy: 100.0
+Epoch [35/100], Iteration [1200/1952], Loss: 0.2314, Accuracy: 100.0
+Epoch [35/100], Iteration [1400/1952], Loss: 0.1665, Accuracy: 100.0
+Epoch [35/100], Iteration [1600/1952], Loss: 0.2255, Accuracy: 93.75
+Epoch [35/100], Iteration [1800/1952], Loss: 0.4255, Accuracy: 93.75
+###### Epoch [35/100], Training Loss: 0.2923, Training accuracy: 93.72, Validation Loss: 0.5957, Validation accuracy: 88.89 ######
+
+Epoch [36/100], Iteration [200/1952], Loss: 0.1886, Accuracy: 100.0
+Epoch [36/100], Iteration [400/1952], Loss: 0.1067, Accuracy: 100.0
+Epoch [36/100], Iteration [600/1952], Loss: 0.2500, Accuracy: 100.0
+Epoch [36/100], Iteration [800/1952], Loss: 0.6985, Accuracy: 87.5
+Epoch [36/100], Iteration [1000/1952], Loss: 0.3275, Accuracy: 87.5
+Epoch [36/100], Iteration [1200/1952], Loss: 0.4759, Accuracy: 87.5
+Epoch [36/100], Iteration [1400/1952], Loss: 0.2104, Accuracy: 93.75
+Epoch [36/100], Iteration [1600/1952], Loss: 0.2169, Accuracy: 87.5
+Epoch [36/100], Iteration [1800/1952], Loss: 0.2923, Accuracy: 93.75
+###### Epoch [36/100], Training Loss: 0.2904, Training accuracy: 93.75, Validation Loss: 0.5970, Validation accuracy: 88.89 ######
+
+Epoch [37/100], Iteration [200/1952], Loss: 0.1619, Accuracy: 100.0
+Epoch [37/100], Iteration [400/1952], Loss: 0.1391, Accuracy: 100.0
+Epoch [37/100], Iteration [600/1952], Loss: 0.1915, Accuracy: 93.75
+Epoch [37/100], Iteration [800/1952], Loss: 0.1327, Accuracy: 100.0
+Epoch [37/100], Iteration [1000/1952], Loss: 0.3558, Accuracy: 93.75
+Epoch [37/100], Iteration [1200/1952], Loss: 0.4332, Accuracy: 87.5
+Epoch [37/100], Iteration [1400/1952], Loss: 0.1972, Accuracy: 93.75
+Epoch [37/100], Iteration [1600/1952], Loss: 0.2934, Accuracy: 87.5
+Epoch [37/100], Iteration [1800/1952], Loss: 0.2323, Accuracy: 100.0
+###### Epoch [37/100], Training Loss: 0.2907, Training accuracy: 93.73, Validation Loss: 0.6063, Validation accuracy: 100.0 ######
+
+Epoch [38/100], Iteration [200/1952], Loss: 0.2308, Accuracy: 93.75
+Epoch [38/100], Iteration [400/1952], Loss: 0.1449, Accuracy: 100.0
+Epoch [38/100], Iteration [600/1952], Loss: 0.1604, Accuracy: 100.0
+Epoch [38/100], Iteration [800/1952], Loss: 0.4087, Accuracy: 93.75
+Epoch [38/100], Iteration [1000/1952], Loss: 0.8597, Accuracy: 87.5
+Epoch [38/100], Iteration [1200/1952], Loss: 0.2129, Accuracy: 100.0
+Epoch [38/100], Iteration [1400/1952], Loss: 0.3015, Accuracy: 93.75
+Epoch [38/100], Iteration [1600/1952], Loss: 0.2519, Accuracy: 93.75
+Epoch [38/100], Iteration [1800/1952], Loss: 0.2397, Accuracy: 93.75
+###### Epoch [38/100], Training Loss: 0.2879, Training accuracy: 93.91, Validation Loss: 0.5982, Validation accuracy: 88.89 ######
+

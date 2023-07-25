@@ -15,6 +15,9 @@ class IntentClassifier(nn.Module):
         self.embedding_size = embedding_size
         self.num_heads = num_heads
 
+        self.q = nn.Parameter(torch.randn(1, embedding_size, requires_grad=True) * 0.001)
+        self.softmax = nn.Softmax(dim=1)
+
         self.multihead_attention = nn.MultiheadAttention(self.embedding_size, self.num_heads)
         self.classifier = nn.Sequential(
             nn.Linear(768,101),
@@ -29,8 +32,10 @@ class IntentClassifier(nn.Module):
         return max 
     
     def self_attention(self, x):
-        attention_outputs, attention_weights = self.multihead_attention(x,x,x)
-        return attention_outputs #TO BE CHANGES
+        z = torch.matmul(x, self.q.T)
+        alpha = self.softmax(z)
+        attention = torch.matmul(alpha.permute(0,2,1), x)
+        return attention
 
     def forward(self, x):
         #Downsample embeddings
