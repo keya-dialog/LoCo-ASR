@@ -56,7 +56,7 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --enc_layers_to_freeze="24" \
   --steps_to_freeze_enc="-1" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
-  --gradient_accumulation_steps="4" \
+  --gradient_accumulation_steps="16" \
   --learning_rate="1e-6" \
   --logging_steps="5" \
   --save_strategy="steps" \
@@ -75,7 +75,7 @@ python joinning_enc_dec/src/trainers/LoCo_v1.py \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs=2 \
+  --num_train_epochs=1 \
   --num_beams="1" \
   --max_len="128" \
   --group_by_length="True" \

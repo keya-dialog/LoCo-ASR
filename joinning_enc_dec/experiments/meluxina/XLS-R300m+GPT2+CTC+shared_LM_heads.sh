@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --nodes=1                          # number of nodes
-#SBATCH --time=24:00:00                    # time (HH:MM:SS)
+#SBATCH --time=1-24:00:00                  # time (HH:MM:SS)
 #SBATCH --partition=gpu                    # partition
 #SBATCH --account=p200186                  # project account
 #SBATCH --qos=default                      # SLURM qos
