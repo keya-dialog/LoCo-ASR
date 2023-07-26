@@ -7,7 +7,7 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, HfArgumentParser, 
     Seq2SeqTrainingArguments, SpeechEncoderDecoderModel
 from transformers.utils import logging
 
-from per_utterance_models import JointCTCAttentionEncoderDecoder
+from per_utterance.models import JointCTCAttentionEncoderDecoder
 from utils import Seq2SeqDataCollatorWithPadding, compute_metrics
 
 
