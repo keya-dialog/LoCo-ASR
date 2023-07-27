@@ -21,7 +21,6 @@ export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
 
 cd $SRC_DIR
 
-
 python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
@@ -38,8 +37,8 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="8" \
-  --per_device_eval_batch_size="8" \
+  --per_device_train_batch_size="6" \
+  --per_device_eval_batch_size="6" \
   --group_by_length="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
@@ -56,5 +55,4 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --greater_is_better="False" \
   --train_split="train_500" \
   --validation_split="dev_6" \
-  --bf16 \
   --ctc_weight="0.2"
