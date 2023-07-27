@@ -15,6 +15,8 @@ EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 export WANDB_PROJECT=$PROJECT
 export WANDB_RUN_ID=$EXPERIMENT
 export HF_HOME="${WORK_DIR}/huggingface_cache"
+export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
+
 source /home/users/u100959/miniconda3/bin/activate /project/home/p200186/envs/loco_asr
 cd $SRC_DIR
 
