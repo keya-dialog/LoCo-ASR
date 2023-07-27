@@ -38,8 +38,8 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="16" \
-  --per_device_eval_batch_size="16" \
+  --per_device_train_batch_size="8" \
+  --per_device_eval_batch_size="8" \
   --group_by_length="True" \
   --auto_find_batch_size="True" \
   --report_to="wandb" \
