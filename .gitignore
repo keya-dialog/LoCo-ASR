@@ -1,7 +1,9 @@
 #Large files
-data/
+slurp/
 extracted/
-model/
+checkpoints/
+results/
+
 
 #Audio files
 *.wav

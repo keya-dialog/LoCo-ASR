@@ -50,7 +50,7 @@ train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collat
 val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
 test_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
 
-model = IntentClassifier(method=pooling, embedding_size=768, num_heads=1)
+model = IntentClassifier(method=pooling, embedding_size=768)
 model = model.to(device)
 
 num_epochs = 100
@@ -62,7 +62,7 @@ criterion = nn.CrossEntropyLoss()
 criterion_val = nn.CrossEntropyLoss(reduction="sum")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
 
-model_folder = "model"
+model_folder = "checkpoints"
 save_folder = os.path.join(os.path.join(model_folder, modality), pooling)
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
@@ -213,7 +213,7 @@ print("Training started...")
 train(model, train_loader, val_loader, criterion, criterion_val, optimizer, num_epochs, patience=patience, print_every=print_every)
 print("Training done!")
 
-model = IntentClassifier(method=pooling, embedding_size=768, num_heads=1).to(device)
+model = IntentClassifier(method=pooling, embedding_size=768).to(device)
 model.load_state_dict(torch.load(os.path.join(save_folder, f'speecht5_{pooling}_{modality}_best.pth')))
 
 print("Evaluating model on test set")

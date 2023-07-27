@@ -3,7 +3,7 @@ import pickle
 import argparse
 import librosa
 
-from slurp_data_v2 import SLURPDataset
+from slurp_data import SLURPDataset
 from intent_classes import ALL_CLASSES
 
 import torch
@@ -72,12 +72,13 @@ if modality == "text":
     with torch.no_grad():
         for data in data_loader:
             slurp_ids, texts, _, _, targets = data
-            n = texts['input_ids'].shape[0]
-            speaker_embeddings = torch.zeros((n, 512)).to(device)
-            set_seed(555)
-            decoder_input_values = torch.zeros((n, 1024, 80)).to(device)
-            out = model(**texts, speaker_embeddings=speaker_embeddings, decoder_input_values=decoder_input_values)
-            embeddings = out.encoder_last_hidden_state.cpu().detach().numpy()
+            #n = texts['input_ids'].shape[0]
+            #speaker_embeddings = torch.zeros((n, 512)).to(device)
+            #set_seed(555)
+            #decoder_input_values = torch.zeros((n, 1024, 80)).to(device)
+            #out = model(**texts, speaker_embeddings=speaker_embeddings, decoder_input_values=decoder_input_values)
+            out = model.speecht5.encoder(texts.input_ids)
+            embeddings = out.last_hidden_state.cpu().detach().numpy()
 
 
             #save_embeddings = {}

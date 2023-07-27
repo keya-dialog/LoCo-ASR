@@ -17,7 +17,6 @@ class IntentClassifier(nn.Module):
         self.q = nn.Parameter(torch.randn(1, embedding_size, requires_grad=True) * 0.001)
         self.softmax = nn.Softmax(dim=1)
 
-        self.multihead_attention = nn.MultiheadAttention(self.embedding_size, self.num_heads)
         self.classifier = nn.Sequential(
             nn.Linear(768,101),
         )
