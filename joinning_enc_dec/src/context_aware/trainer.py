@@ -511,9 +511,9 @@ class ContextAwareTrainer(Seq2SeqTrainer):
                 
                 
                 """
-                context = torch.zeros((batch_size, model.encoder.config.hidden_size))
+                context = None
                 for inputs in conversations:
-                    inputs['context_vector'] = context
+                    inputs['context_vectors'] = context
                     step += 1
                     # Skip past any already trained steps if resuming training
                     if steps_trained_in_current_epoch > 0:
@@ -622,6 +622,8 @@ class ContextAwareTrainer(Seq2SeqTrainer):
 
                     if self.control.should_epoch_stop or self.control.should_training_stop:
                         break
+
+                torch.cuda.empty_cache()
             """
 
 
@@ -745,7 +747,7 @@ class ContextAwareTrainer(Seq2SeqTrainer):
         else:
             loss.backward()
 
-        return outputs.encoder_context_vector.detach(), loss.detach()
+        return outputs.encoder_context_vectors.detach(), loss.detach()
 
     def evaluation_loop(
             self,
