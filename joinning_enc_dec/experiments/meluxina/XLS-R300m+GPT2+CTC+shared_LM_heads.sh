@@ -31,7 +31,7 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --base_decoder_model="gpt2" \
   --tokenizer_name="gpt2" \
   --output_dir=$EXPERIMENT_PATH \
-  --gradient_accumulation_steps="4" \
+  --gradient_accumulation_steps="2" \
   --learning_rate="1e-4" \
   --logging_steps="5" \
   --save_strategy="steps" \
@@ -41,7 +41,6 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc_loss+warm_LM_head.py \
   --per_device_train_batch_size="8" \
   --per_device_eval_batch_size="8" \
   --group_by_length="True" \
-  --auto_find_batch_size="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="32" \
