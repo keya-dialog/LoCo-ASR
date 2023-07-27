@@ -24,8 +24,8 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
-  --base_encoder_model="facebook/wav2vec2-xls-r-1b" \
-  --feature_extractor_name="facebook/wav2vec2-xls-r-1b" \
+  --base_encoder_model="facebook/wav2vec2-xls-r-300m" \
+  --feature_extractor_name="facebook/wav2vec2-xls-r-300m" \
   --base_decoder_model="gpt2-medium" \
   --tokenizer_name="gpt2-medium" \
   --output_dir=$EXPERIMENT_PATH \
