@@ -4,8 +4,8 @@
 #$ -l ram_free=16G,mem_free=16G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen+cross_v2.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen+cross_v2.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="LoCo_frozen_v2"
+EXPERIMENT="LoCo_frozen+cross_v2"
 
 cd $SRC_DIR
 
@@ -58,7 +58,7 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --dec_layers_to_freeze="12" \
   --steps_to_freeze_dec="-1" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
-  --gradient_accumulation_steps="2" \
+  --gradient_accumulation_steps="4" \
   --learning_rate="1e-6" \
   --logging_steps="5" \
   --save_strategy="steps" \
@@ -66,8 +66,8 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
   --auto_find_batch_size="True" \
-  --per_device_train_batch_size="16" \
-  --per_device_eval_batch_size="16" \
+  --per_device_train_batch_size="8" \
+  --per_device_eval_batch_size="8" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
@@ -86,6 +86,5 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --validation_split="dev_6" \
   --length_column_name="n_turns" \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
-  --freeze_cross_attention \
   --freeze_others
 

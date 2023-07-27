@@ -69,7 +69,7 @@ class FrozenLayersManager(TrainerCallback):
                 if name.startswith("transformer.h."):
                     if 'cross' in name and not self.freeze_cross_attention:
                         param.requires_grad = True
-                    if 'adapter' in name:
+                    elif 'adapter' in name:
                         param.requires_grad = True
                     else:
                         layer = int(name.split('.')[2])
