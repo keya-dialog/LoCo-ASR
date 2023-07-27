@@ -72,6 +72,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     freeze_cross_attention: bool = field(
         default=False, metadata={"help": "Wherever to freeze cross attentions"}
     )
+    freeze_others: bool = field(
+        default=False, metadata={"help": "Wherever to freeze cross attentions"}
+    )
     custom_optimizer: bool = field(
         default=False, metadata={"help": "Custom optimizer for decoder"}
     )
@@ -203,7 +206,9 @@ if __name__ == '__main__':
     # 4. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
                                                  training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec,
-                                                 training_args.freeze_cross_attention)
+                                                 training_args.freeze_cross_attention,
+                                                 training_args.freeze_others,
+                                                 callbacks=[model.encoder.base_model.activate_custom_params])
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
 

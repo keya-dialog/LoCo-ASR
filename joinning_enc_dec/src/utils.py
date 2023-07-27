@@ -34,13 +34,15 @@ def compute_metrics(tokenizer, pred):
 
 class FrozenLayersManager(TrainerCallback):
     def __init__(self, enc_layers_to_freeze, dec_layers_to_freeze, steps_to_freeze_enc, steps_to_freeze_dec,
-                 freeze_cross_attention=False):
+                 freeze_cross_attention=False, freeze_others=False, callbacks=None):
         super().__init__()
         self.enc_layers_to_freeze = enc_layers_to_freeze
         self.dec_layers_to_freeze = dec_layers_to_freeze
         self.steps_to_freeze_enc = steps_to_freeze_enc
         self.steps_to_freeze_dec = steps_to_freeze_dec
         self.freeze_cross_attention = freeze_cross_attention
+        self.freeze_others = freeze_others
+        self.callbacks = callbacks
 
     def on_init_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         curr_model: SpeechEncoderDecoderModel = kwargs['model']
@@ -60,7 +62,7 @@ class FrozenLayersManager(TrainerCallback):
                 elif 'adapter' in name:
                     param.requires_grad = True
                 else:
-                    param.requires_grad = True
+                    param.requires_grad = not self.freeze_others
 
         if self.dec_layers_to_freeze > 0:
             for name, param in curr_model.decoder.named_parameters():
@@ -76,10 +78,15 @@ class FrozenLayersManager(TrainerCallback):
                         else:
                             param.requires_grad = True
                 else:
-                    param.requires_grad = True
+                    param.requires_grad = not self.freeze_others
 
         curr_model.freeze_feature_encoder()
-        curr_model.decoder.lm_head.weight.requires_grad = True
+        curr_model.decoder.lm_head.weight.requires_grad = not self.freeze_others
+
+        if self.callbacks:
+            for callback in self.callbacks:
+                callback()
+
         logger.debug(str([n for n, p in curr_model.named_parameters() if p.requires_grad]))
         logger.info(
             f'Model info: total parameters - {curr_model.num_parameters()}, trainable parameters - '
@@ -113,7 +120,7 @@ class AdditionalLossPrinterCallback(TrainerCallback):
         state.additional_logs = []
 
     def on_log(self, args, state, control, logs=None, **kwargs):
-        if hasattr(state, 'additional_logs'):
+        if hasattr(state, 'additional_logs') and len(state.additional_logs) > 0:
             enc_loss, dec_loss = torch.tensor(state.additional_logs).mean(axis=0)
             if state.is_local_process_zero:
                 logs['enc_loss'] = float(enc_loss)
@@ -271,13 +278,14 @@ class Seq2SeqDataCollatorWithPaddingContext:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
 
-        audios = zip_longest(*[conv['audio'] for conv in conversations], fillvalue=[])
-        labels = zip_longest(*[conv['text'] for conv in conversations], fillvalue="")
+        audios = zip_longest(*[conv['audio'] for conv in conversations])
+        labels = zip_longest(*[conv['text'] for conv in conversations])
 
-        input_features = [self.feature_extractor(utterance, padding=True, return_tensors='pt',
-                                                 sampling_rate=self.sampling_rate) for utterance in audios]
+        input_features = [
+            self.feature_extractor([conv for conv in utterance if conv is not None], padding=True, return_tensors='pt',
+                                   sampling_rate=self.sampling_rate) for utterance in audios]
         labels = [self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(item) for item in utterance], return_attention_mask=True,
+            [self._encapsulate_utterance(item) for item in utterance if item is not None], return_attention_mask=True,
             padding='longest', return_tensors='pt') for utterance in labels]
 
         batches = []

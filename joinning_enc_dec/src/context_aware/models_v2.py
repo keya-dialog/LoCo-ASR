@@ -64,13 +64,34 @@ class Wav2Vec2BaseModelOutputWithContext(Wav2Vec2BaseModelOutput):
     context_vectors: Optional[Tuple[torch.FloatTensor]] = None
 
 
+class PrevContextCombiner(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.utterance_pool = SelfAttentionPooling(config.hidden_size)
+        self.prev_utterances_attention = nn.MultiheadAttention(config.hidden_size, num_heads=config.num_attention_heads,
+                                                               dropout=config.attention_dropout, batch_first=True)
+        self.combined_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+
+    def forward(self, hidden_states, context_vectors):
+        summary_vector = self.utterance_pool(hidden_states)
+        if context_vectors is None:
+            context_vectors = summary_vector
+        else:
+            context_vectors = torch.hstack((context_vectors, summary_vector))
+        attended_context, _ = self.prev_utterances_attention(hidden_states, context_vectors, context_vectors)
+        hidden_states = hidden_states + attended_context
+        hidden_states = self.combined_norm(hidden_states)
+        return hidden_states, context_vectors
+
+
 class Wav2Vec2WithContextV2(Wav2Vec2Model):
     def __init__(self, config: Wav2Vec2Config):
         super().__init__(config)
-        self.utterance_pool = SelfAttentionPooling(self.config.hidden_size)
-        self.cross_attention = nn.MultiheadAttention(config.hidden_size, num_heads=config.num_attention_heads,
-                                                     dropout=config.attention_dropout, batch_first=True)
-        self.layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+        self.prev_context_combiner = PrevContextCombiner(config)
+
+    def activate_custom_params(self):
+        for param in self.prev_context_combiner.parameters():
+            param.requires_grad = True
 
     def forward(
             self,
@@ -86,19 +107,11 @@ class Wav2Vec2WithContextV2(Wav2Vec2Model):
         output = super().forward(input_values, attention_mask, mask_time_indices, output_attentions,
                                  output_hidden_states,
                                  return_dict)
-        hidden_states = output.last_hidden_state
-        summary_vector = self.utterance_pool(hidden_states)
-        if context_vectors is not None:
-            attended_context, _ = self.cross_attention(hidden_states, context_vectors, context_vectors)
-            hidden_states = hidden_states + attended_context
-            hidden_states = self.layer_norm(hidden_states)
 
-            context_vectors = torch.hstack((context_vectors, summary_vector))
-        else:
-            context_vectors = summary_vector
-
-        output.last_hidden_state = hidden_states
-        output.context_vectors = context_vectors.detach()
+        hidden_state, context_vectors = self.prev_context_combiner(output.last_hidden_state,
+                                                                   context_vectors)
+        output.last_hidden_state = hidden_state
+        output.context_vectors = context_vectors
         return output
 
 

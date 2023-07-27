@@ -513,6 +513,8 @@ class ContextAwareTrainer(Seq2SeqTrainer):
                 """
                 context = None
                 for inputs in conversations:
+                    if context is not None and inputs['input_values'].shape[0] != context.shape[0]:
+                        context = context[:inputs['input_values'].shape[0]]
                     inputs['context_vectors'] = context
                     step += 1
                     # Skip past any already trained steps if resuming training
@@ -834,9 +836,11 @@ class ContextAwareTrainer(Seq2SeqTrainer):
 
 
             """
-            context = torch.zeros((batch_size, model.encoder.config.hidden_size))
+            context = None
             for inputs in conversations:
-                inputs['context_vector'] = context
+                if context is not None and inputs['input_values'].shape[0] != context.shape[0]:
+                    context = context[:inputs['input_values'].shape[0]]
+                inputs['context_vectors'] = context
                 step += 1
                 # Update the observed num examples
                 observed_batch_size = find_batch_size(inputs)
@@ -1096,13 +1100,13 @@ class ContextAwareTrainer(Seq2SeqTrainer):
                             self._past = outputs[self.args.past_index - 1]
 
             if prediction_loss_only:
-                return (loss, None, None, outputs.encoder_context_vector)
+                return (loss, None, None, outputs.encoder_context_vectors)
 
             logits = nested_detach(logits)
             if len(logits) == 1:
                 logits = logits[0]
 
-            return (loss, logits, labels, outputs.encoder_context_vector)
+            return (loss, logits, labels, outputs.encoder_context_vectors)
         has_labels = "labels" in inputs
         inputs = self._prepare_inputs(inputs)
 
@@ -1123,8 +1127,8 @@ class ContextAwareTrainer(Seq2SeqTrainer):
         if "global_attention_mask" in inputs:
             gen_kwargs["global_attention_mask"] = inputs.get("global_attention_mask", None)
 
-        if "context_vector" in inputs:
-            gen_kwargs["context_vector"] = inputs.get("context_vector", None)
+        if "context_vectors" in inputs:
+            gen_kwargs["context_vectors"] = inputs.get("context_vectors", None)
 
         # prepare generation inputs
         # some encoder-decoder models can have varying encoder's and thus
@@ -1158,7 +1162,7 @@ class ContextAwareTrainer(Seq2SeqTrainer):
                 loss = None
 
         if self.args.prediction_loss_only:
-            return loss, None, None, outputs.encoder_context_vector
+            return loss, None, None, outputs.encoder_context_vectors
 
         if has_labels:
             labels = inputs["labels"]
@@ -1171,4 +1175,4 @@ class ContextAwareTrainer(Seq2SeqTrainer):
         else:
             labels = None
 
-        return loss, generated_tokens, labels, outputs.encoder_context_vector
+        return loss, generated_tokens, labels, outputs.encoder_context_vectors

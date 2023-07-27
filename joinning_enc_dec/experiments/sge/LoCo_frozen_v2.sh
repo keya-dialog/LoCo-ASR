@@ -86,5 +86,6 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --validation_split="dev_6" \
   --length_column_name="n_turns" \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
-  --freeze_cross_attention
+  --freeze_cross_attention \
+  --freeze_others
 
