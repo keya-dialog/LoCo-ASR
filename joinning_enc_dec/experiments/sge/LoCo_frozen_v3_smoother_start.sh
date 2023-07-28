@@ -59,7 +59,7 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --steps_to_freeze_dec="-1" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-6" \
+  --learning_rate="1e-4" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \

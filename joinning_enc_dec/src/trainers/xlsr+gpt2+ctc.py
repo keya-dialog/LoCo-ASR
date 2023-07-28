@@ -133,6 +133,9 @@ class DataTrainingArguments:
     val_indexes_to_use: str = field(
         default="", metadata={"help": "Part of the validation split to be used."}
     )
+    restart_from: str = field(
+        default="", metadata={"help": "Path to checkpoint used to restart the training."}
+    )
 
 
 if __name__ == '__main__':
@@ -223,7 +226,7 @@ if __name__ == '__main__':
     )
 
     # 5. Train
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
     decoder_tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
     feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))

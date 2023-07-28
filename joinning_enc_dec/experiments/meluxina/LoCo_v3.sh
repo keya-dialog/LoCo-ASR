@@ -11,7 +11,7 @@ SRC_DIR="/home/users/u100959/projects/LoCo-ASR"
 WORK_DIR="/project/home/p200186"
 DATASET_DIR="${WORK_DIR}/data/fisher_conv"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
-MODEL_CHECKPOINT="$WORK_DIR/experiments/LoCo-ASR_v2_XLS-R300m+GPT2+CTC_MELUXINA/checkpoint-27000/"
+MODEL_CHECKPOINT="$WORK_DIR/experiments/LoCo-ASR_v2_XLS-R300m+GPT2+CTC_MELUXINA/best_checkpoint"
 
 export WANDB_PROJECT=$PROJECT
 export WANDB_RUN_ID=$EXPERIMENT
@@ -35,25 +35,24 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --dec_layers_to_freeze="12" \
   --steps_to_freeze_dec="-1" \
   --output_dir="${EXPERIMENT_PATH}" \
-  --gradient_accumulation_steps="2" \
+  --gradient_accumulation_steps="1" \
   --learning_rate="1e-6" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="8" \
+  --per_device_train_batch_size="16" \
   --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="16" \
-  --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs=2 \
+  --num_train_epochs=10 \
   --num_beams="1" \
   --max_len="128" \
   --group_by_length="True" \
@@ -64,4 +63,6 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
   --freeze_cross_attention \
   --freeze_others \
-  --ctc_weight="0.2"
+  --ctc_weight="0.2" \
+  --reinit_context_weights \
+  --bf16
