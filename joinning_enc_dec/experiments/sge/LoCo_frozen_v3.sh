@@ -35,7 +35,7 @@ EXPERIMENT="LoCo_frozen_v3"
 cd $SRC_DIR
 
 export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
-export $(/mnt/matylda4/kesiraju/bin/gpus 1) || exit 1
+export $(/mnt/matylda4/kesiraju/bin/gpus 2) || exit 1
 
 export HF_HOME="${SRC_DIR}/huggingface_cache"
 export HF_DATASETS_OFFLINE=1
@@ -66,8 +66,8 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
   --auto_find_batch_size="True" \
-  --per_device_train_batch_size="16" \
-  --per_device_eval_batch_size="16" \
+  --per_device_train_batch_size="2" \
+  --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
@@ -87,5 +87,5 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --length_column_name="n_turns" \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
   --freeze_cross_attention \
-  --freeze_others
-
+  --freeze_others \
+  --ctc_weight="0.2"
