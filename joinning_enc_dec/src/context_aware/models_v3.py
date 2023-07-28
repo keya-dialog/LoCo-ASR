@@ -233,6 +233,9 @@ class Wav2Vec2EncoderStableLayerNormWithContext(Wav2Vec2EncoderStableLayerNorm):
             for param in layer.context_combiner.parameters():
                 param.requires_grad = True
 
+    def reinit_cross_attention_weights(self):
+        for layer in self.layers:
+            layer.context_combiner.prev_utterances_attention.in_proj_weight.data.normal_(mean=0.0, std=1e-9)
 
 class Wav2Vec2ModelWithContext(Wav2Vec2Model):
     def __init__(self, config: Wav2Vec2Config):

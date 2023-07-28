@@ -70,10 +70,10 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
         default=0, metadata={"help": "Steps to freeze decoder"}
     )
     freeze_cross_attention: bool = field(
-        default=False, metadata={"help": "Wherever to freeze cross attentions"}
+        default=False, metadata={"help": "Whether to freeze cross attentions"}
     )
     freeze_others: bool = field(
-        default=False, metadata={"help": "Wherever to freeze cross attentions"}
+        default=False, metadata={"help": "Whether to freeze cross attentions"}
     )
     custom_optimizer: bool = field(
         default=False, metadata={"help": "Custom optimizer for decoder"}

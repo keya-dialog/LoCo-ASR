@@ -70,10 +70,10 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
         default=0, metadata={"help": "Steps to freeze decoder"}
     )
     freeze_cross_attention: bool = field(
-        default=False, metadata={"help": "Wherever to freeze cross attentions"}
+        default=False, metadata={"help": "Whether to freeze cross attentions"}
     )
     freeze_others: bool = field(
-        default=False, metadata={"help": "Wherever to freeze cross attentions"}
+        default=False, metadata={"help": "Whether to freeze cross attentions"}
     )
     custom_optimizer: bool = field(
         default=False, metadata={"help": "Custom optimizer for decoder"}
@@ -86,6 +86,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     )
     ctc_weight: float = field(
         default=0, metadata={"help": "Weight of CTC loss."}
+    )
+    reinit_context_weights: bool = field(
+        default=False, metadata={"help": "Whether to reinitialize context weights."}
     )
 
 
@@ -212,9 +215,6 @@ if __name__ == '__main__':
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
 
-    for n, p in model.named_parameters():
-        if 'context_pool' not in n and 'utterance_pool' not in n:
-            p.requires_grad = False
     data_collator = Seq2SeqDataCollatorWithPaddingContext(feature_extractor=feature_extractor,
                                                           tokenizer=decoder_tokenizer,
                                                           padding=True, sampling_rate=model_args.sampling_rate)
@@ -222,6 +222,9 @@ if __name__ == '__main__':
     if training_args.custom_optimizer:
         optimizer = AdamW(group_params(model, training_args.weight_decay, training_args.learning_rate,
                                        model_args.cross_attention_scaling_factor), lr=training_args.learning_rate)
+
+    if training_args.reinit_context_weights:
+        model.encoder.base_model.encoder.reinit_cross_attention_weights()
 
     trainer = ContextAwareTrainer(
         args=training_args,

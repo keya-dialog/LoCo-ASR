@@ -87,4 +87,5 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
   --freeze_cross_attention \
   --freeze_others \
-  --ctc_weight="0.2"
+  --ctc_weight="0.2" \
+  --reinit_context_weights
