@@ -42,10 +42,11 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="16" \
+  --per_device_train_batch_size="8" \
   --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
+  --auto_find_batch_size="True" \
   --dataloader_num_workers="16" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
@@ -64,5 +65,4 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --freeze_cross_attention \
   --freeze_others \
   --ctc_weight="0.2" \
-  --reinit_context_weights \
-  --bf16
+  --reinit_context_weights
