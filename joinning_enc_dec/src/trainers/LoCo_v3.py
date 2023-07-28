@@ -208,7 +208,7 @@ if __name__ == '__main__':
                                                  training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec,
                                                  training_args.freeze_cross_attention,
                                                  training_args.freeze_others,
-                                                 callbacks=[])
+                                                 callbacks=[model.encoder.base_model.encoder.activate_custom_params])
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
 

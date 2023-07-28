@@ -228,6 +228,11 @@ class Wav2Vec2EncoderStableLayerNormWithContext(Wav2Vec2EncoderStableLayerNorm):
             attentions=all_self_attentions,
         )
 
+    def activate_custom_params(self):
+        for layer in self.layers:
+            for param in layer.context_combiner.parameters():
+                param.requires_grad = True
+
 
 class Wav2Vec2ModelWithContext(Wav2Vec2Model):
     def __init__(self, config: Wav2Vec2Config):
