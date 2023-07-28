@@ -80,6 +80,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     ctc_weight: float = field(
         default=0, metadata={"help": "Weight of CTC loss."}
     )
+    restart_from: str = field(
+        default="", metadata={"help": "Path to checkpoint used to restart the training."}
+    )
 
 
 @dataclass
@@ -132,9 +135,6 @@ class DataTrainingArguments:
     )
     val_indexes_to_use: str = field(
         default="", metadata={"help": "Part of the validation split to be used."}
-    )
-    restart_from: str = field(
-        default="", metadata={"help": "Path to checkpoint used to restart the training."}
     )
 
 
