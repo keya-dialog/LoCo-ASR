@@ -57,5 +57,5 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --validation_split="dev_6" \
   --bf16 \
   --ctc_weight="0.2" \
-  --restart_from="/project/home/p200186/experiments/LoCo-ASR_v2_XLS-R300m+GPT2_large_MELUXINA/checkpoint-11000" \
+  --restart_from="/project/home/p200186/experiments/LoCo-ASR_v2_XLS-R300m+GPT2_large_MELUXINA/checkpoint-12000" \
   --ignore_data_skip
