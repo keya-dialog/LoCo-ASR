@@ -79,15 +79,18 @@ def main():
 
     nlls = []
     ids = []
+    duration = 0.0
     stime = time()
 
     if args.context_type == "max_len":
         obj = load_checkpoint(path_out_dir)
+        stime = time()
         if obj:
             nlls = obj["nlls"]
             ids = obj["ids"]
             dataset.ids_done = obj["ids_done"]
             dataset.sentence_done = obj["sentence_done"]
+            duration = obj["duration"]
 
     with torch.no_grad():
         pbar = tqdm(dataset, initial=dataset.sentence_done)
@@ -122,18 +125,22 @@ def main():
 
             if args.context_type == "max_len":
                 if i % args.patience_save_checkpoints == 0:
+                    duration += (time() - stime)
                     obj = {
                         "nlls": nlls,
                         "ids": ids,
                         "ids_done": dataset.ids_done,
                         "sentence_done": dataset.sentence_done,
+                        "duration": duration,
                     }
                     save_checkpoint(obj, path_out_dir, keep=args.keep_n_checkpoints)
+                    stime = time()
 
             pbar.update(batch_text_ids.shape[0])
 
     if args.context_type == "indep":
         ids = dataset.utt_ids
+        duration = time() - stime
 
     assert len(nlls) == len(ids), f"nlls {len(nlls)} != utt_ids {len(ids)}"
 
@@ -145,7 +152,7 @@ def main():
     with open(path_out_dir / "rec_id2ppl.json", "w", encoding="utf-8") as fpw:
         json.dump(rec_id2ppl, fpw, indent=2, ensure_ascii=False)
 
-    logger.info(f"Saved in {args.out_dir} Time taken {time() - stime:.2f} sec")
+    logger.info(f"Saved in {args.out_dir} Time taken {duration:.2f} sec")
 
     return 0
 
@@ -225,7 +232,7 @@ def parse_arguments():
         "-patience_save_checkpoints",
         "-psc",
         type=int,
-        default=100,
+        default=1000,
         help="Number how many batch processed for checkpointing",
     )
     parser.add_argument(
