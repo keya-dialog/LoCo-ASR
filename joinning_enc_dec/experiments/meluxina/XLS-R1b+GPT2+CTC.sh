@@ -5,7 +5,7 @@
 #SBATCH --account=p200186                  # project account
 #SBATCH --qos=default                      # SLURM qos
 
-EXPERIMENT="XLS-R1b+GPT2+CTC_MELUXINA"
+EXPERIMENT="XLS-R1b+GPT2+CTC_MELUXINA2"
 PROJECT="LoCo-ASR_v2"
 SRC_DIR="/home/users/u100959/projects/LoCo-ASR"
 WORK_DIR="/project/home/p200186"
@@ -36,7 +36,7 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="16" \
+  --per_device_train_batch_size="2" \
   --per_device_eval_batch_size="8" \
   --group_by_length="True" \
   --auto_find_batch_size="True" \
@@ -57,4 +57,5 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --validation_split="dev_6" \
   --bf16 \
   --ctc_weight="0.2" \
-  --restart_from="/project/home/p200186/experiments/LoCo-ASR_v2_XLS-R1b+GPT2+CTC_MELUXINA/checkpoint-12000/"
+  --restart_from="/project/home/p200186/experiments/LoCo-ASR_v2_XLS-R1b+GPT2+CTC_MELUXINA/checkpoint-12000/" \
+  --ignore_data_skip
