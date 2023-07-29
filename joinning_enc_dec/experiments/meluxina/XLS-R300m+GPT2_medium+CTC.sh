@@ -36,8 +36,8 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="16" \
-  --per_device_eval_batch_size="16" \
+  --per_device_train_batch_size="4" \
+  --per_device_eval_batch_size="4" \
   --group_by_length="True" \
   --auto_find_batch_size="True" \
   --report_to="wandb" \
@@ -56,4 +56,6 @@ python joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
   --train_split="train_500" \
   --validation_split="dev_6" \
   --bf16 \
-  --ctc_weight="0.2"
+  --ctc_weight="0.2" \
+  --restart_from="/project/home/p200186/experiments/LoCo-ASR_v2_XLS-R300m+GPT2_medium_MELUXINA/checkpoint-22000/" \
+  --ignore_data_skip
