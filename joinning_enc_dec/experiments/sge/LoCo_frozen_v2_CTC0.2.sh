@@ -42,7 +42,7 @@ export $(/mnt/matylda4/kesiraju/bin/gpus 2) || exit 1
 export HF_HOME="${SRC_DIR}/huggingface_cache"
 export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
-export HF_DATASETS_IN_MEMORY_MAX_SIZE=32000000000
+export HF_DATASETS_IN_MEMORY_MAX_SIZE=300000000000
 
 export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT

@@ -153,7 +153,7 @@ if __name__ == '__main__':
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
     # 1. Load dataset
-    dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
+    dataset = load_from_disk(data_args.dataset_name)
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())

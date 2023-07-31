@@ -83,7 +83,7 @@ class PrevContextCombiner(nn.Module):
         self.utterance_pool = SelfAttentionPooling(config.hidden_size)
         self.prev_utterances_attention = nn.MultiheadAttention(config.hidden_size, num_heads=config.num_attention_heads,
                                                                dropout=config.attention_dropout, batch_first=True)
-        self.combined_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+        # self.combined_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
 
     def forward(self, hidden_states, context_vectors):
         summary_vector = self.utterance_pool(hidden_states)
@@ -93,7 +93,6 @@ class PrevContextCombiner(nn.Module):
             context_vectors = torch.hstack((context_vectors, summary_vector))
         attended_context, _ = self.prev_utterances_attention(hidden_states, context_vectors, context_vectors)
         hidden_states = hidden_states + attended_context
-        hidden_states = self.combined_norm(hidden_states)
         return hidden_states, context_vectors
 
 

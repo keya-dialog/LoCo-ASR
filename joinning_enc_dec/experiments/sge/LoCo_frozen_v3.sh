@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -N LoCo-ASR
 #$ -q long.q@@gpu
-#$ -l ram_free=16G,mem_free=16G
+#$ -l ram_free=64G,mem_free=64G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3.o
@@ -35,15 +35,17 @@ EXPERIMENT="LoCo_frozen_v3"
 cd $SRC_DIR
 
 export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
-export $(/mnt/matylda4/kesiraju/bin/gpus 2) || exit 1
+export $(/mnt/matylda4/kesiraju/bin/gpus 1) || exit 1
 
 export HF_HOME="${SRC_DIR}/huggingface_cache"
 export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
+export HF_DATASETS_IN_MEMORY_MAX_SIZE=32000000000
 
 export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
 export WANDB_PROJECT="LoCo-ASR_v2"
+
 
 python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --dataset_name="${DATASET_DIR}" \
@@ -87,4 +89,5 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
   --freeze_cross_attention \
   --freeze_others \
-  --ctc_weight="0.2"
+  --ctc_weight="0.2" \
+  --reinit_context_weights
