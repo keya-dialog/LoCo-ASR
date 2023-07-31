@@ -114,18 +114,16 @@ class Wav2Vec2EncoderLayerStableLayerNormWithContext(nn.Module):
 
     def forward(self, hidden_states, context_vectors, attention_mask=None, output_attentions=False):
         attn_residual = hidden_states
+        hidden_states = self.layer_norm(hidden_states)
         hidden_states, attn_weights, _ = self.attention(
             hidden_states, attention_mask=attention_mask, output_attentions=output_attentions
         )
         hidden_states = self.dropout(hidden_states)
         hidden_states = attn_residual + hidden_states
 
-        hidden_states = self.layer_norm(hidden_states)
-
         hidden_states, context_vectors = self.context_combiner(hidden_states, context_vectors)
 
-        hidden_states = hidden_states + self.feed_forward(hidden_states)
-        hidden_states = self.final_layer_norm(hidden_states)
+        hidden_states = hidden_states + self.feed_forward(self.final_layer_norm(hidden_states))
 
         outputs = (hidden_states, context_vectors)
 
@@ -236,6 +234,7 @@ class Wav2Vec2EncoderStableLayerNormWithContext(Wav2Vec2EncoderStableLayerNorm):
     def reinit_cross_attention_weights(self):
         for layer in self.layers:
             layer.context_combiner.prev_utterances_attention.in_proj_weight.data.normal_(mean=0.0, std=1e-9)
+
 
 class Wav2Vec2ModelWithContext(Wav2Vec2Model):
     def __init__(self, config: Wav2Vec2Config):
