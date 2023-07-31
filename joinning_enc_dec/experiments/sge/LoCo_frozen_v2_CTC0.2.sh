@@ -4,8 +4,8 @@
 #$ -l ram_free=128G,mem_free=128G
 #$ -l matylda5=5
 #$ -l gpu=2,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.e
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2_CTC0.2.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2_CTC0.2.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
