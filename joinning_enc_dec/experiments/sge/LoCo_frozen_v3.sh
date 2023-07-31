@@ -3,9 +3,9 @@
 #$ -q long.q@@gpu
 #$ -l ram_free=64G,mem_free=64G
 #$ -l matylda5=10
-#$ -l gpu=2,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3.e
+#$ -l gpu=2,gpu_ram=40G
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3_rand_init.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3_rand_init.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="LoCo_frozen_v3_fixed"
+EXPERIMENT="LoCo_frozen_v3_rand_init"
 
 cd $SRC_DIR
 
@@ -63,24 +63,24 @@ torchrun --standalone \
   --steps_to_freeze_dec="-1" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-6" \
+  --learning_rate="1e-4" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="4" \
+  --per_device_train_batch_size="8" \
+  --per_device_eval_batch_size="8" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="8" \
+  --dataloader_num_workers="2" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs=2 \
+  --num_train_epochs=1 \
   --num_beams="1" \
   --max_len="128" \
   --group_by_length="True" \
@@ -91,5 +91,4 @@ torchrun --standalone \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
   --freeze_cross_attention \
   --freeze_others \
-  --ctc_weight="0.2" \
-  --reinit_context_weights
+  --ctc_weight="0.2"
