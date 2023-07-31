@@ -3,7 +3,7 @@
 #$ -q long.q@@gpu
 #$ -l ram_free=64G,mem_free=64G
 #$ -l matylda5=10
-#$ -l gpu=1,gpu_ram=20G
+#$ -l gpu=2,gpu_ram=20G
 #$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3.o
 #$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v3.e
 
@@ -30,12 +30,12 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="LoCo_frozen_v3"
+EXPERIMENT="LoCo_frozen_v3_fixed"
 
 cd $SRC_DIR
 
 export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
-export $(/mnt/matylda4/kesiraju/bin/gpus 1) || exit 1
+export $(/mnt/matylda4/kesiraju/bin/gpus 2) || exit 1
 
 export HF_HOME="${SRC_DIR}/huggingface_cache"
 export HF_DATASETS_OFFLINE=1
@@ -46,8 +46,10 @@ export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
 export WANDB_PROJECT="LoCo-ASR_v2"
 
-
-python joinning_enc_dec/src/trainers/LoCo_v3.py \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=2 \
+  joinning_enc_dec/src/trainers/LoCo_v3.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
@@ -67,11 +69,11 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="8" \
+  --per_device_train_batch_size="4" \
   --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="4" \
+  --dataloader_num_workers="8" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \

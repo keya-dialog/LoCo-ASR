@@ -19,10 +19,14 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 source /home/users/u100959/miniconda3/bin/activate /project/home/p200186/envs/loco_asr
 
 export PYTHONPATH="${PYTHONPATH}:${SRC_DIR}/joinning_enc_dec/src"
+export OMP_NUM_THREADS=64
 
 cd $SRC_DIR
 
-python joinning_enc_dec/src/trainers/LoCo_v3.py \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
+   joinning_enc_dec/src/trainers/LoCo_v3.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
@@ -35,15 +39,15 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --dec_layers_to_freeze="12" \
   --steps_to_freeze_dec="-1" \
   --output_dir="${EXPERIMENT_PATH}" \
-  --gradient_accumulation_steps="1" \
-  --learning_rate="1e-6" \
+  --gradient_accumulation_steps="4" \
+  --learning_rate="1e-4" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="8" \
-  --per_device_eval_batch_size="4" \
+  --per_device_train_batch_size="16" \
+  --per_device_eval_batch_size="8" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --auto_find_batch_size="True" \
@@ -52,8 +56,8 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --metric_for_best_model="eval_loss" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
-  --save_total_limit="5" \
-  --num_train_epochs=10 \
+  --save_total_limit="2" \
+  --num_train_epochs=2 \
   --num_beams="1" \
   --max_len="128" \
   --group_by_length="True" \
@@ -65,4 +69,5 @@ python joinning_enc_dec/src/trainers/LoCo_v3.py \
   --freeze_cross_attention \
   --freeze_others \
   --ctc_weight="0.2" \
-  --reinit_context_weights
+  --reinit_context_weights \
+  --bf16
