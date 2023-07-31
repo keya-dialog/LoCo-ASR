@@ -46,7 +46,7 @@ torchrun --standalone \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="16" \
+  --per_device_train_batch_size="8" \
   --per_device_eval_batch_size="8" \
   --report_to="wandb" \
   --optim="adamw_torch" \
@@ -57,7 +57,7 @@ torchrun --standalone \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="2" \
-  --num_train_epochs=2 \
+  --num_train_epochs=1 \
   --num_beams="1" \
   --max_len="128" \
   --group_by_length="True" \
@@ -70,4 +70,4 @@ torchrun --standalone \
   --freeze_others \
   --ctc_weight="0.2" \
   --reinit_context_weights \
-  --bf16
+  --ddp_find_unused_parameters=False
