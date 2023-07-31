@@ -14,7 +14,7 @@ ulimit -t 172800
 ulimit -n 4096
 
 # Enable to save bigger checkpoints
-ulimit -f unlimitedq
+ulimit -f unlimited
 
 # Enable more threads per process by increasing virtual memory (https://stackoverflow.com/questions/344203/maximum-number-of-threads-per-process-in-linux)
 ulimit -v unlimited
