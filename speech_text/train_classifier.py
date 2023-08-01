@@ -16,14 +16,19 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser(description='Train an Intent Classifier with SpeechT5 embeddings from SLURP dataset')
 parser.add_argument('--modality', '-m', choices=['text', 'audio'], default='text', required=True, help='Modality (text or audio).')
 parser.add_argument('--pooling', '-p', choices=['average', 'max', 'attention'], default='average', required=True, help='Pooling strategy (average,max,attention)')
+parser.add_argument('--version', '-v', choices=['fine_tuned', 'base'], default='fine_tuned', required=True, help='Choose the version of the model (fine-tuned, base)')
 args = parser.parse_args()
 modality = args.modality
 pooling = args.pooling
+model_version = args.version
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running on", device)
 
-folder = "extracted/speecht5"
+if model_version == "fine_tuned":
+    folder = "extracted/speecht5"
+else:
+    folder = "extracted/speecht5_base"
 
 train_original_set = SLURPEmbeddingsTargets(folder, modality, "train")
 train_synthetic_set = SLURPEmbeddingsTargets(folder, modality, "train_synthetic")
@@ -62,12 +67,12 @@ criterion = nn.CrossEntropyLoss()
 criterion_val = nn.CrossEntropyLoss(reduction="sum")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
 
-model_folder = "checkpoints"
+model_folder = os.path.join("checkpoints",model_version)
 save_folder = os.path.join(os.path.join(model_folder, modality), pooling)
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
 
-results_folder = os.path.join(os.path.join("results", modality), pooling)
+results_folder = os.path.join(os.path.join(os.path.join("results", model_version), modality), pooling)
 plots_folder = os.path.join(results_folder, "plots")
 logs_folder = os.path.join(results_folder, "logs")
 if not os.path.exists(plots_folder):
