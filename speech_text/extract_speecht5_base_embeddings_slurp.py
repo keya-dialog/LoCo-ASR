@@ -37,12 +37,16 @@ onehot_labels = label_binarizer.fit_transform(numerical_labels)
 
 processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_asr")
 
+#Mappings from SpeechT5 Base from microsoft to SpeechT5 fine-tuned from huggingface
 mapping_encoder_file = "extracted/speecht5/mapping/encoder_state_dict.pickle"
 with open(mapping_encoder_file, 'rb') as handle:
     encoder_state_dict = pickle.load(handle)
 mapping_speech_prenet_file = "extracted/speecht5/mapping/speech_prenet_state_dict.pickle"
 with open(mapping_speech_prenet_file, 'rb') as handle2:
     speech_prenet_state_dict = pickle.load(handle2)
+mapping_text_prenet_file = "extracted/speecht5/mapping/text_prenet_state_dict.pickle"
+with open(mapping_text_prenet_file, 'rb') as handle3:
+    text_prenet_state_dict = pickle.load(handle3)
 
 def collate_fn(batch):
     slurp_ids, texts, audio_paths, sample_rates, tasks = zip(*batch)
@@ -75,28 +79,19 @@ if not os.path.exists(save_folder):
 if modality == "text":
     model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(device)
     model.speecht5.encoder.wrapped_encoder.load_state_dict(encoder_state_dict)
+    model.speecht5.encoder.prenet.load_state_dict(text_prenet_state_dict)
     print("Loaded model")
     model.eval()
     with torch.no_grad():
         for data in data_loader:
             slurp_ids, texts, _, _, targets = data
-            #n = texts['input_ids'].shape[0]
-            #speaker_embeddings = torch.zeros((n, 512)).to(device)
-            #set_seed(555)
-            #decoder_input_values = torch.zeros((n, 1024, 80)).to(device)
-            #out = model(**texts, speaker_embeddings=speaker_embeddings, decoder_input_values=decoder_input_values)
             out = model.speecht5.encoder(texts.input_ids)
             embeddings = out.last_hidden_state.cpu().detach().numpy()
 
-
-            #save_embeddings = {}
             for slurp_id, text_embedding, target in zip(slurp_ids, embeddings, targets):
                 with open(os.path.join(save_folder, f'{slurp_id}_embedding_and_target.pickle'), 'wb') as handle:
                     pickle.dump({"id":slurp_id, "embedding":text_embedding, "target":target}, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-                #print("ID:", slurp_id)
-                #print("Embedding:", text_embedding.shape)
-                #print("Target:", target)
 
 else:
     # SPEECH
@@ -109,18 +104,12 @@ else:
     with torch.no_grad():
         for data in data_loader:
             slurp_ids, _, audios, sample_rates, targets = data
-            
-            #predicted_ids_speech = model.generate(**audios, max_length=450)
-            #out = model(**audios, decoder_input_ids=predicted_ids_speech)
+
             out = model.speecht5.encoder(**audios)
-            #embeddings = out.encoder_last_hidden_state.cpu().detach().numpy()
             embeddings = out.last_hidden_state.cpu().detach().numpy()
             
             for slurp_id, speech_embedding, target in zip(slurp_ids, embeddings, targets):
                 with open(os.path.join(save_folder, f'{slurp_id}_embedding_and_target.pickle'), 'wb') as handle:
                     pickle.dump({"id":slurp_id, "embedding":speech_embedding, "target":target}, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                #print("ID:", slurp_id)
-                #print("Embedding:", speech_embedding.shape)
-                #print("Target:", target)
         
 print("Done!")

@@ -1,12 +1,12 @@
 class Mapping():
-    def __init__(self, model_asr, ckpt):
+    def __init__(self, model_asr, model_tts, ckpt):
         self.model_asr = model_asr
+        self.model_tts = model_tts
         self.ckpt = ckpt
         self.encoder_map, self.encoder_values = self.map_encoder()
         self.encoder_state_dict = self.map_states_encoder()
         self.speech_prenet_map, self.speech_prenet_values = self.map_speech_prenet()
         self.speech_prenet_state_dict = self.map_states_speech_prenet()
-        self.text_prenet_map, self.text_prenet_values = self.map_text_prenet()
         self.text_prenet_state_dict = self.map_states_text_prenet()
 
     def search_mapping(self, base_name, hf_list):
@@ -166,26 +166,16 @@ class Mapping():
                 speech_prenet_dict_state[name.split('.',maxsplit=3)[-1]] = param
         
         return speech_prenet_dict_state
-
-    def map_text_prenet(self):
-        #Because it is only 2 layers, I am doing it manually
-        prenet_mapping = {}
-        prenet_mapping["speecht5.encoder.prenet.embed_tokens.weight"] = "text_encoder_prenet.encoder_prenet.0.weight"
-        prenet_mapping["speecht5.encoder.prenet.encode_positions.alpha"] = "text_encoder_prenet.encoder_prenet.1.alpha"
-
-        prenet_dict_state = {}
-        for hf_layer, bs_layer in prenet_mapping.items():
-            for name, p in self.ckpt['model'].items():
-                if bs_layer == name:
-                    prenet_dict_state[hf_layer] = p
-                    break
-
-        return prenet_dict_state, prenet_mapping
     
     def map_states_text_prenet(self):
-        text_prenet_dict_state = {}
-        for layer, param in self.text_prenet_map.items():
-            new_layer = layer.split('.',maxsplit=3)[-1]
-            text_prenet_dict_state[new_layer] = param
+        text_prenet_state_dict = {}
+        for name, param in self.model_tts.named_parameters():
+            if name.startswith("speecht5.encoder.prenet"):
+                if name == "speecht5.encoder.prenet.embed_tokens.weight":
+                    text_prenet_state_dict[name.split('.',maxsplit=3)[-1]] = self.ckpt['model']['text_encoder_prenet.encoder_prenet.0.weight']
+                else:
+                    text_prenet_state_dict[name.split('.',maxsplit=3)[-1]] = param
+                    
+        text_prenet_state_dict["encode_positions.pe"] = self.model_tts.speecht5.encoder.prenet.encode_positions.pe
             
-        return text_prenet_dict_state
+        return text_prenet_state_dict
