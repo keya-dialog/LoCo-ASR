@@ -1,0 +1,12 @@
+Results
+Epoch [1/1], Iteration [200/1952], Loss: 3.6920, Accuracy: 43.75
+Epoch [1/1], Iteration [400/1952], Loss: 3.1968, Accuracy: 37.5
+Epoch [1/1], Iteration [600/1952], Loss: 3.2091, Accuracy: 31.25
+Epoch [1/1], Iteration [800/1952], Loss: 2.6880, Accuracy: 56.25
+Epoch [1/1], Iteration [1000/1952], Loss: 2.9641, Accuracy: 62.5
+Epoch [1/1], Iteration [1200/1952], Loss: 2.0108, Accuracy: 62.5
+Epoch [1/1], Iteration [1400/1952], Loss: 2.1736, Accuracy: 50.0
+Epoch [1/1], Iteration [1600/1952], Loss: 2.0572, Accuracy: 62.5
+Epoch [1/1], Iteration [1800/1952], Loss: 1.9710, Accuracy: 62.5
+###### Epoch [1/1], Training Loss: 2.7512, Training accuracy: 50.43, Validation Loss: 2.2134, Validation accuracy: 56.517461878996556 ######
+
