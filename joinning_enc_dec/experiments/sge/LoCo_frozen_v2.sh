@@ -1,11 +1,11 @@
 #!/bin/bash
 #$ -N LoCo-ASR
 #$ -q long.q@@gpu
-#$ -l ram_free=16G,mem_free=16G
+#$ -l ram_free=48G,mem_free=48G
 #$ -l matylda5=10
-#$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_frozen_v2.e
+#$ -l gpu=1,gpu_ram=40G
+#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_enc_frozen_v2.o
+#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_enc_frozen_v2.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher_conv"
 MODEL_CHECKPOINT="/mnt/matylda5/xpolok03/projects/LoCo-ASR/models/XLS-R+GPT2_withCTC"
-EXPERIMENT="LoCo_frozen_v2"
+EXPERIMENT="LoCo_enc_frozen_v2"
 
 cd $SRC_DIR
 
@@ -55,11 +55,9 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --tokenizer_name="gpt2" \
   --enc_layers_to_freeze="24" \
   --steps_to_freeze_enc="-1" \
-  --dec_layers_to_freeze="12" \
-  --steps_to_freeze_dec="-1" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
   --gradient_accumulation_steps="2" \
-  --learning_rate="1e-6" \
+  --learning_rate="1e-5" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
@@ -86,6 +84,4 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --validation_split="dev_6" \
   --length_column_name="n_turns" \
   --resume_from_checkpoint=$MODEL_CHECKPOINT \
-  --freeze_cross_attention \
-  --freeze_others \
   --ctc_weight="0.2"

@@ -942,7 +942,7 @@ class ContextAwareTrainer(Seq2SeqTrainer):
                 num_samples = observed_num_examples
         if num_samples == 0 and observed_num_examples > 0:
             num_samples = observed_num_examples
-
+        num_samples = sum(eval_dataset['n_turns'])
         # Number of losses has been rounded to a multiple of batch_size and in a distributed training, the number of
         # samplers has been rounded to a multiple of batch_size, so we truncate.
         if all_losses is not None:
