@@ -3,7 +3,7 @@ import pickle
 from dataclasses import dataclass, field
 from typing import Optional
 
-from datasets import concatenate_datasets, load_from_disk
+from datasets import load_from_disk
 from torch.optim import AdamW
 from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser, \
     Seq2SeqTrainingArguments
@@ -166,16 +166,6 @@ if __name__ == '__main__':
 
     # 1. Load dataset
     dataset = load_from_disk(data_args.dataset_name)
-
-
-    def change_recording_id(x, suffix):
-        x['recording'] = x['recording'] + suffix
-        return x
-
-
-    dataset['validation'] = dataset['validation'].map(lambda x: change_recording_id(x, "validation"))
-    dataset['test'] = dataset['test'].map(lambda x: change_recording_id(x, "test"))
-    dataset['train'] = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
