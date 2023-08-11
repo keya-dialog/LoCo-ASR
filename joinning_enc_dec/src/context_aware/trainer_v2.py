@@ -174,7 +174,10 @@ class RandomSamplerWithDependency(Sampler[int]):
                 weights_update = torch.zeros_like(weights)
                 weights_update[selected_convs] = 1
                 weights -= weights_update
-                yield from [self.dependent_samples[conv].pop() for conv in selected_convs]
+                # return rand element of dataset in case conversation is already empty
+                weights = torch.clip(weights, 0)
+                yield from [self.dependent_samples[conv].pop() for conv
+                            in selected_convs if len(self.dependent_samples[conv]) > 0]
 
     def __len__(self) -> int:
         return self.num_samples
@@ -405,6 +408,8 @@ class ContextAwareTrainer(Seq2SeqTrainer):
             gen_kwargs["attention_mask"] = inputs.get("attention_mask", None)
         if "global_attention_mask" in inputs:
             gen_kwargs["global_attention_mask"] = inputs.get("global_attention_mask", None)
+        if "context_vectors" in inputs:
+            gen_kwargs["context_vectors"] = inputs.get("context_vectors", None)
 
         # prepare generation inputs
         # some encoder-decoder models can have varying encoder's and thus
