@@ -81,7 +81,8 @@ class FrozenLayersManager(TrainerCallback):
                 else:
                     param.requires_grad = not self.freeze_others
 
-        curr_model.freeze_feature_encoder()
+        if self.freeze_others:
+            curr_model.freeze_feature_encoder()
         curr_model.decoder.lm_head.weight.requires_grad = not self.freeze_others
 
         if self.callbacks:
@@ -249,8 +250,6 @@ class Seq2SeqDataCollatorWithPadding:
     pad_to_multiple_of_labels: Optional[int] = None
     sampling_rate: Optional[int] = 16_000
 
-    def _encapsulate_utterance(self, utterance):
-        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
@@ -258,7 +257,7 @@ class Seq2SeqDataCollatorWithPadding:
         input_features = self.feature_extractor([feature["input_values"] for feature in features], padding=True,
                                                 sampling_rate=self.sampling_rate)
         labels = self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(feature['labels']) for feature in features], return_attention_mask=True,
+            [feature['labels'] for feature in features], return_attention_mask=True,
             padding='longest', return_tensors='pt')
 
         batch = self.feature_extractor.pad(
@@ -379,10 +378,6 @@ class Seq2SeqDataCollatorWithPaddingContext:
     pad_to_multiple_of_labels: Optional[int] = None
     sampling_rate: Optional[int] = 16_000
 
-    def _encapsulate_utterance(self, utterance):
-        # TODO: Remove this for next model
-        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
-
     def __call__(self, conversations: List[Dict[str, Union[List[List[int]], List[torch.Tensor]]]]) -> List[
         BatchFeature]:
         # split inputs and labels since they have to be of different lengths and need
@@ -395,7 +390,7 @@ class Seq2SeqDataCollatorWithPaddingContext:
             self.feature_extractor([conv for conv in utterance if conv is not None], padding=True, return_tensors='pt',
                                    sampling_rate=self.sampling_rate) for utterance in audios]
         labels = [self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(item) for item in utterance if item is not None], return_attention_mask=True,
+            [item for item in utterance if item is not None], return_attention_mask=True,
             padding='longest', return_tensors='pt') for utterance in labels]
 
         batches = []
