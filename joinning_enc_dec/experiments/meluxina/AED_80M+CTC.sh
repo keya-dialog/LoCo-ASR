@@ -28,7 +28,7 @@ torchrun --standalone \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
-  --base_encoder_model="Lakoc/fisher_enc_4_layers" \
+  --base_encoder_model="Lakoc/fisher_enc_12_layers" \
   --feature_extractor_name="facebook/wav2vec2-xls-r-300m" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
   --tokenizer_name="Lakoc/fisher_bpe" \
@@ -40,13 +40,12 @@ torchrun --standalone \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="64" \
-  --per_device_eval_batch_size="64" \
+  --per_device_train_batch_size="24" \
+  --per_device_eval_batch_size="24" \
   --group_by_length="True" \
-  --auto_find_batch_size="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="32" \
+  --dataloader_num_workers="16" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
