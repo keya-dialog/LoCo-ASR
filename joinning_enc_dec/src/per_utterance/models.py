@@ -94,6 +94,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             )
         self.enc_loss_weight = config.ctc_weight
         self.dec_loss_weight = 1 - config.ctc_weight
+        self.lsm_factor = config.lsm_factor
 
     @classmethod
     def from_encoder_decoder_pretrained(
@@ -285,7 +286,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         loss = enc_loss = dec_loss = None
         if labels is not None:
             dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
-            loss_fct = CrossEntropyLoss()
+            loss_fct = CrossEntropyLoss(label_smoothing=self.lsm_factor)
             dec_loss = loss_fct(dec_logits.reshape(-1, self.decoder.config.vocab_size), labels.reshape(-1))
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
             loss = self.enc_loss_weight * enc_loss + self.dec_loss_weight * dec_loss

@@ -83,6 +83,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     restart_from: str = field(
         default="", metadata={"help": "Path to checkpoint used to restart the training."}
     )
+    lsm_factor: float = field(
+        default=0, metadata={"help": "Label smoothing coefficient for CE loss."}
+    )
 
 
 @dataclass
@@ -189,6 +192,7 @@ if __name__ == '__main__':
         encoder_ctc_loss_reduction="mean",
         encoder_pad_token_id=decoder_tokenizer.pad_token_id,
         encoder_vocab_size=len(decoder_tokenizer),
+        lsm_factor=training_args.lsm_factor
     )
 
     if training_args.decoder_cold_start:
