@@ -101,7 +101,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             cls,
             encoder_pretrained_model_name_or_path: str = None,
             decoder_pretrained_model_name_or_path: str = None,
-            spec_augment_cfg=None, reverb_cfg=None,
             *model_args,
             **kwargs
     ) -> PreTrainedModel:
@@ -486,7 +485,6 @@ class JointCTCAttentionEncoderDecoderSharedHeads(SpeechEncoderDecoderModel):
             cls,
             encoder_pretrained_model_name_or_path: str = None,
             decoder_pretrained_model_name_or_path: str = None,
-            spec_augment_cfg=None, reverb_cfg=None,
             *model_args,
             **kwargs
     ) -> PreTrainedModel:

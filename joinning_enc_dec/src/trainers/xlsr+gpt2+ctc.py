@@ -201,6 +201,7 @@ if __name__ == '__main__':
 
     model.config.decoder_start_token_id = decoder_tokenizer.bos_token_id
     model.config.pad_token_id = decoder_tokenizer.pad_token_id
+    model.config.eos_token_id = decoder_tokenizer.eos_token_id
 
     if model_args.dec_adapters:
         model.decoder.add_adapter("gpt2_fisher", set_active=True)
