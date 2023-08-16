@@ -263,7 +263,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         elif isinstance(encoder_outputs, tuple):
             encoder_outputs = BaseModelOutput(*encoder_outputs)
 
-        encoder_hidden_states = encoder_outputs['hidden_states'][-1] if return_dict else encoder_outputs[1][-1]
+        encoder_hidden_states = encoder_outputs.last_hidden_state
 
         # optionally project encoder_hidden_states
         if (
