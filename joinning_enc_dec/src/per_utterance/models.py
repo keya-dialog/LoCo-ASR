@@ -59,7 +59,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         super().__init__(config)
 
         if encoder is None:
-            encoder = AutoModelForCTC(config.encoder)
+            encoder = AutoModelForCTC.from_config(config.encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
 
 
