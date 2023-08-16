@@ -52,7 +52,7 @@ if __name__ == '__main__':
         model = SpeechEncoderDecoderModel.from_pretrained(model_args.model)
 
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
-                                                   decoder_tokenizer=tokenizer,
+                                                   tokenizer=tokenizer,
                                                    padding=True)
     trainer = Seq2SeqTrainer(
         args=training_args,
@@ -60,15 +60,12 @@ if __name__ == '__main__':
         data_collator=data_collator,
     )
 
-    if model_args.with_ctc:
-        model.config.output_hidden_states = True
-
-    predictions = trainer.predict(dataset[data_args.validation_split])
+    predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=model_args.with_ctc)
     logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    predictions = trainer.predict(dataset[data_args.test_split])
+    predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=model_args.with_ctc)
     logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)

@@ -37,11 +37,11 @@ cd $SRC_DIR
 
 python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataset_name="${DATASET_DIR}" \
-  --model="checkpoint-27000" \
-  --output_dir="test_xx" \
+  --model="models/checkpoint-303000" \
+  --output_dir="test_small" \
   --predict_with_generate="True" \
   --with_ctc="True" \
   --validation_split="dev_6" \
   --per_device_eval_batch_size="8" \
-  --generation_num_beams="1" \
+  --generation_num_beams="5" \
   --dataloader_num_workers="4"
