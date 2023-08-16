@@ -35,7 +35,7 @@ torchrun --standalone \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="5e-4" \
-  --warmup_steps="5000"
+  --warmup_steps="25000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
