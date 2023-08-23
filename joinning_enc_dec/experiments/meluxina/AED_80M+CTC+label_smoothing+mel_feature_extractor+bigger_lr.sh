@@ -50,7 +50,7 @@ torchrun --standalone \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
-  --early_stopping_patience="5" \
+  --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
   --num_train_epochs="100" \
