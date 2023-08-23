@@ -3,6 +3,8 @@ import pickle
 from dataclasses import dataclass, field
 from typing import Optional
 
+import numpy as np
+from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_from_disk
 from torch.optim import AdamW
 from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser, \
@@ -145,6 +147,9 @@ class DataTrainingArguments:
     val_indexes_to_use: Optional[str] = field(
         default="", metadata={"help": "Part of the validation split to be used."}
     )
+    apply_augmentations: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
+    )
 
 
 if __name__ == '__main__':
@@ -160,6 +165,25 @@ if __name__ == '__main__':
         dataset[split] = filter_out_sequence_from_dataset(dataset[split],
                                                           max_input_len=data_args.max_duration_in_seconds,
                                                           min_input_len=data_args.min_duration_in_seconds)
+
+    if data_args.apply_augmentations:
+        augmenter = Compose([
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
+            TimeStretch(min_rate=0.8, max_rate=1.2, p=0.2),
+            PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
+            Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
+            TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
+        ])
+        dataset['train'].set_transform(
+            lambda batch: {
+                data_args.audio_column_name: [augmenter(np.array(audio), sample_rate=model_args.sampling_rate) for audio
+                                              in
+                                              batch[data_args.audio_column_name]]},
+            columns=[data_args.audio_column_name], output_all_columns=True)
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())

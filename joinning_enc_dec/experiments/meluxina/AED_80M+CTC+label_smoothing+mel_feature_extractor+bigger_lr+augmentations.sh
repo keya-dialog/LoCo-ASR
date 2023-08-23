@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #SBATCH --nodes=1                          # number of nodes
-#SBATCH --time=1-24:00:00                    # time (HH:MM:SS)
+#SBATCH --time=24:00:00                    # time (HH:MM:SS)
 #SBATCH --partition=gpu                    # partition
 #SBATCH --account=p200186                  # project account
 #SBATCH --qos=default                      # SLURM qos
 
-EXPERIMENT="AED_80M_label_smoothing_MELUXINA_mel_fe"
+EXPERIMENT="AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations"
 PROJECT="LoCo-ASR_v2"
 SRC_DIR="/home/users/u100959/projects/LoCo-ASR"
 WORK_DIR="/project/home/p200186"
@@ -65,4 +65,6 @@ torchrun --standalone \
   --eos_token="</s>" \
   --pad_token="<pad>" \
   --lsm_factor="0.1" \
-  --use_fbanks
+  --use_fbanks \
+  --apply_augmentations \
+  --audio_column_name="input_values"
