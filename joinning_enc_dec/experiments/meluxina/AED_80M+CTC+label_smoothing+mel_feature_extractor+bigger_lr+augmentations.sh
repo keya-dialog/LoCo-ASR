@@ -46,7 +46,7 @@ torchrun --standalone \
   --group_by_length="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="32" \
+  --dataloader_num_workers="24" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
