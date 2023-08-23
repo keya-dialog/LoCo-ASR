@@ -9,7 +9,7 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallb
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.models import JointCTCAttentionEncoderDecoder, MelFeatureExtractor
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
     Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
 
@@ -88,6 +88,9 @@ class CustomTrainingArguments(Seq2SeqTrainingArguments):
     )
     shared_lm_head: Optional[bool] = field(
         default=False, metadata={"help": "Whether to share LM head params."}
+    )
+    use_fbanks: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to use fbanks instead of raw audio signal."}
     )
 
 
@@ -207,6 +210,14 @@ if __name__ == '__main__':
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config
         )
+
+    if training_args.use_fbanks:
+        model.encoder.base_model.config.conv_kernel = [3, 3]
+        model.encoder.config.conv_kernel = [3, 3]
+        model.encoder.base_model.config.conv_stride = [2, 2]
+        model.encoder.config.conv_stride = [2, 2]
+        model.encoder.config.num_mel_bins = feature_extractor.num_mel_bins
+        model.encoder.base_model.feature_extractor = MelFeatureExtractor(model.encoder.config)
 
     if training_args.decoder_cold_start:
         logger.info('Reinitializing decoder weights')

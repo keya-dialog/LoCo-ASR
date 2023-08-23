@@ -6,6 +6,7 @@ from torch import nn
 from torch.nn import CrossEntropyLoss
 from transformers import AutoConfig, AutoModelForCTC, AutoModelForCausalLM, PreTrainedModel, PretrainedConfig, \
     SpeechEncoderDecoderConfig, SpeechEncoderDecoderModel
+from transformers.activations import ACT2FN
 from transformers.modeling_outputs import BaseModelOutput, CausalLMOutput, Seq2SeqLMOutput
 from transformers.models.speech_encoder_decoder.modeling_speech_encoder_decoder import shift_tokens_right
 from transformers.utils import logging
@@ -22,6 +23,30 @@ class Seq2SeqLMOutputLosses(Seq2SeqLMOutput):
 def wav2vec2_for_ctc_forward_hook(model: AutoModelForCTC, input: Any, output: CausalLMOutput):
     if "hidden_states" in output:
         output.last_hidden_state = output.hidden_states[-1]
+
+
+class MelFeatureExtractor(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.conv = torch.nn.Sequential(
+            nn.Conv2d(1, config.hidden_size, kernel_size=(3, 3), stride=(2, 2)),
+            ACT2FN[config.hidden_act],
+            nn.Conv2d(config.hidden_size, config.hidden_size, kernel_size=(3, 3), stride=(2, 2)),
+            ACT2FN[config.hidden_act],
+        )
+
+        linear_in_dim = config.hidden_size * (((config.num_mel_bins - 1) // 2 - 1) // 2)
+        self.out = torch.nn.Linear(linear_in_dim, config.hidden_size, bias=True)
+        self.dropout = torch.nn.Dropout(p=0.3)
+        self.pos_encoding = torch.nn.Embedding(config.max_source_positions, config.hidden_size)
+
+    def forward(self, input_values):
+        hidden_states = self.conv(input_values[:, None, ...])
+        hidden_states = self.out(hidden_states.transpose(1, 2).flatten(2, 3))
+        position_ids = torch.arange(0, hidden_states.shape[-2], dtype=torch.long, device=hidden_states.device)
+        hidden_states = self.pos_encoding(position_ids) + hidden_states
+        hidden_states = self.dropout(hidden_states)
+        return hidden_states.transpose(1, 2)
 
 
 class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
@@ -61,7 +86,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         if encoder is None:
             encoder = AutoModelForCTC.from_config(config.encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
-
 
         if decoder is None:
             decoder = AutoModelForCausalLM.from_config(config.decoder)
@@ -104,7 +128,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
         if config.shared_lm_head:
             self.encoder.lm_head.weight = self.decoder.lm_head.weight
-
 
     @classmethod
     def from_encoder_decoder_pretrained(
@@ -159,8 +182,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 kwargs_encoder["config"] = encoder_config
 
             encoder = AutoModelForCTC.from_pretrained(encoder_pretrained_model_name_or_path,
-                                                     *model_args,
-                                                     **kwargs_encoder)
+                                                      *model_args,
+                                                      **kwargs_encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
 
         decoder = kwargs_decoder.pop("model", None)
