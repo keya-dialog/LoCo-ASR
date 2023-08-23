@@ -180,7 +180,8 @@ if __name__ == '__main__':
         ])
         dataset[data_args.train_split].set_transform(
             lambda batch: {
-                data_args.audio_column_name: [augmenter(np.array(audio), sample_rate=model_args.sampling_rate) for audio
+                data_args.audio_column_name: [
+                    augmenter(np.array(audio, dtype=np.float32), sample_rate=model_args.sampling_rate) for audio
                                               in
                                               batch[data_args.audio_column_name]]},
             columns=[data_args.audio_column_name], output_all_columns=True)
