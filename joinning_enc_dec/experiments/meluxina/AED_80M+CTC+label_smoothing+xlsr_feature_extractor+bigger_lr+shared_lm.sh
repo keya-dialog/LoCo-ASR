@@ -24,7 +24,7 @@ cd $SRC_DIR
 torchrun --standalone \
   --nnodes=1 \
   --nproc-per-node=4 \
-  joinning_enc_dec/src/trainers/xlsr+gpt2+ctc.py \
+  joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
