@@ -16,11 +16,14 @@ from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, F
 
 @dataclass
 class ModelArguments:
-    base_encoder_model: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    base_encoder_model: Optional[str] = field(
+        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
-    base_decoder_model: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    base_decoder_model: Optional[str] = field(
+        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    )
+    from_pretrained: Optional[str] = field(
+        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     tokenizer_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
@@ -37,63 +40,63 @@ class ModelArguments:
     eos_token: Optional[str] = field(
         default='>', metadata={"help": "EOS token"}
     )
-    enc_adapters: bool = field(
+    enc_adapters: Optional[bool] = field(
         default=False, metadata={"help": "Add adapters to the encoder."}
     )
-    dec_adapters: bool = field(
+    dec_adapters: Optional[bool] = field(
         default=False, metadata={"help": "Add adapters to the decoder."}
     )
-    sampling_rate: int = field(
+    sampling_rate: Optional[int] = field(
         default=16_000, metadata={"help": "Sampling rate for the model"}
     )
 
 
 @dataclass
 class CustomTrainingArguments(Seq2SeqTrainingArguments):
-    early_stopping_patience: int = field(
+    early_stopping_patience: Optional[int] = field(
         default=1, metadata={"help": "Patience for early stopping."}
     )
-    decoder_cold_start: bool = field(
+    decoder_cold_start: Optional[bool] = field(
         default=False, metadata={"help": "Whenever to reinitialize decoder weights"}
     )
-    enc_layers_to_freeze: int = field(
+    enc_layers_to_freeze: Optional[int] = field(
         default=0, metadata={"help": "Encoder layers to freeze"}
     )
-    dec_layers_to_freeze: int = field(
+    dec_layers_to_freeze: Optional[int] = field(
         default=0, metadata={"help": "Decoder layers to freeze"}
     )
-    steps_to_freeze_enc: int = field(
+    steps_to_freeze_enc: Optional[int] = field(
         default=0, metadata={"help": "Steps to freeze encoder"}
     )
-    steps_to_freeze_dec: int = field(
+    steps_to_freeze_dec: Optional[int] = field(
         default=0, metadata={"help": "Steps to freeze decoder"}
     )
-    custom_optimizer: bool = field(
+    custom_optimizer: Optional[bool] = field(
         default=False, metadata={"help": "Custom optimizer for decoder"}
     )
-    cross_attention_scaling_factor: float = field(
+    cross_attention_scaling_factor: Optional[float] = field(
         default=1, metadata={"help": "Custom scaling factor for cross attention weights"}
     )
-    n_gpus: int = field(
-        default=1, metadata={"help": "Number of gpus to be used"}
-    )
-    ctc_weight: float = field(
+    ctc_weight: Optional[float] = field(
         default=0, metadata={"help": "Weight of CTC loss."}
     )
-    restart_from: str = field(
+    restart_from: Optional[str] = field(
         default="", metadata={"help": "Path to checkpoint used to restart the training."}
     )
-    lsm_factor: float = field(
+    lsm_factor: Optional[float] = field(
         default=0, metadata={"help": "Label smoothing coefficient for CE loss."}
+    )
+    shared_lm_head: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to share LM head params."}
     )
 
 
 @dataclass
 class GenerationArguments:
-    num_beams: int = field(
+    num_beams: Optional[int] = field(
         default=1, metadata={"help": "Num beams for decoding."}
     )
-    max_len: int = field(
+    max_len: Optional[int] = field(
         default=200, metadata={"help": "Max number of generated tokens."}
     )
 
@@ -105,17 +108,17 @@ class DataTrainingArguments:
     """
 
     dataset_name: str = field(
-        default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
+        metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
-    audio_column_name: str = field(
+    audio_column_name: Optional[str] = field(
         default="audio",
         metadata={"help": "The name of the dataset column containing the audio data. Defaults to 'audio'"},
     )
-    text_column_name: str = field(
+    text_column_name: Optional[str] = field(
         default="text",
         metadata={"help": "The name of the dataset column containing the text data. Defaults to 'text'"},
     )
-    max_duration_in_seconds: float = field(
+    max_duration_in_seconds: Optional[float] = field(
         default=20.0,
         metadata={
             "help": (
@@ -124,19 +127,19 @@ class DataTrainingArguments:
             )
         },
     )
-    min_duration_in_seconds: float = field(
+    min_duration_in_seconds: Optional[float] = field(
         default=0.0, metadata={"help": "Filter audio files that are shorter than `min_duration_in_seconds` seconds"}
     )
-    train_split: str = field(
+    train_split: Optional[str] = field(
         default="train", metadata={"help": "Training split to be used."}
     )
-    validation_split: str = field(
+    validation_split: Optional[str] = field(
         default="validation", metadata={"help": "Validation split to be used."}
     )
-    test_split: str = field(
+    test_split: Optional[str] = field(
         default="test", metadata={"help": "Test split to be used."}
     )
-    val_indexes_to_use: str = field(
+    val_indexes_to_use: Optional[str] = field(
         default="", metadata={"help": "Part of the validation split to be used."}
     )
 
@@ -163,49 +166,59 @@ if __name__ == '__main__':
 
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
-    decoder_tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
-    decoder_tokenizer.bos_token_id = decoder_tokenizer.vocab[model_args.bos_token]
-    decoder_tokenizer.eos_token_id = decoder_tokenizer.vocab[model_args.eos_token]
-    decoder_tokenizer.pad_token_id = decoder_tokenizer.vocab[model_args.pad_token]
+    tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
+    tokenizer.bos_token_id = tokenizer.vocab[model_args.bos_token]
+    tokenizer.eos_token_id = tokenizer.vocab[model_args.eos_token]
+    tokenizer.pad_token_id = tokenizer.vocab[model_args.pad_token]
 
-    decoder_tokenizer.add_special_tokens({
+    tokenizer.add_special_tokens({
         "additional_special_tokens": [model_args.pad_token, model_args.bos_token, model_args.eos_token]
     })
 
+    base_model_config = {
+        "bos_token_id": tokenizer.bos_token_id,
+        "eos_token_id": tokenizer.eos_token_id,
+        "pad_token_id": tokenizer.pad_token_id,
+        "encoder_feat_proj_dropout": 0.0,
+        "encoder_layerdrop": 0.0,
+        "min_length": 0,
+        "no_repeat_ngram_size": 0,
+        "early_stopping": True,
+        "length_penalty": 1,
+        "max_length": gen_args.max_len,
+        "num_beams": gen_args.num_beams,
+        "encoder_add_adapter": model_args.enc_adapters,
+        "ctc_weight": training_args.ctc_weight,
+        "encoder_ctc_loss_reduction": "mean",
+        "encoder_pad_token_id": tokenizer.pad_token_id,
+        "encoder_vocab_size": len(tokenizer),
+        "lsm_factor": training_args.lsm_factor,
+        "shared_lm_head": training_args.shared_lm_head
+    }
+
     # 3. Initialize seq2seq model
-    model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
-        encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
-        decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
-        bos_token_id=decoder_tokenizer.bos_token_id,
-        eos_token_id=decoder_tokenizer.eos_token_id,
-        pad_token_id=decoder_tokenizer.pad_token_id,
-        encoder_feat_proj_dropout=0.0,
-        encoder_layerdrop=0.0,
-        min_length=0,
-        no_repeat_ngram_size=0,
-        early_stopping=True,
-        length_penalty=1,
-        max_length=gen_args.max_len,
-        num_beams=gen_args.num_beams,
-        encoder_add_adapter=model_args.enc_adapters,
-        ctc_weight=training_args.ctc_weight,
-        encoder_ctc_loss_reduction="mean",
-        encoder_pad_token_id=decoder_tokenizer.pad_token_id,
-        encoder_vocab_size=len(decoder_tokenizer),
-        lsm_factor=training_args.lsm_factor
-    )
+    if model_args.from_pretrained:
+        model = JointCTCAttentionEncoderDecoder.from_pretrained(
+            model_args.from_pretrained,
+            **base_model_config)
+    else:
+        model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
+            encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
+            decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
+            **base_model_config
+        )
 
     if training_args.decoder_cold_start:
         logger.info('Reinitializing decoder weights')
         model.decoder.apply(model.decoder._init_weights)
 
-    model.config.decoder_start_token_id = decoder_tokenizer.bos_token_id
-    model.config.pad_token_id = decoder_tokenizer.pad_token_id
-    model.config.eos_token_id = decoder_tokenizer.eos_token_id
+    model.config.decoder_start_token_id = tokenizer.bos_token_id
+    model.config.pad_token_id = tokenizer.pad_token_id
+    model.config.eos_token_id = tokenizer.eos_token_id
 
     if model_args.dec_adapters:
-        model.decoder.add_adapter("gpt2_fisher", set_active=True)
-        model.decoder.train_adapter("gpt2_fisher")
+        model.decoder.add_adapter("dec_adapters", set_active=True)
+        model.decoder.train_adapter("dec_adapters")
 
     # 4. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
@@ -213,7 +226,7 @@ if __name__ == '__main__':
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
-                                                   tokenizer=decoder_tokenizer,
+                                                   tokenizer=tokenizer,
                                                    padding=True, sampling_rate=model_args.sampling_rate)
     optimizer = None
     if training_args.custom_optimizer:
@@ -227,26 +240,27 @@ if __name__ == '__main__':
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
+        compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
         optimizers=(optimizer, None)
     )
+
+    # Ensure encoder return hidden states and predictions are generated
+    trainer.args.predict_with_generate = True
+    model.config.output_hidden_states = True
 
     # 5. Train
     trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
-    decoder_tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
+    tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
     feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))
 
-    # 6. Eval on dev
-    trainer.args.predict_with_generate = True
-    model.config.output_hidden_states = True
-
     predictions = trainer.predict(dataset[data_args.validation_split])
-    logger.info(compute_metrics(decoder_tokenizer, predictions))
+    logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    # # 6. Eval on test
+    # 6. Eval on test
     predictions = trainer.predict(dataset[data_args.test_split])
-    logger.info(compute_metrics(decoder_tokenizer, predictions))
+    logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)

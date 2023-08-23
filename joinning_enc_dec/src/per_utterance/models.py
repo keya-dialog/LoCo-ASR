@@ -102,6 +102,10 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         self.dec_loss_weight = 1 - config.ctc_weight
         self.lsm_factor = config.lsm_factor
 
+        if config.shared_lm_head:
+            self.encoder.lm_head.weight = self.decoder.lm_head.weight
+
+
     @classmethod
     def from_encoder_decoder_pretrained(
             cls,
