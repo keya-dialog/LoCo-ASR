@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field, make_dataclass
-from dataclasses import dataclass, field, make_dataclass
 from itertools import zip_longest
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -14,6 +13,20 @@ from transformers.trainer_pt_utils import get_parameter_names
 from transformers.utils import logging
 
 logger = logging.get_logger("transformers")
+
+
+# def merge_dictionaries_to_lists(dictionaries):
+#     result = {}
+#
+#     for dictionary in dictionaries:
+#         for key, value in dictionary.items():
+#             if key in result:
+#                 result[key].append(value)
+#             else:
+#                 result[key] = [value]
+#     for key in result:
+#         result[key] = list(zip(*result[key]))
+#     return result
 
 
 def compute_metrics(tokenizer, pred):
@@ -166,48 +179,59 @@ class AdditionalLossTrackerTrainer(Seq2SeqTrainer):
         return (loss, outputs) if return_outputs else loss
 
 
-class ContextContainerCallback(TrainerCallback):
-    def __init__(self):
-        self.context_stack = []
-        self.padded_dimensions = None
-        self.context_vectors = None
-
-    def _init_context_vectors(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
-        encoder_init_context_shape = (model.config.encoder.num_hidden_layers, 0, model.config.encoder.hidden_size)
-        conv_ids = dataset[conv_ids_column]
-        self.context_vectors = {conv: torch.zeros(encoder_init_context_shape, dtype=torch.float) for conv in conv_ids}
-
-    def _push_context_state(self):
-        self.context_stack.append(self.context_vectors)
-        self.context_vectors = None
-
-    def _pop_context_state(self):
-        self.context_vectors = self.context_stack.pop()
-
-    def add_context_vectors(self, inputs: Dict[str, Union[torch.Tensor, Any]], conv_ids: List[str]) -> Dict[
-        str, Union[torch.Tensor, Any]]:
-        context_vectors = [self.context_vectors[conv] for conv in conv_ids]
-        context_histories = [context.shape[1] for context in context_vectors]
-        max_history = max(context_histories)
-        self.padded_dimensions = [max_history - context_history for context_history in context_histories]
-        padded_tensors = [torch.nn.functional.pad(context_vector, ((0, 0, max_history - context_h, 0))) for
-                          context_vector, context_h in zip(context_vectors, context_histories)]
-        inputs['context_vectors'] = torch.stack(padded_tensors)
-        return inputs
-
-    def update_context_vectors(self, new_contexts, conv_ids):
-        for idx, conv in enumerate(conv_ids):
-            self.context_vectors[conv] = new_contexts[idx, :, self.padded_dimensions[idx]:, ...].detach().cpu()
-
-    def on_evaluate_begin(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
-        self._push_context_state()
-        self._init_context_vectors(model, dataset, conv_ids_column)
-
-    def on_evaluate_end(self):
-        self._pop_context_state()
-
-    def on_epoch_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        self._init_context_vectors(kwargs['model'], kwargs['train_dataloader'].dataset, args.conv_ids_column_name)
+# class ContextContainerCallback(TrainerCallback):
+#     def __init__(self):
+#         self.context_stack = []
+#         self.padded_dimensions = None
+#         self.prev_context_vectors = None
+#         self.prev_hidden_states = None
+#
+#     def _init_context_vectors(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
+#         conv_ids = dataset[conv_ids_column]
+#         self.prev_context_vectors = {conv: {"encoder": [None for _ in range(model.config.encoder.num_hidden_layers)],
+#                                             "decoder": [None for _ in range(model.config.decoder.n_layer)]} for
+#                                      conv in conv_ids}
+#         self.prev_hidden_states = {conv: {"encoder": [None for _ in range(model.config.encoder.num_hidden_layers)],
+#                                           "decoder": [None for _ in range(model.config.decoder.n_layer)]} for
+#                                    conv in conv_ids}
+#
+#     def _push_context_state(self):
+#         self.context_stack.append((self.prev_context_vectors, self.prev_hidden_states))
+#         self.prev_context_vectors = None
+#         self.prev_hidden_states = None
+#
+#     def _pop_context_state(self):
+#         prev_context_vectors, prev_hidden_states = self.context_stack.pop()
+#         self.prev_context_vectors = prev_context_vectors
+#         self.prev_hidden_states = prev_hidden_states
+#
+#     def add_context_vectors(self, inputs: Dict[str, Union[torch.Tensor, Any]], conv_ids: List[str]) -> Dict[
+#         str, Union[torch.Tensor, Any]]:
+#         # context_vectors =
+#         # context_histories = [context.shape[1] for context in context_vectors]
+#         # max_history = max(context_histories)
+#         # self.padded_dimensions = [max_history - context_history for context_history in context_histories]
+#         # padded_tensors = [torch.nn.functional.pad(context_vector, ((0, 0, max_history - context_h, 0))) for
+#         #                   context_vector, context_h in zip(context_vectors, context_histories)]
+#         inputs['prev_context_vectors'] = merge_dictionaries_to_lists(
+#             [self.prev_context_vectors[conv] for conv in conv_ids])
+#         inputs['prev_hidden_states'] = merge_dictionaries_to_lists([self.prev_hidden_states[conv] for conv in conv_ids])
+#         return inputs
+#
+#     def update_context_vectors(self, contexts, hidden_states, conv_ids):
+#         for idx, conv in enumerate(conv_ids):
+#             self.prev_context_vectors[conv] = contexts[conv]
+#             self.prev_hidden_states[conv] = hidden_states[conv]
+#
+#     def on_evaluate_begin(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
+#         self._push_context_state()
+#         self._init_context_vectors(model, dataset, conv_ids_column)
+#
+#     def on_evaluate_end(self):
+#         self._pop_context_state()
+#
+#     def on_epoch_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+#         self._init_context_vectors(kwargs['model'], kwargs['train_dataloader'].dataset, args.conv_ids_column_name)
 
 
 @dataclass
@@ -273,6 +297,9 @@ class Seq2SeqDataCollatorWithPadding:
         labels = labels["input_ids"].masked_fill(labels.attention_mask.ne(1), -100)
         batch["labels"] = labels
 
+        if "input_features" in batch:
+            batch["input_values"] = batch["input_features"]
+            del batch["input_features"]
         return batch
 
 
