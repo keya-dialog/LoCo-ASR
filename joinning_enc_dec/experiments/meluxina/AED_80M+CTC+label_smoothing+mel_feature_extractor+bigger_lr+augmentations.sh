@@ -60,7 +60,7 @@ torchrun --standalone \
   --train_split="train_500" \
   --validation_split="dev_6" \
   --bf16 \
-  --ctc_weight="0.2" \
+  --ctc_weight="0.3" \
   --bos_token="<s>" \
   --eos_token="</s>" \
   --pad_token="<pad>" \
