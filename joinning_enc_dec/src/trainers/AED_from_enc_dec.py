@@ -217,6 +217,7 @@ if __name__ == '__main__':
         model.encoder.base_model.config.conv_stride = [2, 2]
         model.encoder.config.conv_stride = [2, 2]
         model.encoder.config.num_mel_bins = feature_extractor.num_mel_bins
+        model.encoder.config.max_source_positions = 1024
         model.encoder.base_model.feature_extractor = MelFeatureExtractor(model.encoder.config)
 
     if training_args.decoder_cold_start:
