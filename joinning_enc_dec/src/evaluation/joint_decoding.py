@@ -85,25 +85,18 @@ if __name__ == "__main__":
         num_workers=gen_args.dataloader_num_workers,
     )
 
-    # instantiate beam scorer
-    beam_scorer = BeamSearchScorer(
-        batch_size=gen_args.batch_size,
-        num_beams=gen_args.num_beams,
-        device=device,
-    )
+    encoder = model.get_encoder()
 
     for batch in iter(dataloader):
-        # define decoder start token ids
-        # Get number of elements in batch
         batch = batch.to(device)
         input_ids = torch.ones((find_batch_size(batch), 1), device=device, dtype=torch.long)
         input_ids = input_ids * model.config.decoder_start_token_id
 
         # add encoder_outputs to model keyword arguments
         model_kwargs = {
-            "encoder_outputs": model.get_encoder()(
+            "encoder_outputs": encoder(
                 **batch, return_dict=True, output_hidden_states=True),
-            "logit_lens": model.get_encoder()._get_feat_extract_output_lengths(
+            "logit_lens": encoder._get_feat_extract_output_lengths(
                 batch['attention_mask'].sum(-1)).to(
                 torch.long),
             "output_attentions": gen_args.ctc_margin > 0,
@@ -117,6 +110,12 @@ if __name__ == "__main__":
                                                                       is_encoder_decoder=True,
                                                                       input_ids=input_ids,
                                                                       **model_kwargs)
+        # instantiate beam scorer
+        beam_scorer = BeamSearchScorer(
+            batch_size=gen_args.batch_size,
+            num_beams=gen_args.num_beams,
+            device=device,
+        )
 
         outputs = model.joint_beam_search(input_ids, beam_scorer, **model_kwargs)
         labels_batch = batch['labels']
