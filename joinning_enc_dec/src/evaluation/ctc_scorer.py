@@ -57,8 +57,6 @@ class CTCPrefixScoreTH(object):
         self.idx_bh = None
         self.idx_b = torch.arange(self.batch, device=self.device)
         self.idx_bo = (self.idx_b * self.odim).unsqueeze(1)
-        from transformers import AutoTokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained("checkpoint-88000")
 
     def __call__(self, y, state, scoring_ids=None, att_w=None):
         """Compute CTC prefix scores for next labels
