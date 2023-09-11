@@ -11,7 +11,7 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallb
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder, MelFeatureExtractor
+from per_utterance.models import JointCTCAttentionEncoderDecoder
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
     Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
 
@@ -182,8 +182,7 @@ if __name__ == '__main__':
             lambda batch: {
                 data_args.audio_column_name: [
                     augmenter(np.array(audio, dtype=np.float32), sample_rate=model_args.sampling_rate) for audio
-                                              in
-                                              batch[data_args.audio_column_name]]},
+                    in batch[data_args.audio_column_name]]},
             columns=[data_args.audio_column_name], output_all_columns=True)
 
     if data_args.val_indexes_to_use:
@@ -221,7 +220,9 @@ if __name__ == '__main__':
         "encoder_pad_token_id": tokenizer.pad_token_id,
         "encoder_vocab_size": len(tokenizer),
         "lsm_factor": training_args.lsm_factor,
-        "shared_lm_head": training_args.shared_lm_head
+        "shared_lm_head": training_args.shared_lm_head,
+        "use_fbanks": training_args.use_fbanks,
+        "num_mel_bins": feature_extractor.num_mel_bins if hasattr(feature_extractor, "num_mel_bins") else None
     }
 
     # 3. Initialize seq2seq model
@@ -235,15 +236,6 @@ if __name__ == '__main__':
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config
         )
-
-    if training_args.use_fbanks:
-        model.encoder.base_model.config.conv_kernel = [3, 3]
-        model.encoder.config.conv_kernel = [3, 3]
-        model.encoder.base_model.config.conv_stride = [2, 2]
-        model.encoder.config.conv_stride = [2, 2]
-        model.encoder.config.num_mel_bins = feature_extractor.num_mel_bins
-        model.encoder.config.max_source_positions = 1024
-        model.encoder.base_model.feature_extractor = MelFeatureExtractor(model.encoder.config)
 
     if training_args.decoder_cold_start:
         logger.info('Reinitializing decoder weights')
