@@ -2,10 +2,10 @@
 #$ -N LoCo-ASR
 #$ -q long.q@@gpu
 #$ -l ram_free=8G,mem_free=8G
-#$ -l matylda5=2
+#$ -l matylda5=1
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.o
-#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.2.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.12.e
 
 # Job should finish in 24 hours
 ulimit -t 86400
@@ -39,8 +39,8 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --dataset_name="${DATASET_DIR}" \
   --from_pretrained="models/checkpoint-88000" \
   --ctc_weight="0.1" \
-  --batch_size="2" \
+  --batch_size="16" \
   --dataloader_num_workers="1" \
-  --num_beams="3" \
+  --num_beams="5" \
   --use_cuda="true" \
-  --out_path="predictions_joint_decoding_0.3"
+  --out_path="predictions_joint_decoding_0.2"
