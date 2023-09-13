@@ -41,5 +41,5 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --ctc_weight="0.3" \
   --batch_size="2" \
   --dataloader_num_workers="1" \
-  --num_beams="5" \
+  --num_beams="3" \
   --use_cuda="true"

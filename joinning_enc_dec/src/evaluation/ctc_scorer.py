@@ -147,6 +147,10 @@ class CTCPrefixScoreTH(object):
             start = max(output_length, 1)
             end = self.input_length
 
+        if start > end:
+            return torch.full_like(s_prev, self.logzero), (
+            r, torch.full_like(s_prev, self.logzero), f_min, f_max, scoring_idmap)
+
         # compute forward probabilities log(r_t^n(h)) and log(r_t^b(h))
         for t in range(start, end):
             rp = r[t - 1]

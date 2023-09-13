@@ -142,9 +142,14 @@ if __name__ == "__main__":
             device=device,
             do_early_stopping=True
         )
-        outputs = model.joint_beam_search(input_ids, beam_scorer,
+        if gen_args.ctc_weight > 0:
+            outputs = model.joint_beam_search(input_ids, beam_scorer,
                                           logits_processor=logits_processor,
                                           **model_kwargs)
+        else:
+            outputs = model.beam_search(input_ids, beam_scorer,
+                                        logits_processor=logits_processor,
+                                        **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
 
