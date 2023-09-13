@@ -5,12 +5,40 @@ import torch
 from datasets import load_from_disk
 from safe_gpu import safe_gpu
 from torch.utils.data import DataLoader
-from transformers import (AutoFeatureExtractor, AutoTokenizer, BeamSearchScorer, HfArgumentParser)
+from transformers import (AutoFeatureExtractor, AutoTokenizer, BeamSearchScorer, HfArgumentParser, LogitsProcessor,
+                          LogitsProcessorList)
 from transformers.trainer_pt_utils import find_batch_size
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder
 from trainers.AED_from_enc_dec import DataTrainingArguments, ModelArguments
 from utils import Seq2SeqDataCollatorWithPadding
+
+
+class EnforceEosIfCTCStops(LogitsProcessor):
+    """Logits processor (to use with HuggingFace `generate()` method :
+    https://huggingface.co/docs/transformers/v4.24.0/en/main_classes/
+    text_generation#transformers.generation_utils.GenerationMixin).
+
+    This logit processor simply ensure that after hitting logzero likelihood for all tokens eos is generated.
+
+    Args:
+        eos_token_id (int): ID of the EOS token.
+        log_thr (float): Value to use for logzero.
+    """
+
+    def __init__(self, eos_token_id: int, log_thr: float = -10000000000.0):
+        super().__init__()
+        self.log_thr = log_thr
+        self.eos_token_id = eos_token_id
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        should_enforce_stop = scores.max(dim=1).values <= self.log_thr
+        mask = should_enforce_stop.unsqueeze(dim=-1).expand(scores.size())
+        eos_mask = torch.zeros_like(mask, dtype=torch.bool)
+        eos_mask[:, self.eos_token_id] = True
+        mask = mask & eos_mask
+        scores = torch.where(~mask, scores, self.log_thr / 2)
+        return scores
 
 
 @dataclass
@@ -39,6 +67,9 @@ class GenerationArguments:
     use_cuda: Optional[bool] = field(
         default=True, metadata={"help": "Whether to use gpu for decoding."}
     )
+    no_repeat_ngram_size: Optional[int] = field(
+        default=0, metadata={"help": "No repeat ngram size."}
+    )
 
 
 if __name__ == "__main__":
@@ -57,13 +88,6 @@ if __name__ == "__main__":
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.from_pretrained)
     tokenizer = AutoTokenizer.from_pretrained(model_args.from_pretrained)
-    tokenizer.bos_token_id = tokenizer.vocab[model_args.bos_token]
-    tokenizer.eos_token_id = tokenizer.vocab[model_args.eos_token]
-    tokenizer.pad_token_id = tokenizer.vocab[model_args.pad_token]
-
-    tokenizer.add_special_tokens({
-        "additional_special_tokens": [model_args.pad_token, model_args.bos_token, model_args.eos_token]
-    })
 
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    tokenizer=tokenizer,
@@ -84,6 +108,9 @@ if __name__ == "__main__":
     )
 
     encoder = model.get_encoder()
+    logits_processor = LogitsProcessorList(
+        [EnforceEosIfCTCStops(tokenizer.eos_token_id,
+                              log_thr=-10000000000.0 * gen_args.ctc_weight if gen_args.ctc_weight > 0 else -10000000000.0)])
 
     for batch in iter(dataloader):
         batch = batch.to(device)
@@ -108,17 +135,16 @@ if __name__ == "__main__":
                                                                       is_encoder_decoder=True,
                                                                       input_ids=input_ids,
                                                                       **model_kwargs)
-        model_kwargs['max_length'] = min(gen_args.max_len, 1.5 * model_kwargs['logit_lens'].max())
 
-        # instantiate beam scorer
         beam_scorer = BeamSearchScorer(
             batch_size=gen_args.batch_size,
             num_beams=gen_args.num_beams,
             device=device,
             do_early_stopping=True
         )
-
-        outputs = model.joint_beam_search(input_ids, beam_scorer, **model_kwargs)
+        outputs = model.joint_beam_search(input_ids, beam_scorer,
+                                          logits_processor=logits_processor,
+                                          **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
 

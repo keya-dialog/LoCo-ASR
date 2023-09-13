@@ -179,7 +179,10 @@ class CTCPrefixScoreTH(object):
         # exclude blank probs
         log_psi[:, self.blank] = self.logzero
 
-        return (log_psi - s_prev), (r, log_psi, f_min, f_max, scoring_idmap)
+        token_scores = log_psi - s_prev
+        token_scores[token_scores == 0] = self.logzero
+
+        return token_scores, (r, log_psi, f_min, f_max, scoring_idmap)
 
     def index_select_state(self, state, best_ids):
         """Select CTC states according to best ids

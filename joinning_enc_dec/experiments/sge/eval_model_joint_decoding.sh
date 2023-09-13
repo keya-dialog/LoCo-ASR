@@ -39,8 +39,7 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --dataset_name="${DATASET_DIR}" \
   --from_pretrained="models/checkpoint-88000" \
   --ctc_weight="0.3" \
-  --batch_size="1" \
+  --batch_size="2" \
   --dataloader_num_workers="1" \
   --num_beams="5" \
-  --use_cuda="true" \
-  --max_length="200"
+  --use_cuda="true"
