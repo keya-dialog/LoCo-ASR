@@ -599,9 +599,12 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         """
         CTC Prefix scorer to bias model predictions with CTC scores (lower number of insertions and deletions)
         """
+        non_repeated_beam_mask = torch.zeros((batch_size, num_beams), dtype=torch.bool)
+        non_repeated_beam_mask[:, 0] = True
+        non_repeated_beam_mask = non_repeated_beam_mask.view(-1)
         ctc_prefix_scorer = CTCPrefixScoreTH(
-            nn.functional.log_softmax(model_kwargs["encoder_outputs"].get("logits").unique_consecutive(dim=0), dim=-1),
-            model_kwargs['logit_lens'].unique_consecutive(dim=0),
+            nn.functional.log_softmax(model_kwargs["encoder_outputs"].get("logits")[non_repeated_beam_mask], dim=-1),
+            model_kwargs['logit_lens'][non_repeated_beam_mask],
             self.generation_config.pad_token_id,
             self.generation_config.eos_token_id,
             model_kwargs['margin'])
