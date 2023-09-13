@@ -76,8 +76,6 @@ if __name__ == "__main__":
 
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
-    ctc_beam_width = gen_args.ctc_beam_width or len(tokenizer)
-
     dataloader = DataLoader(
         dataset[data_args.test_split],
         batch_size=gen_args.batch_size,
@@ -101,7 +99,7 @@ if __name__ == "__main__":
                 torch.long),
             "output_attentions": gen_args.ctc_margin > 0,
             "margin": gen_args.ctc_margin,
-            "ctc_beam_width": ctc_beam_width,
+            "ctc_beam_width": gen_args.ctc_beam_width or len(tokenizer),
             "ctc_weight": gen_args.ctc_weight,
             "max_length": gen_args.max_len,
         }

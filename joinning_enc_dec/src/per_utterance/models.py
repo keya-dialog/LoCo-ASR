@@ -662,14 +662,17 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 next_token_scores_processed, ctc_beam_width, dim=1
             )
 
-            ctc_scores, ctc_states = ctc_prefix_scorer(
-                input_ids, ctc_states, local_best_ids, att_w
-            )
-            # Update auto-regressive scores with CTC scores
+            if (input_ids.shape[1] <= model_kwargs['logit_lens'].min()).all():
+                ctc_scores, ctc_states = ctc_prefix_scorer(
+                    input_ids, ctc_states, local_best_ids, att_w
+                )
+                # Update auto-regressive scores with CTC scores
 
-            next_token_scores = ((1 - ctc_weight) * next_token_scores_processed +
-                                 ctc_weight * ctc_scores +
-                                 beam_scores[:, None].expand_as(next_token_scores))
+                next_token_scores = ((1 - ctc_weight) * next_token_scores_processed +
+                                     ctc_weight * ctc_scores +
+                                     beam_scores[:, None].expand_as(next_token_scores))
+            else:
+                next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
 
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
@@ -723,7 +726,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
 
             """
-            ctc_states = ctc_prefix_scorer.index_select_state(ctc_states, beam_next_tokens.view(batch_size, -1))
+            if (input_ids.shape[1] <= model_kwargs['logit_lens'].min()).all():
+                ctc_states = ctc_prefix_scorer.index_select_state(ctc_states, beam_next_tokens.view(batch_size, -1))
             """
 
             /Changed part

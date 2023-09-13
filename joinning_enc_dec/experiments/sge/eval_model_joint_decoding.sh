@@ -4,8 +4,8 @@
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=2
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint.e
 
 # Job should finish in 24 hours
 ulimit -t 86400
@@ -22,9 +22,9 @@ ulimit -v unlimited
 # Initialize environment
 unset PYTHONPATH
 unset PYTHONHOME
-source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/envs/loco_asr/
+source /mnt/matylda5/ipoloka/miniconda3/bin/activate /mnt/matylda5/ipoloka/envs/loco_asr/
 
-SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
+SRC_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
 
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -40,5 +40,6 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --from_pretrained="models/checkpoint-88000" \
   --ctc_weight="0.3" \
   --batch_size="2" \
-  --dataloader_num_workers="1" \
+  --dataloader_num_workers="2" \
   --num_beams="10"
+  --use_cuda="True"
