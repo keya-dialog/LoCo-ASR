@@ -108,11 +108,14 @@ if __name__ == "__main__":
                                                                       is_encoder_decoder=True,
                                                                       input_ids=input_ids,
                                                                       **model_kwargs)
+        model_kwargs['max_length'] = min(gen_args.max_len, 1.5 * model_kwargs['logit_lens'].max())
+
         # instantiate beam scorer
         beam_scorer = BeamSearchScorer(
             batch_size=gen_args.batch_size,
             num_beams=gen_args.num_beams,
             device=device,
+            do_early_stopping=True
         )
 
         outputs = model.joint_beam_search(input_ids, beam_scorer, **model_kwargs)
