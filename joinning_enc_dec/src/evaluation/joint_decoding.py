@@ -1,8 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+import pandas as pd
 import torch
+import tqdm
 from datasets import load_from_disk
+from jiwer import cer, compute_measures
 from safe_gpu import safe_gpu
 from torch.utils.data import DataLoader
 from transformers import (AutoFeatureExtractor, AutoTokenizer, BeamSearchScorer, HfArgumentParser, LogitsProcessor,
@@ -49,6 +52,9 @@ class GenerationArguments:
     max_len: Optional[int] = field(
         default=200, metadata={"help": "Max number of generated tokens."}
     )
+    max_len_factor: Optional[float] = field(
+        default=1.5, metadata={"help": "Factor of max tokens to number of encoder frames."}
+    )
     ctc_margin: Optional[int] = field(
         default=0, metadata={"help": "Margin to stop generation."}
     )
@@ -69,6 +75,9 @@ class GenerationArguments:
     )
     no_repeat_ngram_size: Optional[int] = field(
         default=0, metadata={"help": "No repeat ngram size."}
+    )
+    out_path: Optional[str] = field(
+        default="predictions.csv", metadata={"help": "Path to save output."}
     )
 
 
@@ -112,7 +121,9 @@ if __name__ == "__main__":
         [EnforceEosIfCTCStops(tokenizer.eos_token_id,
                               log_thr=-10000000000.0 * gen_args.ctc_weight if gen_args.ctc_weight > 0 else -10000000000.0)])
 
-    for batch in iter(dataloader):
+    ref = []
+    hyp = []
+    for batch in tqdm.tqdm(iter(dataloader)):
         batch = batch.to(device)
         input_ids = torch.ones((find_batch_size(batch), 1), device=device, dtype=torch.long)
         input_ids = input_ids * model.config.decoder_start_token_id
@@ -128,8 +139,10 @@ if __name__ == "__main__":
             "margin": gen_args.ctc_margin,
             "ctc_beam_width": gen_args.ctc_beam_width or len(tokenizer),
             "ctc_weight": gen_args.ctc_weight,
-            "max_length": gen_args.max_len,
         }
+
+        model_kwargs["max_length"] = min(gen_args.max_len,
+                                         int(model_kwargs["logit_lens"].max() * gen_args.max_len_factor))
 
         input_ids, model_kwargs = model._expand_inputs_for_generation(expand_size=gen_args.num_beams,
                                                                       is_encoder_decoder=True,
@@ -144,14 +157,22 @@ if __name__ == "__main__":
         )
         if gen_args.ctc_weight > 0:
             outputs = model.joint_beam_search(input_ids, beam_scorer,
-                                          logits_processor=logits_processor,
-                                          **model_kwargs)
+                                              logits_processor=logits_processor,
+                                              **model_kwargs)
         else:
             outputs = model.beam_search(input_ids, beam_scorer,
                                         logits_processor=logits_processor,
                                         **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
+        ref.extend(tokenizer.batch_decode(labels_batch.tolist(), skip_special_tokens=True))
+        hyp.extend(tokenizer.batch_decode(outputs, skip_special_tokens=True))
 
-        print(f"Reference: {tokenizer.batch_decode(labels_batch.tolist(), skip_special_tokens=True)}\n"
-              f"Hypothesis: {tokenizer.batch_decode(outputs, skip_special_tokens=True)}")
+    metrics = compute_measures(ref, hyp)
+    del metrics['ops']
+    del metrics['truth']
+    del metrics['hypothesis']
+
+    metrics = {"cer": cer(ref, hyp), **metrics}
+    print(metrics)
+    pd.DataFrame({"ref": ref, "hyp": hyp}).to_csv(gen_args.out_path, index=False)

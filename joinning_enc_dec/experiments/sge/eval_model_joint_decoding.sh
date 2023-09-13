@@ -43,3 +43,4 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --dataloader_num_workers="1" \
   --num_beams="3" \
   --use_cuda="true"
+  --out_path="predictions_joint_decoding_0.3"
