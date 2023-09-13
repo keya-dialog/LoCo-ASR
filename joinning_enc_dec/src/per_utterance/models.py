@@ -652,27 +652,22 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
-            next_token_scores_processed = logits_processor(input_ids, next_token_scores)
-
             """
             Sample next tokens that will be used for CTC prefix computation and compute CTC cumulative prefix scores
             """
-            next_token_scores_processed[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
+            next_token_scores[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
             local_best_scores, local_best_ids = torch.topk(
-                next_token_scores_processed, ctc_beam_width, dim=1
+                next_token_scores, ctc_beam_width, dim=1
             )
 
-            if (input_ids.shape[1] <= model_kwargs['logit_lens'].min()).all():
-                ctc_scores, ctc_states = ctc_prefix_scorer(
-                    input_ids, ctc_states, local_best_ids, att_w
-                )
-                # Update auto-regressive scores with CTC scores
+            ctc_scores, ctc_states = ctc_prefix_scorer(
+                input_ids, ctc_states, local_best_ids, att_w
+            )
+            next_token_scores = (1 - ctc_weight) * next_token_scores + ctc_weight * ctc_scores
 
-                next_token_scores = ((1 - ctc_weight) * next_token_scores_processed +
-                                     ctc_weight * ctc_scores +
-                                     beam_scores[:, None].expand_as(next_token_scores))
-            else:
-                next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
+            next_token_scores_processed = logits_processor(input_ids, next_token_scores)
+
+            next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
 
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
@@ -726,8 +721,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
 
             """
-            if (input_ids.shape[1] <= model_kwargs['logit_lens'].min()).all():
-                ctc_states = ctc_prefix_scorer.index_select_state(ctc_states, beam_next_tokens.view(batch_size, -1))
+            ctc_states = ctc_prefix_scorer.index_select_state(ctc_states, beam_next_tokens.view(batch_size, -1))
             """
 
             /Changed part
