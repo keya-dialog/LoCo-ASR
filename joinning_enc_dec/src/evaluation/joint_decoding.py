@@ -140,7 +140,7 @@ if __name__ == "__main__":
             "ctc_beam_width": gen_args.ctc_beam_width or len(tokenizer),
             "ctc_weight": gen_args.ctc_weight,
         }
-
+        actual_batch_size = model_kwargs["logit_lens"].size(0)
         model_kwargs["max_length"] = min(gen_args.max_len,
                                          int(model_kwargs["logit_lens"].max() * gen_args.max_len_factor))
 
@@ -150,19 +150,20 @@ if __name__ == "__main__":
                                                                       **model_kwargs)
 
         beam_scorer = BeamSearchScorer(
-            batch_size=gen_args.batch_size,
+            batch_size=actual_batch_size,
             num_beams=gen_args.num_beams,
             device=device,
             do_early_stopping=True
         )
-        if gen_args.ctc_weight > 0:
-            outputs = model.joint_beam_search(input_ids, beam_scorer,
-                                              logits_processor=logits_processor,
-                                              **model_kwargs)
-        else:
-            outputs = model.beam_search(input_ids, beam_scorer,
-                                        logits_processor=logits_processor,
-                                        **model_kwargs)
+        with torch.no_grad():
+            if gen_args.ctc_weight > 0:
+                outputs = model.joint_beam_search(input_ids, beam_scorer,
+                                                  logits_processor=logits_processor,
+                                                  **model_kwargs)
+            else:
+                outputs = model.beam_search(input_ids, beam_scorer,
+                                            logits_processor=logits_processor,
+                                            **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
         ref.extend(tokenizer.batch_decode(labels_batch.tolist(), skip_special_tokens=True))
