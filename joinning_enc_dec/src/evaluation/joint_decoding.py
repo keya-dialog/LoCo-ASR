@@ -150,4 +150,3 @@ if __name__ == "__main__":
 
         print(f"Reference: {tokenizer.batch_decode(labels_batch.tolist(), skip_special_tokens=True)}\n"
               f"Hypothesis: {tokenizer.batch_decode(outputs, skip_special_tokens=True)}")
-        break
