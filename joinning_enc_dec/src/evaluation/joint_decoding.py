@@ -14,7 +14,7 @@ from transformers.trainer_pt_utils import find_batch_size
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder
 from trainers.AED_from_enc_dec import DataTrainingArguments, ModelArguments
-from utils import Seq2SeqDataCollatorWithPadding
+from utils import Seq2SeqDataCollatorWithPadding, filter_out_sequence_from_dataset
 
 
 class EnforceEosIfCTCStops(LogitsProcessor):
@@ -107,7 +107,12 @@ if __name__ == "__main__":
         model_args.from_pretrained)
     model.to(device)
 
+    # dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
+    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
+        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
+                                                          max_input_len=data_args.max_duration_in_seconds,
+                                                          min_input_len=data_args.min_duration_in_seconds)
 
     dataloader = DataLoader(
         dataset[data_args.test_split],

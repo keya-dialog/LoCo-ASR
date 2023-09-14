@@ -4,8 +4,8 @@
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=1
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.2.o
-#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.12.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.e
 
 # Job should finish in 24 hours
 ulimit -t 86400
@@ -43,4 +43,6 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --dataloader_num_workers="1" \
   --num_beams="5" \
   --use_cuda="true" \
-  --out_path="predictions_joint_decoding_0.2"
+  --out_path="predictions_joint_decoding_0.1" \
+  --max_duration_in_seconds="20.0" \
+  --min_duration_in_seconds="2.0"

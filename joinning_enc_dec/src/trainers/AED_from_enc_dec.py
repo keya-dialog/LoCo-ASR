@@ -7,7 +7,7 @@ import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_from_disk
 from torch.optim import AdamW
-from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser, \
+from transformers import AutoConfig, AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser, \
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
@@ -227,9 +227,11 @@ if __name__ == '__main__':
 
     # 3. Initialize seq2seq model
     if model_args.from_pretrained:
+        config = AutoConfig.from_pretrained(model_args.from_pretrained)
+        config.update(base_model_config)
         model = JointCTCAttentionEncoderDecoder.from_pretrained(
             model_args.from_pretrained,
-            **base_model_config)
+            config=config)
     else:
         model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
             encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
