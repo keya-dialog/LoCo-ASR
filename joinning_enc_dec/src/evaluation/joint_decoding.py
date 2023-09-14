@@ -9,7 +9,7 @@ from jiwer import cer, compute_measures
 from safe_gpu import safe_gpu
 from torch.utils.data import DataLoader
 from transformers import (AutoFeatureExtractor, AutoTokenizer, BeamSearchScorer, HfArgumentParser, LogitsProcessor,
-                          LogitsProcessorList)
+                          LogitsProcessorList, MaxLengthCriteria, StoppingCriteriaList)
 from transformers.trainer_pt_utils import find_batch_size
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder
@@ -34,7 +34,7 @@ class EnforceEosIfCTCStops(LogitsProcessor):
         self.log_thr = log_thr
         self.eos_token_id = eos_token_id
 
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.Tensor) -> torch.Tensor:
         should_enforce_stop = scores.max(dim=1).values <= self.log_thr
         mask = should_enforce_stop.unsqueeze(dim=-1).expand(scores.size())
         eos_mask = torch.zeros_like(mask, dtype=torch.bool)
@@ -146,8 +146,10 @@ if __name__ == "__main__":
             "ctc_weight": gen_args.ctc_weight,
         }
         actual_batch_size = model_kwargs["logit_lens"].size(0)
-        model_kwargs["max_length"] = min(gen_args.max_len,
-                                         int(model_kwargs["logit_lens"].max() * gen_args.max_len_factor))
+
+        stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=min(gen_args.max_len,
+                                                                                   int(model_kwargs[
+                                                                                           "logit_lens"].max() * gen_args.max_len_factor)))])
 
         input_ids, model_kwargs = model._expand_inputs_for_generation(expand_size=gen_args.num_beams,
                                                                       is_encoder_decoder=True,
@@ -161,14 +163,11 @@ if __name__ == "__main__":
             do_early_stopping=True
         )
         with torch.no_grad():
-            if gen_args.ctc_weight > 0:
-                outputs = model.joint_beam_search(input_ids, beam_scorer,
-                                                  logits_processor=logits_processor,
-                                                  **model_kwargs)
-            else:
-                outputs = model.beam_search(input_ids, beam_scorer,
-                                            logits_processor=logits_processor,
-                                            **model_kwargs)
+            search_alg = model.joint_beam_search if gen_args.ctc_weight > 0 else model.beam_search
+            outputs = search_alg(input_ids, beam_scorer,
+                                 logits_processor=logits_processor,
+                                 stopping_criteria=stopping_criteria,
+                                 **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
         ref.extend(tokenizer.batch_decode(labels_batch.tolist(), skip_special_tokens=True))
