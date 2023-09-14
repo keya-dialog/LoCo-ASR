@@ -29,6 +29,10 @@ from evaluation.ctc_scorer import CTCPrefixScoreTH
 logger = logging.get_logger("transformers")
 
 
+class JointCTCAttentionEncoderDecoderConfig(SpeechEncoderDecoderConfig):
+    model_type = "joint_aed_ctc_speech-encoder-decoder"
+    is_composition = True
+
 @dataclass
 class Seq2SeqLMOutputLosses(Seq2SeqLMOutput):
     enc_loss: Optional[torch.FloatTensor] = None
@@ -69,8 +73,8 @@ class MelFeatureExtractor(nn.Module):
 class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
     """Custom model for CTC+Attention loss based on the ESPNet architecture"""
 
-    config_class = SpeechEncoderDecoderConfig
-    base_model_prefix = "speech_encoder_decoder"
+    config_class = JointCTCAttentionEncoderDecoderConfig
+    base_model_prefix = "joint_aed_ctc_speech-encoder-decoder"
     main_input_name = "inputs"
     supports_gradient_checkpointing = True
 

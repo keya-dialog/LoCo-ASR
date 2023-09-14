@@ -8,13 +8,17 @@ from datasets import load_from_disk
 from jiwer import cer, compute_measures
 from safe_gpu import safe_gpu
 from torch.utils.data import DataLoader
-from transformers import (AutoFeatureExtractor, AutoTokenizer, BeamSearchScorer, HfArgumentParser, LogitsProcessor,
-                          LogitsProcessorList, MaxLengthCriteria, StoppingCriteriaList)
+from transformers import (AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, BeamSearchScorer,
+                          HfArgumentParser, LogitsProcessor, LogitsProcessorList, MaxLengthCriteria,
+                          StoppingCriteriaList)
 from transformers.trainer_pt_utils import find_batch_size
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
 from trainers.AED_from_enc_dec import DataTrainingArguments, ModelArguments
 from utils import Seq2SeqDataCollatorWithPadding, filter_out_sequence_from_dataset
+
+AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
+AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
 
 
 class EnforceEosIfCTCStops(LogitsProcessor):
@@ -103,9 +107,7 @@ if __name__ == "__main__":
                                                    padding=True, sampling_rate=model_args.sampling_rate)
 
     # 3. Initialize seq2seq model
-    model = JointCTCAttentionEncoderDecoder.from_pretrained(
-        model_args.from_pretrained)
-    model.to(device)
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(model_args.from_pretrained).to(device)
 
     # dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
