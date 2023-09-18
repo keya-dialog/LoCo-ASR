@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # 3. Initialize seq2seq model
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_args.from_pretrained).to(device)
-
+    model.eval()
     # dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
     for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
@@ -162,13 +162,16 @@ if __name__ == "__main__":
             batch_size=actual_batch_size,
             num_beams=gen_args.num_beams,
             device=device,
-            do_early_stopping=True
+            do_early_stopping=True,
+            length_penalty=1.0,
         )
         with torch.no_grad():
             search_alg = model.joint_beam_search if gen_args.ctc_weight > 0 else model.beam_search
             outputs = search_alg(input_ids, beam_scorer,
                                  logits_processor=logits_processor,
                                  stopping_criteria=stopping_criteria,
+                                 pad_token_id=tokenizer.pad_token_id,
+                                 eos_token_id=tokenizer.eos_token_id,
                                  **model_kwargs)
         labels_batch = batch['labels']
         labels_batch[labels_batch == -100] = tokenizer.pad_token_id
