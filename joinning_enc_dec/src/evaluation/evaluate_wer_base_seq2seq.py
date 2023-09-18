@@ -174,7 +174,7 @@ if __name__ == '__main__':
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=model_args.with_ctc)
+    predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True)
     logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
