@@ -3,11 +3,12 @@ import os
 import pickle
 import shutil
 from dataclasses import dataclass, field
+from typing import Optional
 
 import torch
 from datasets import load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, HfArgumentParser, \
-    Seq2SeqTrainer, Seq2SeqTrainingArguments
+    LogitsProcessor, LogitsProcessorList, Seq2SeqTrainer, Seq2SeqTrainingArguments
 from transformers.utils import logging
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
@@ -15,6 +16,33 @@ from utils import Seq2SeqDataCollatorWithPadding, compute_metrics
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
+
+
+class EnforceEosIfCTCStops(LogitsProcessor):
+    """Logits processor (to use with HuggingFace `generate()` method :
+    https://huggingface.co/docs/transformers/v4.24.0/en/main_classes/
+    text_generation#transformers.generation_utils.GenerationMixin).
+
+    This logit processor simply ensure that after hitting logzero likelihood for all tokens eos is generated.
+
+    Args:
+        eos_token_id (int): ID of the EOS token.
+        log_thr (float): Value to use for logzero.
+    """
+
+    def __init__(self, eos_token_id: int, log_thr: float = -10000000000.0):
+        super().__init__()
+        self.log_thr = log_thr
+        self.eos_token_id = eos_token_id
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.Tensor) -> torch.Tensor:
+        should_enforce_stop = scores.max(dim=1).values <= self.log_thr
+        mask = should_enforce_stop.unsqueeze(dim=-1).expand(scores.size())
+        eos_mask = torch.zeros_like(mask, dtype=torch.bool)
+        eos_mask[:, self.eos_token_id] = True
+        mask = mask & eos_mask
+        scores = torch.where(~mask, scores, self.log_thr / 2)
+        return scores
 
 
 @dataclass
@@ -27,6 +55,15 @@ class ModelArguments:
     )
     average_checkpoints: bool = field(
         default=False, metadata={"help": "Whether to average last checkpoints"}
+    )
+    ctc_margin: Optional[int] = field(
+        default=0, metadata={"help": "Margin to stop generation."}
+    )
+    ctc_weight: Optional[float] = field(
+        default=0, metadata={"help": "CTC weight to bias hypothesis."}
+    )
+    ctc_beam_width: Optional[int] = field(
+        default=None, metadata={"help": "Width of the CTC beam."}
     )
 
 
@@ -100,6 +137,19 @@ if __name__ == '__main__':
         model=model,
         data_collator=data_collator,
     )
+    if model_args.with_ctc:
+        def new_beam(*args, **kwargs):
+            logits_processor = LogitsProcessorList(
+                [EnforceEosIfCTCStops(tokenizer.eos_token_id,
+                                      log_thr=-10000000000.0 * model_args.ctc_weight if model_args.ctc_weight > 0 else -10000000000.0)])
+            kwargs.update({"logits_processor": logits_processor})
+            return model.joint_beam_search(*args, **kwargs,
+                                           ctc_weight=model_args.ctc_weight,
+                                           margin=model_args.ctc_margin,
+                                           ctc_beam_width=len(tokenizer))
+
+
+        model.beam_search = new_beam
 
     predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=model_args.with_ctc)
     logger.info(compute_metrics(tokenizer, predictions))

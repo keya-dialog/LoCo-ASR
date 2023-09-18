@@ -411,9 +411,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         if model_kwargs.get("attention_mask") is not None:
             model_kwargs["attention_mask"] = model_kwargs["attention_mask"].repeat_interleave(expand_size, dim=0)
 
-        if model_kwargs.get("logit_lens") is not None:
-            model_kwargs["logit_lens"] = model_kwargs["logit_lens"].repeat_interleave(expand_size, dim=0)
-
         if is_encoder_decoder:
             encoder_outputs = model_kwargs.get("encoder_outputs")
             if encoder_outputs is None:
@@ -619,7 +616,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         non_repeated_beam_mask = non_repeated_beam_mask.view(-1)
         ctc_prefix_scorer = CTCPrefixScoreTH(
             nn.functional.log_softmax(model_kwargs["encoder_outputs"].get("logits")[non_repeated_beam_mask], dim=-1),
-            model_kwargs['logit_lens'][non_repeated_beam_mask],
+            self.encoder._get_feat_extract_output_lengths(
+                model_kwargs['attention_mask'][non_repeated_beam_mask].sum(dim=1)),
             self.generation_config.pad_token_id,
             self.generation_config.eos_token_id,
             model_kwargs['margin'])
