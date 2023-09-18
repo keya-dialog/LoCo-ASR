@@ -4,8 +4,8 @@
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=2
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model.o
-#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model_joint0.1.e
 
 # Job should finish in 24 hours
 ulimit -t 86400
@@ -38,9 +38,11 @@ cd $SRC_DIR
 python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataset_name="${DATASET_DIR}" \
   --model="models/checkpoint-88000" \
-  --output_dir="test_small" \
+  --output_dir="test_small0.1" \
   --predict_with_generate="True" \
   --validation_split="dev_6" \
   --per_device_eval_batch_size="8" \
   --generation_num_beams="5" \
   --dataloader_num_workers="4" \
+  --with_ctc \
+  --ctc_weight="0.1"
