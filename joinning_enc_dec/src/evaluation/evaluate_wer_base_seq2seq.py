@@ -6,12 +6,15 @@ from dataclasses import dataclass, field
 
 import torch
 from datasets import load_from_disk
-from transformers import AutoFeatureExtractor, AutoTokenizer, HfArgumentParser, Seq2SeqTrainer, \
-    Seq2SeqTrainingArguments, SpeechEncoderDecoderModel
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, HfArgumentParser, \
+    Seq2SeqTrainer, Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
 from utils import Seq2SeqDataCollatorWithPadding, compute_metrics
+
+AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
+AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
 
 
 @dataclass
@@ -88,11 +91,7 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_path)
-    if model_args.with_ctc:
-        model = JointCTCAttentionEncoderDecoder.from_pretrained(model_path)
-    else:
-        model = SpeechEncoderDecoderModel.from_pretrained(model_path)
-
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path)
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    tokenizer=tokenizer,
                                                    padding=True)

@@ -33,6 +33,7 @@ class JointCTCAttentionEncoderDecoderConfig(SpeechEncoderDecoderConfig):
     model_type = "joint_aed_ctc_speech-encoder-decoder"
     is_composition = True
 
+
 @dataclass
 class Seq2SeqLMOutputLosses(Seq2SeqLMOutput):
     enc_loss: Optional[torch.FloatTensor] = None
@@ -75,8 +76,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
     config_class = JointCTCAttentionEncoderDecoderConfig
     base_model_prefix = "joint_aed_ctc_speech-encoder-decoder"
-    main_input_name = "inputs"
-    supports_gradient_checkpointing = True
 
     def __init__(self,
                  config: Optional[PretrainedConfig] = None,
@@ -102,7 +101,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             # initialize with config
             # make sure input & output embeddings is not tied
         config.tie_word_embeddings = False
-        super().__init__(config)
+        super(SpeechEncoderDecoderModel, self).__init__(config)
 
         if encoder is None:
             encoder = AutoModelForCTC.from_config(config.encoder)
@@ -382,6 +381,18 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             encoder_attentions=encoder_outputs.attentions,
             encoder_logits=encoder_outputs.logits,
         )
+
+    def activate_memory_params(self):
+        self.encoder.activate_memory_params()
+        self.decoder.activate_memory_params()
+
+    def freeze(self):
+        for param in self.parameters():
+            param.requires_grad = False
+
+    def connect_context_container(self, context_container):
+        self.encoder.connect_context_container(context_container)
+        self.decoder.connect_context_container(context_container)
 
     @staticmethod
     def _expand_inputs_for_generation(

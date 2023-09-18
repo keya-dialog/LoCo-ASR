@@ -9,8 +9,8 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallb
     Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from context_aware.models_v3 import JointCTCAttentionEncoderDecoderWithContext
-from context_aware.trainer import ContextAwareTrainer
+from context_aware.old.models_v3 import JointCTCAttentionEncoderDecoderWithContext
+from context_aware.old.trainer import ContextAwareTrainer
 from utils import AdditionalLossPrinterCallback, FrozenLayersManager, Seq2SeqDataCollatorWithPaddingContext, \
     compute_metrics, group_params
 

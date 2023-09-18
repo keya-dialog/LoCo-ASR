@@ -4,8 +4,8 @@
 #$ -l ram_free=8G,mem_free=8G
 #$ -l matylda5=2
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/eval_pretrained_model.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/eval_pretrained_model.e
 
 # Job should finish in 24 hours
 ulimit -t 86400
@@ -22,9 +22,9 @@ ulimit -v unlimited
 # Initialize environment
 unset PYTHONPATH
 unset PYTHONHOME
-source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/envs/loco_asr/
+source /mnt/matylda5/ipoloka/miniconda3/bin/activate /mnt/matylda5/ipoloka/envs/loco_asr/
 
-SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
+SRC_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
 
 export HF_HOME="${SRC_DIR}/huggingface_cache"
@@ -37,7 +37,7 @@ cd $SRC_DIR
 
 python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataset_name="${DATASET_DIR}" \
-  --model="models/checkpoint-303000" \
+  --model="models/checkpoint-88000" \
   --output_dir="test_small" \
   --predict_with_generate="True" \
   --with_ctc="True" \

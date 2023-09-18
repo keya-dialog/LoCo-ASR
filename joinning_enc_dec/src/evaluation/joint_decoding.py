@@ -14,7 +14,7 @@ from transformers import (AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSe
 from transformers.trainer_pt_utils import find_batch_size
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
-from trainers.AED_from_enc_dec import DataTrainingArguments, ModelArguments
+from trainers.training_arguments import DataTrainingArguments, ModelArguments
 from utils import Seq2SeqDataCollatorWithPadding, filter_out_sequence_from_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)

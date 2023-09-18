@@ -1,161 +1,27 @@
 import os
 import pickle
-from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_from_disk
 from torch.optim import AdamW
-from transformers import AutoConfig, AutoFeatureExtractor, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser, \
-    Seq2SeqTrainingArguments
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
+    EarlyStoppingCallback, HfArgumentParser
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
+from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
+    ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
     Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
 
-
-@dataclass
-class ModelArguments:
-    base_encoder_model: Optional[str] = field(
-        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
-    )
-    base_decoder_model: Optional[str] = field(
-        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
-    )
-    from_pretrained: Optional[str] = field(
-        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
-    )
-    tokenizer_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
-    )
-    feature_extractor_name: Optional[str] = field(
-        default=None, metadata={"help": "feature extractor name or path if not the same as model_name"}
-    )
-    pad_token: Optional[str] = field(
-        default='|', metadata={"help": "PAD token"}
-    )
-    bos_token: Optional[str] = field(
-        default='<', metadata={"help": "BOS token"}
-    )
-    eos_token: Optional[str] = field(
-        default='>', metadata={"help": "EOS token"}
-    )
-    enc_adapters: Optional[bool] = field(
-        default=False, metadata={"help": "Add adapters to the encoder."}
-    )
-    dec_adapters: Optional[bool] = field(
-        default=False, metadata={"help": "Add adapters to the decoder."}
-    )
-    sampling_rate: Optional[int] = field(
-        default=16_000, metadata={"help": "Sampling rate for the model"}
-    )
-
-
-@dataclass
-class CustomTrainingArguments(Seq2SeqTrainingArguments):
-    early_stopping_patience: Optional[int] = field(
-        default=1, metadata={"help": "Patience for early stopping."}
-    )
-    decoder_cold_start: Optional[bool] = field(
-        default=False, metadata={"help": "Whenever to reinitialize decoder weights"}
-    )
-    enc_layers_to_freeze: Optional[int] = field(
-        default=0, metadata={"help": "Encoder layers to freeze"}
-    )
-    dec_layers_to_freeze: Optional[int] = field(
-        default=0, metadata={"help": "Decoder layers to freeze"}
-    )
-    steps_to_freeze_enc: Optional[int] = field(
-        default=0, metadata={"help": "Steps to freeze encoder"}
-    )
-    steps_to_freeze_dec: Optional[int] = field(
-        default=0, metadata={"help": "Steps to freeze decoder"}
-    )
-    custom_optimizer: Optional[bool] = field(
-        default=False, metadata={"help": "Custom optimizer for decoder"}
-    )
-    cross_attention_scaling_factor: Optional[float] = field(
-        default=1, metadata={"help": "Custom scaling factor for cross attention weights"}
-    )
-    ctc_weight: Optional[float] = field(
-        default=0, metadata={"help": "Weight of CTC loss."}
-    )
-    restart_from: Optional[str] = field(
-        default="", metadata={"help": "Path to checkpoint used to restart the training."}
-    )
-    lsm_factor: Optional[float] = field(
-        default=0, metadata={"help": "Label smoothing coefficient for CE loss."}
-    )
-    shared_lm_head: Optional[bool] = field(
-        default=False, metadata={"help": "Whether to share LM head params."}
-    )
-    use_fbanks: Optional[bool] = field(
-        default=False, metadata={"help": "Whether to use fbanks instead of raw audio signal."}
-    )
-
-
-@dataclass
-class GenerationArguments:
-    num_beams: Optional[int] = field(
-        default=1, metadata={"help": "Num beams for decoding."}
-    )
-    max_len: Optional[int] = field(
-        default=200, metadata={"help": "Max number of generated tokens."}
-    )
-
-
-@dataclass
-class DataTrainingArguments:
-    """
-    Arguments pertaining to what data we are going to input our model for training and eval.
-    """
-
-    dataset_name: str = field(
-        metadata={"help": "The name of the dataset to use (via the datasets library)."}
-    )
-    audio_column_name: Optional[str] = field(
-        default="audio",
-        metadata={"help": "The name of the dataset column containing the audio data. Defaults to 'audio'"},
-    )
-    text_column_name: Optional[str] = field(
-        default="text",
-        metadata={"help": "The name of the dataset column containing the text data. Defaults to 'text'"},
-    )
-    max_duration_in_seconds: Optional[float] = field(
-        default=20.0,
-        metadata={
-            "help": (
-                "Truncate audio files that are longer than `max_duration_in_seconds` seconds to"
-                " 'max_duration_in_seconds`"
-            )
-        },
-    )
-    min_duration_in_seconds: Optional[float] = field(
-        default=0.0, metadata={"help": "Filter audio files that are shorter than `min_duration_in_seconds` seconds"}
-    )
-    train_split: Optional[str] = field(
-        default="train", metadata={"help": "Training split to be used."}
-    )
-    validation_split: Optional[str] = field(
-        default="validation", metadata={"help": "Validation split to be used."}
-    )
-    test_split: Optional[str] = field(
-        default="test", metadata={"help": "Test split to be used."}
-    )
-    val_indexes_to_use: Optional[str] = field(
-        default="", metadata={"help": "Part of the validation split to be used."}
-    )
-    apply_augmentations: Optional[bool] = field(
-        default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
-    )
-
+AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
+AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
 
 if __name__ == '__main__':
     logging.set_verbosity_debug()
     logger = logging.get_logger("transformers")
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, CustomTrainingArguments, GenerationArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, GeneralTrainingArguments, GenerationArguments))
 
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
@@ -229,11 +95,11 @@ if __name__ == '__main__':
     if model_args.from_pretrained:
         config = AutoConfig.from_pretrained(model_args.from_pretrained)
         config.update(base_model_config)
-        model = JointCTCAttentionEncoderDecoder.from_pretrained(
+        model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_args.from_pretrained,
             config=config)
     else:
-        model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
+        model = AutoModelForSpeechSeq2Seq.from_encoder_decoder_pretrained(
             encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config

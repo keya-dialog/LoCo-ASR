@@ -45,4 +45,5 @@ python joinning_enc_dec/src/evaluation/joint_decoding.py \
   --use_cuda="true" \
   --out_path="predictions_joint_decoding_0.1" \
   --max_duration_in_seconds="20.0" \
-  --min_duration_in_seconds="2.0"
+  --min_duration_in_seconds="2.0" \
+  --max_len="128"
