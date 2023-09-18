@@ -12,7 +12,7 @@ from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq
 from transformers.utils import logging
 
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
-from utils import Seq2SeqDataCollatorWithPadding, compute_metrics
+from utils import Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -121,6 +121,12 @@ if __name__ == '__main__':
     logging.set_verbosity_debug()
     logger = logging.get_logger("transformers")
     dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
+
+    for split in [data_args.validation_split, data_args.test_split]:
+        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
+                                                          max_input_len=data_args.max_duration_in_seconds,
+                                                          min_input_len=data_args.min_duration_in_seconds)
+
     model_path = model_args.model
 
     if model_args.average_checkpoints:
