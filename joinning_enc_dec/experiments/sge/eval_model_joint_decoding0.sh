@@ -44,4 +44,6 @@ python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --per_device_eval_batch_size="8" \
   --generation_num_beams="5" \
   --dataloader_num_workers="4" \
-  --with_ctc
+  --with_ctc \
+  --max_duration_in_seconds="20.0" \
+  --min_duration_in_seconds="2.0"

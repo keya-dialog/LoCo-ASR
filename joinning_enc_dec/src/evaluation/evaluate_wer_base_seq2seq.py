@@ -81,6 +81,18 @@ class DataTrainingArguments:
     test_split: str = field(
         default="test", metadata={"help": "Test split to be used."}
     )
+    max_duration_in_seconds: Optional[float] = field(
+        default=20.0,
+        metadata={
+            "help": (
+                "Truncate audio files that are longer than `max_duration_in_seconds` seconds to"
+                " 'max_duration_in_seconds`"
+            )
+        },
+    )
+    min_duration_in_seconds: Optional[float] = field(
+        default=0.0, metadata={"help": "Filter audio files that are shorter than `min_duration_in_seconds` seconds"}
+    )
 
 
 def average_dicts(*dicts):

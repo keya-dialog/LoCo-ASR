@@ -45,4 +45,6 @@ python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --generation_num_beams="5" \
   --dataloader_num_workers="4" \
   --with_ctc \
-  --ctc_weight="0.1"
+  --ctc_weight="0.1" \
+  --max_duration_in_seconds="20.0" \
+  --min_duration_in_seconds="2.0"
