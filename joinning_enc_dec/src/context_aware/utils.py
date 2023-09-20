@@ -105,7 +105,7 @@ class ContextHolder:
 
     def prepare_current_vectors(self, conversation_ids):
         self.current_conversations = conversation_ids
-        for conversation_id in conversation_ids:
+        for conversation_id in self.current_conversations:
             self.current_context_vectors.append(
                 self.context_vectors.get(conversation_id, self.memory_initializer.squeeze(dim=0))[None, ...])
             self.current_hidden_states.append(
@@ -113,7 +113,20 @@ class ContextHolder:
         self.current_context_vectors = torch.vstack(self.current_context_vectors)
         self.current_hidden_states = pad_sequence(self.current_hidden_states, batch_first=True)
 
+    def expand_context_states(self, expand_size):
+        self.current_context_vectors = self.current_context_vectors.repeat_interleave(expand_size, dim=0)
+        self.current_hidden_states = self.current_hidden_states.repeat_interleave(expand_size, dim=0)
+
     def get_prev_state(self):
+        # TODO: Fix this trick for beam decoding
+        if isinstance(self.current_context_vectors, list):
+            for conversation_id in self.current_conversations:
+                self.current_context_vectors.append(
+                    self.context_vectors.get(conversation_id, self.memory_initializer.squeeze(dim=0))[None, ...])
+                self.current_hidden_states.append(
+                    self.hidden_states.get(conversation_id, self.hidden_initializer.squeeze(dim=0)))
+            self.current_context_vectors = torch.vstack(self.current_context_vectors)
+            self.current_hidden_states = pad_sequence(self.current_hidden_states, batch_first=True)
         return self.current_context_vectors, self.current_hidden_states
 
     def update_context_vectors(self, memory_states, hidden_states, hidden_lens):

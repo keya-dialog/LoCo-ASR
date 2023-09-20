@@ -76,6 +76,9 @@ class MemoryCell(nn.Module):
         self.context_holder.bind_memory_initializer(self.memory_init)
         self.context_holder.bind_hidden_initializer(self.hidden_init)
 
+    def expand_context_states(self, expand_size):
+        self.context_holder.expand_context_states(expand_size)
+
     def forward(self, hidden_states, attention_mask):
         """Actualize memory state"""
         prev_memory_state, prev_hidden_states = self.context_holder.get_prev_state()

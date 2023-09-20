@@ -394,8 +394,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         self.encoder.connect_context_container(context_container)
         self.decoder.connect_context_container(context_container)
 
-    @staticmethod
     def _expand_inputs_for_generation(
+            self,
             expand_size: int = 1,
             is_encoder_decoder: bool = False,
             input_ids: Optional[torch.LongTensor] = None,
@@ -422,6 +422,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 encoder_outputs["logits"] = encoder_outputs.logits.repeat_interleave(
                     expand_size, dim=0
                 )
+
+            self.decoder.expand_context_states(expand_size)
 
             model_kwargs["encoder_outputs"] = encoder_outputs
             decoder_attention_mask = model_kwargs.get("decoder_attention_mask")

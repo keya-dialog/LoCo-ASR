@@ -85,6 +85,9 @@ class GPT2BlockWithContext(GPT2Block):
     def connect_context_container(self, context_container):
         self.context_combiner.connect_context_container(context_container)
 
+    def expand_context_states(self, expand_size):
+        self.context_combiner.expand_context_states(expand_size)
+
 
 class GPT2ModelWithContext(GPT2Model):
     def __init__(self, config):
@@ -108,6 +111,12 @@ class GPT2ModelWithContext(GPT2Model):
             if hasattr(layer, "connect_context_container"):
                 layer.connect_context_container(context_container)
 
+    def expand_context_states(self, expand_size):
+        for layer in self.h:
+            if hasattr(layer, "connect_context_container"):
+                layer.expand_context_states(expand_size)
+
+
 
 class GPT2ConfigWithContext(GPT2Config):
     model_type = "gpt2-with-context"
@@ -128,3 +137,6 @@ class GPT2WithContextLMHeadModel(GPT2LMHeadModel):
 
     def connect_context_container(self, context_container):
         self.transformer.connect_context_container(context_container)
+
+    def expand_context_states(self, expand_size):
+        self.transformer.expand_context_states(expand_size)

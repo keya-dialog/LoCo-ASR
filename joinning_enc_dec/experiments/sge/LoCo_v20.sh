@@ -70,7 +70,6 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
   --num_train_epochs=5 \
-  --num_beams="5" \
   --max_len="128" \
   --from_pretrained=$MODEL_CHECKPOINT \
   --conv_ids_column_name="recording" \
@@ -82,4 +81,5 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --train_split="train_500" \
   --validation_split="dev_6" \
   --fp16 \
-  --predict_with_generate
+  --predict_with_generate \
+  --generation_num_beams 1
