@@ -39,18 +39,6 @@ if __name__ == '__main__':
                                                           max_input_len=data_args.max_duration_in_seconds,
                                                           min_input_len=data_args.min_duration_in_seconds)
 
-
-    def change_recording_id(x, suffix):
-        x['recording'] = x['recording'] + suffix
-        return x
-
-
-    from datasets import concatenate_datasets
-
-    dataset['validation'] = dataset['validation'].map(lambda x: change_recording_id(x, "validation"))
-    dataset['test'] = dataset['test'].map(lambda x: change_recording_id(x, "test"))
-    dataset['train'] = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
-
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.from_pretrained)
     decoder_tokenizer = AutoTokenizer.from_pretrained(model_args.from_pretrained)
@@ -67,8 +55,8 @@ if __name__ == '__main__':
                            "activation_dropout": config.decoder.resid_pdrop,
                            "hidden_act": config.decoder.activation_function,
                            "intermediate_size": config.decoder.n_inner or 4 * config.decoder.hidden_size})
-    if max(config.encoder.memory_cells) >= config.encoder.num_hidden_layers or max(
-            config.decoder.memory_cells) >= config.decoder.n_layer:
+    if max(config.encoder.memory_cells, default=0) >= config.encoder.num_hidden_layers or max(
+            config.decoder.memory_cells, default=0) >= config.decoder.n_layer:
         raise ValueError("Memory cell location cannot be greater than number of layers")
 
     encoder_model_type = config.encoder.model_type + "-with-context"

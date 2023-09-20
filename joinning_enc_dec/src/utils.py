@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field, make_dataclass
-from itertools import zip_longest
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -13,20 +12,6 @@ from transformers.trainer_pt_utils import get_parameter_names
 from transformers.utils import logging
 
 logger = logging.get_logger("transformers")
-
-
-# def merge_dictionaries_to_lists(dictionaries):
-#     result = {}
-#
-#     for dictionary in dictionaries:
-#         for key, value in dictionary.items():
-#             if key in result:
-#                 result[key].append(value)
-#             else:
-#                 result[key] = [value]
-#     for key in result:
-#         result[key] = list(zip(*result[key]))
-#     return result
 
 
 def compute_metrics(tokenizer, pred):
@@ -179,61 +164,6 @@ class AdditionalLossTrackerTrainer(Seq2SeqTrainer):
         return (loss, outputs) if return_outputs else loss
 
 
-# class ContextContainerCallback(TrainerCallback):
-#     def __init__(self):
-#         self.context_stack = []
-#         self.padded_dimensions = None
-#         self.prev_context_vectors = None
-#         self.prev_hidden_states = None
-#
-#     def _init_context_vectors(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
-#         conv_ids = dataset[conv_ids_column]
-#         self.prev_context_vectors = {conv: {"encoder": [None for _ in range(model.config.encoder.num_hidden_layers)],
-#                                             "decoder": [None for _ in range(model.config.decoder.n_layer)]} for
-#                                      conv in conv_ids}
-#         self.prev_hidden_states = {conv: {"encoder": [None for _ in range(model.config.encoder.num_hidden_layers)],
-#                                           "decoder": [None for _ in range(model.config.decoder.n_layer)]} for
-#                                    conv in conv_ids}
-#
-#     def _push_context_state(self):
-#         self.context_stack.append((self.prev_context_vectors, self.prev_hidden_states))
-#         self.prev_context_vectors = None
-#         self.prev_hidden_states = None
-#
-#     def _pop_context_state(self):
-#         prev_context_vectors, prev_hidden_states = self.context_stack.pop()
-#         self.prev_context_vectors = prev_context_vectors
-#         self.prev_hidden_states = prev_hidden_states
-#
-#     def add_context_vectors(self, inputs: Dict[str, Union[torch.Tensor, Any]], conv_ids: List[str]) -> Dict[
-#         str, Union[torch.Tensor, Any]]:
-#         # context_vectors =
-#         # context_histories = [context.shape[1] for context in context_vectors]
-#         # max_history = max(context_histories)
-#         # self.padded_dimensions = [max_history - context_history for context_history in context_histories]
-#         # padded_tensors = [torch.nn.functional.pad(context_vector, ((0, 0, max_history - context_h, 0))) for
-#         #                   context_vector, context_h in zip(context_vectors, context_histories)]
-#         inputs['prev_context_vectors'] = merge_dictionaries_to_lists(
-#             [self.prev_context_vectors[conv] for conv in conv_ids])
-#         inputs['prev_hidden_states'] = merge_dictionaries_to_lists([self.prev_hidden_states[conv] for conv in conv_ids])
-#         return inputs
-#
-#     def update_context_vectors(self, contexts, hidden_states, conv_ids):
-#         for idx, conv in enumerate(conv_ids):
-#             self.prev_context_vectors[conv] = contexts[conv]
-#             self.prev_hidden_states[conv] = hidden_states[conv]
-#
-#     def on_evaluate_begin(self, model: torch.nn.Module, dataset: Dataset, conv_ids_column: str):
-#         self._push_context_state()
-#         self._init_context_vectors(model, dataset, conv_ids_column)
-#
-#     def on_evaluate_end(self):
-#         self._pop_context_state()
-#
-#     def on_epoch_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-#         self._init_context_vectors(kwargs['model'], kwargs['train_dataloader'].dataset, args.conv_ids_column_name)
-
-
 @dataclass
 class Seq2SeqDataCollatorWithPadding:
     """
@@ -305,46 +235,6 @@ class Seq2SeqDataCollatorWithPadding:
 
 @dataclass
 class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
-    """
-    Data collator that will dynamically pad the inputs received.
-    Args:
-        feature_extractor (:class:`~transformers.Wav2Vec2FeatureExtractor`)
-            The feature extractor used for processing the data.
-        tokenizer (:class:`~transformers.PreTrainedTokenizerFast`)
-            The processor used for processing the text data.
-        padding (:obj:`bool`, :obj:`str` or :class:`~transformers.tokenization_utils_base.PaddingStrategy`, `optional`,
-        defaults to :obj:`True`):
-            Select a strategy to pad the returned sequences
-            (according to the model's padding side and padding index) among:
-            * :obj:`True` or :obj:`'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-              sequence if provided).
-            * :obj:`'max_length'`: Pad to a maximum length specified with the argument :obj:`max_length` or to the
-              maximum acceptable input length for the model if that argument is not provided.
-            * :obj:`False` or :obj:`'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
-              different lengths).
-        max_length (:obj:`int`, `optional`):
-            Maximum length of the ``input_values`` of the returned list and optionally padding length (see above).
-        max_length_labels (:obj:`int`, `optional`):
-            Maximum length of the ``labels`` returned list and optionally padding length (see above).
-        pad_to_multiple_of (:obj:`int`, `optional`):
-            If set will pad the sequence to a multiple of the provided value.
-            This is especially useful to enable the use of Tensor Cores on NVIDIA hardware with compute capability >=
-            7.5 (Volta).
-    Based upon: https://colab.research.google.com/github/patrickvonplaten/notebooks/blob/master/
-                /Fine_tuning_Wav2Vec2_for_English_ASR.ipynb
-    """
-
-    feature_extractor: Wav2Vec2FeatureExtractor
-    tokenizer: PreTrainedTokenizerFast
-    padding: Union[bool, str] = True
-    max_length: Optional[int] = None
-    max_length_labels: Optional[int] = None
-    pad_to_multiple_of: Optional[int] = None
-    pad_to_multiple_of_labels: Optional[int] = None
-    sampling_rate: Optional[int] = 16_000
-
-    def _encapsulate_utterance(self, utterance):
-        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
@@ -367,73 +257,10 @@ class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
         batch["labels"] = labels
         batch['conv_ids'] = [feature['recording'] for feature in features]
 
+        if "input_features" in batch:
+            batch["input_values"] = batch["input_features"]
+            del batch["input_features"]
         return batch
-
-
-@dataclass
-class Seq2SeqDataCollatorWithPaddingContext:
-    """
-    Data collator that will dynamically pad the inputs received.
-    Args:
-        feature_extractor (:class:`~transformers.Wav2Vec2FeatureExtractor`)
-            The feature extractor used for processing the data.
-        tokenizer (:class:`~transformers.PreTrainedTokenizerFast`)
-            The processor used for processing the text data.
-        padding (:obj:`bool`, :obj:`str` or :class:`~transformers.tokenization_utils_base.PaddingStrategy`, `optional`,
-        defaults to :obj:`True`):
-            Select a strategy to pad the returned sequences
-            (according to the model's padding side and padding index) among:
-            * :obj:`True` or :obj:`'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-              sequence if provided).
-            * :obj:`'max_length'`: Pad to a maximum length specified with the argument :obj:`max_length` or to the
-              maximum acceptable input length for the model if that argument is not provided.
-            * :obj:`False` or :obj:`'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
-              different lengths).
-        max_length (:obj:`int`, `optional`):
-            Maximum length of the ``input_values`` of the returned list and optionally padding length (see above).
-        max_length_labels (:obj:`int`, `optional`):
-            Maximum length of the ``labels`` returned list and optionally padding length (see above).
-        pad_to_multiple_of (:obj:`int`, `optional`):
-            If set will pad the sequence to a multiple of the provided value.
-            This is especially useful to enable the use of Tensor Cores on NVIDIA hardware with compute capability >=
-            7.5 (Volta).
-    Based upon: https://colab.research.google.com/github/patrickvonplaten/notebooks/blob/master/
-                /Fine_tuning_Wav2Vec2_for_English_ASR.ipynb
-    """
-
-    feature_extractor: Wav2Vec2FeatureExtractor
-    tokenizer: PreTrainedTokenizerFast
-    padding: Union[bool, str] = True
-    max_length: Optional[int] = None
-    max_length_labels: Optional[int] = None
-    pad_to_multiple_of: Optional[int] = None
-    pad_to_multiple_of_labels: Optional[int] = None
-    sampling_rate: Optional[int] = 16_000
-
-    def _encapsulate_utterance(self, utterance):
-        return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
-
-    def __call__(self, conversations: List[Dict[str, Union[List[List[int]], List[torch.Tensor]]]]) -> List[
-        BatchFeature]:
-        # split inputs and labels since they have to be of different lengths and need
-        # different padding methods
-
-        audios = zip_longest(*[conv['audio'] for conv in conversations])
-        labels = zip_longest(*[conv['text'] for conv in conversations])
-
-        input_features = [
-            self.feature_extractor([conv for conv in utterance if conv is not None], padding=True, return_tensors='pt',
-                                   sampling_rate=self.sampling_rate) for utterance in audios]
-        labels = [self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(item) for item in utterance if item is not None], return_attention_mask=True,
-            padding='longest', return_tensors='pt') for utterance in labels]
-
-        batches = []
-        for audio_batch, text_batch in zip(input_features, labels):
-            text_batch = text_batch["input_ids"].masked_fill(text_batch.attention_mask.ne(1), -100)
-            audio_batch["labels"] = text_batch
-            batches.append(audio_batch)
-        return batches
 
 
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,
