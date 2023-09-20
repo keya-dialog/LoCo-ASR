@@ -50,7 +50,7 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
   --output_dir="${SRC_DIR}/experiments/${EXPERIMENT}" \
-  --gradient_accumulation_steps="2" \
+  --gradient_accumulation_steps="1" \
   --learning_rate="1e-5" \
   --logging_steps="5" \
   --save_strategy="steps" \
@@ -58,8 +58,8 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --evaluation_strategy="steps" \
   --eval_steps="100" \
   --auto_find_batch_size="True" \
-  --per_device_train_batch_size="16" \
-  --per_device_eval_batch_size="16" \
+  --per_device_train_batch_size="64" \
+  --per_device_eval_batch_size="64" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
@@ -75,10 +75,11 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --from_pretrained=$MODEL_CHECKPOINT \
   --conv_ids_column_name="recording" \
   --turn_index_column_name="turn_index" \
-  --enc_memory_dim 11 \
-  --dec_memory_dim 5 \
-  --enc_memory_cells_location 12 \
-  --dec_memory_cells_location 12 \
+  --enc_memory_dim 16 \
+  --dec_memory_dim 16 \
+  --enc_memory_cells_location 11 \
+  --dec_memory_cells_location 5 \
   --train_split="train_500" \
   --validation_split="dev_6" \
-  --fp16
+  --fp16 \
+  --predict_with_generate

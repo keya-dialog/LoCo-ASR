@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.from_pretrained)
-    decoder_tokenizer = AutoTokenizer.from_pretrained(model_args.from_pretrained)
+    tokenizer = AutoTokenizer.from_pretrained(model_args.from_pretrained)
 
     # 3. Initialize model config and add memory cells
     config = AutoConfig.from_pretrained(model_args.from_pretrained)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     data_collator = Seq2SeqDataCollatorWithPaddingAndConvId(feature_extractor=feature_extractor,
-                                                            tokenizer=decoder_tokenizer,
+                                                            tokenizer=tokenizer,
                                                             padding=True, sampling_rate=model_args.sampling_rate)
 
     trainer = ContextAwareTrainer(
@@ -91,23 +91,19 @@ if __name__ == '__main__':
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
-        context_container=context_container,
+        compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
     )
 
-    # 6. Train
-    trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
-
-    # 7. Eval on dev
-    trainer.args.predict_with_generate = True
-    model.config.output_hidden_states = True
+    # 5. Train
+    trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
     predictions = trainer.predict(dataset[data_args.validation_split])
-    logger.info(compute_metrics(decoder_tokenizer, predictions))
+    logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    # 8. Eval on test
+    # 6. Eval on test
     predictions = trainer.predict(dataset[data_args.test_split])
-    logger.info(compute_metrics(decoder_tokenizer, predictions))
+    logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)

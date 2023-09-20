@@ -113,6 +113,9 @@ if __name__ == '__main__':
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.eos_token_id = tokenizer.eos_token_id
 
+    # Ensure encoder return hidden states and predictions are generated
+    model.config.output_hidden_states = True
+
     if model_args.dec_adapters:
         model.decoder.add_adapter("dec_adapters", set_active=True)
         model.decoder.train_adapter("dec_adapters")
@@ -140,10 +143,6 @@ if __name__ == '__main__':
         compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
         optimizers=(optimizer, None)
     )
-
-    # Ensure encoder return hidden states and predictions are generated
-    trainer.args.predict_with_generate = True
-    model.config.output_hidden_states = True
 
     # 5. Train
     trainer.train(resume_from_checkpoint=training_args.restart_from or None)
