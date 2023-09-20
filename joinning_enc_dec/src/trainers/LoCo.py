@@ -92,6 +92,7 @@ if __name__ == '__main__':
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
         compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
+        context_container=context_container
     )
 
     # 5. Train
