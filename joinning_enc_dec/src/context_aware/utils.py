@@ -86,17 +86,20 @@ class ContextHolder:
         self.current_hidden_states = []
         self.hidden_states = {}
         self.context_vectors = {}
-        self.vector_initializer = None
-        # self.device = device
+        self.memory_initializer = None
+        self.hidden_initializer = None
 
-    def bind_vector_initializer(self, vector_initializer):
-        self.vector_initializer = vector_initializer
+    def bind_memory_initializer(self, memory_initializer):
+        self.memory_initializer = memory_initializer
+
+    def bind_hidden_initializer(self, hidden_initializer):
+        self.hidden_initializer = hidden_initializer
 
     def reset_prediction_state(self, conversation_ids):
         self.current_conversations = conversation_ids
         for _ in conversation_ids:
-            self.current_context_vectors.append(self.vector_initializer.squeeze(dim=0)[None, ...])
-            self.current_hidden_states.append(torch.zeros((0, self.current_context_vectors[0].size(-1))))
+            self.current_context_vectors.append(self.memory_initializer.squeeze(dim=0)[None, ...])
+            self.current_hidden_states.append(self.hidden_initializer.squeeze(dim=0))
         self.current_context_vectors = torch.vstack(self.current_context_vectors)
         self.current_hidden_states = pad_sequence(self.current_hidden_states, batch_first=True)
 
@@ -104,9 +107,9 @@ class ContextHolder:
         self.current_conversations = conversation_ids
         for conversation_id in conversation_ids:
             self.current_context_vectors.append(
-                self.context_vectors.get(conversation_id, self.vector_initializer.squeeze(dim=0))[None, ...])
+                self.context_vectors.get(conversation_id, self.memory_initializer.squeeze(dim=0))[None, ...])
             self.current_hidden_states.append(
-                self.hidden_states.get(conversation_id, torch.zeros((0, self.current_context_vectors[0].size(-1)))))
+                self.hidden_states.get(conversation_id, self.hidden_initializer.squeeze(dim=0)))
         self.current_context_vectors = torch.vstack(self.current_context_vectors)
         self.current_hidden_states = pad_sequence(self.current_hidden_states, batch_first=True)
 

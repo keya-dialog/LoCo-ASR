@@ -4,8 +4,8 @@
 #$ -l ram_free=48G,mem_free=48G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=40G
-#$ -o /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v20.o
-#$ -e /mnt/matylda5/xpolok03/projects/LoCo-ASR/experiments/LoCo_v20.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -24,10 +24,10 @@ ulimit -u 4096
 # Initialize environment
 unset PYTHONPATH
 unset PYTHONHOME
-source /mnt/matylda5/xpolok03/miniconda3/bin/activate /mnt/matylda5/xpolok03/envs/loco_asr/
+source /mnt/matylda5/ipoloka/miniconda3/bin/activate /mnt/matylda5/ipoloka/envs/loco_asr/
 
-SRC_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
-SCRATCH_DIR="/mnt/matylda5/xpolok03/projects/LoCo-ASR"
+SRC_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
+SCRATCH_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
 MODEL_CHECKPOINT="/mnt/matylda5/ipoloka/projects/LoCo-ASR/models/checkpoint-88000"
 EXPERIMENT="LoCo_enc_frozen_v2"
@@ -45,7 +45,7 @@ export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
 export WANDB_PROJECT="LoCo-ASR_v20"
 
-python joinning_enc_dec/src/trainers/LoCo_v2.py \
+python joinning_enc_dec/src/trainers/LoCo.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
@@ -75,7 +75,10 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --from_pretrained=$MODEL_CHECKPOINT \
   --conv_ids_column_name="recording" \
   --turn_index_column_name="turn_index" \
-  --enc_memory_dim 16 \
-  --dec_memory_dim 16 \
+  --enc_memory_dim 11 \
+  --dec_memory_dim 5 \
   --enc_memory_cells_location 12 \
-  --dec_memory_cells_location 12
+  --dec_memory_cells_location 12 \
+  --train_split="train_500" \
+  --validation_split="dev_6" \
+  --fp16

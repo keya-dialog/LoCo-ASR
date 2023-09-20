@@ -34,7 +34,7 @@ class LearnablePositionalEmbedding(nn.Module):
         super().__init__()
 
         self.emb = nn.Embedding(mem_length, hidden_size)
-        self.position = torch.arange(mem_length, dtype=torch.long).unsqueeze(0)
+        self.register_buffer('position', torch.arange(mem_length, dtype=torch.long).unsqueeze(0))
 
         self.layer_norm = nn.LayerNorm(hidden_size)
 
@@ -51,6 +51,9 @@ class MemoryCell(nn.Module):
         self.memory_init = torch.randn(1, config.memory_dim, config.hidden_size)
         nn.init.normal_(self.memory_init)
         self.memory_init = nn.Parameter(self.memory_init)
+
+        self.hidden_init = torch.randn(1, 0, config.hidden_size)
+        self.hidden_init = nn.Parameter(self.hidden_init)
 
         self.memory_positional_embeddings = LearnablePositionalEmbedding(config.memory_dim, config.hidden_size)
 
@@ -70,7 +73,8 @@ class MemoryCell(nn.Module):
 
     def connect_context_container(self, context_container: ContextContainer):
         self.context_holder = context_container.get_holder()
-        self.context_holder.bind_vector_initializer(self.memory_init)
+        self.context_holder.bind_memory_initializer(self.memory_init)
+        self.context_holder.bind_hidden_initializer(self.hidden_init)
 
     def forward(self, hidden_states, attention_mask):
         """Actualize memory state"""
