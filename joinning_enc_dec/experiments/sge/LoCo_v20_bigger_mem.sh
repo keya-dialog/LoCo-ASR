@@ -3,7 +3,7 @@
 #$ -q long.q@@gpu
 #$ -l ram_free=48G,mem_free=48G
 #$ -l matylda5=10
-#$ -l gpu=1,gpu_ram=40G
+#$ -l gpu=1,gpu_ram=20G
 #$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20_bigger_mem.o
 #$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20_bigger_mem.e
 
