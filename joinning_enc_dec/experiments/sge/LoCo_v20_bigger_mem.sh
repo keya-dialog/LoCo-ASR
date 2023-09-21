@@ -68,7 +68,7 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --metric_for_best_model="eval_loss" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
-  --save_total_limit="5" \
+  --save_total_limit="1" \
   --num_train_epochs=5 \
   --max_len="128" \
   --from_pretrained=$MODEL_CHECKPOINT \
