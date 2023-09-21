@@ -72,7 +72,8 @@ if __name__ == '__main__':
         model_args.from_pretrained,
         config=config,
     )
-    model.freeze()
+    if training_args.freeze_others:
+        model.freeze()
     model.activate_memory_params()
 
     # 4. Initialize context container and connect it with memory cells
