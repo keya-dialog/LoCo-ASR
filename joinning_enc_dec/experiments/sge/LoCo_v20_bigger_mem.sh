@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
 MODEL_CHECKPOINT="/mnt/matylda5/ipoloka/projects/LoCo-ASR/models/checkpoint-88000"
-EXPERIMENT="LoCo_enc_frozen_v2"
+EXPERIMENT="LoCo_v20_bigger_mem"
 
 cd $SRC_DIR
 
@@ -43,7 +43,7 @@ export HF_HUB_OFFLINE=1
 
 export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
-export WANDB_PROJECT="LoCo-ASR_v20_bigger_mem"
+export WANDB_PROJECT="LoCo-ASR_v20"
 
 python joinning_enc_dec/src/trainers/LoCo.py \
   --dataset_name="${DATASET_DIR}" \
@@ -82,4 +82,5 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --validation_split="dev_6" \
   --fp16 \
   --predict_with_generate \
-  --generation_num_beams 1
+  --generation_num_beams 1 \
+  --freeze_others

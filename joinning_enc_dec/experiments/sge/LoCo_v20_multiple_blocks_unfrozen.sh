@@ -4,8 +4,8 @@
 #$ -l ram_free=48G,mem_free=48G
 #$ -l matylda5=10
 #$ -l gpu=1,gpu_ram=20G
-#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20.o
-#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20.e
+#$ -o /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20_multiple_blocks_unfrozen.o
+#$ -e /mnt/matylda5/ipoloka/projects/LoCo-ASR/experiments/LoCo_v20_multiple_blocks_unfrozen.e
 
 # Job should finish in 2 days - 172800 seconds
 ulimit -t 172800
@@ -30,7 +30,7 @@ SRC_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 SCRATCH_DIR="/mnt/matylda5/ipoloka/projects/LoCo-ASR"
 DATASET_DIR="${SRC_DIR}/datasets/fisher"
 MODEL_CHECKPOINT="/mnt/matylda5/ipoloka/projects/LoCo-ASR/models/checkpoint-88000"
-EXPERIMENT="LoCo_enc_frozen_v2"
+EXPERIMENT="LoCo_v20_multiple_blocks_unfrozen"
 
 cd $SRC_DIR
 
@@ -76,8 +76,8 @@ python joinning_enc_dec/src/trainers/LoCo.py \
   --turn_index_column_name="turn_index" \
   --enc_memory_dim 16 \
   --dec_memory_dim 16 \
-  --enc_memory_cells_location 11 \
-  --dec_memory_cells_location 5 \
+  --enc_memory_cells_location 10 11 \
+  --dec_memory_cells_location 4 5 \
   --train_split="train_500" \
   --validation_split="dev_6" \
   --fp16 \
