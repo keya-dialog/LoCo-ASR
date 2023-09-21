@@ -43,7 +43,7 @@ export HF_HUB_OFFLINE=1
 
 export WANDB_MODE=offline
 export WANDB_RUN_ID=$EXPERIMENT
-export WANDB_PROJECT="LoCo-ASR_v20"
+export WANDB_PROJECT="LoCo-ASR_v21"
 
 python joinning_enc_dec/src/trainers/LoCo.py \
   --dataset_name="${DATASET_DIR}" \

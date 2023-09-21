@@ -35,15 +35,10 @@ class RandomSamplerWithDependency(Sampler[int]):
             raise ValueError("num_samples should be a positive integer "
                              "value, but got num_samples={}".format(self.num_samples))
 
-        conversations = Counter(conv_ids)
-        dependent_samples = {conv: [] for conv in conversations}
+        self.conversations = Counter(conv_ids)
+        self.dependent_samples = {conv: [] for conv in self.conversations}
         for index, (conv_id, turn_index) in enumerate(zip(conv_ids, turn_idxs)):
-            dependent_samples[conv_id].append((turn_index, index))
-
-        self.dependent_samples = [[tup[1] for tup in sorted(dependent_samples[conv], key=lambda x: x[0], reverse=True)]
-                                  for conv in
-                                  dependent_samples.keys()]
-        self.initial_weights = torch.tensor(list(conversations.values()), dtype=torch.float)
+            self.dependent_samples[conv_id].append((turn_index, index))
         self.batch_size = batch_size
 
     @property
@@ -54,6 +49,11 @@ class RandomSamplerWithDependency(Sampler[int]):
         return self._num_samples
 
     def __iter__(self) -> Iterator[int]:
+        dependent_samples = [[tup[1] for tup in sorted(self.dependent_samples[conv], key=lambda x: x[0], reverse=True)]
+                             for conv in
+                             self.dependent_samples.keys()]
+        self.initial_weights = torch.tensor(list(self.conversations.values()), dtype=torch.float)
+
         if self.generator is None:
             seed = int(torch.empty((), dtype=torch.int64).random_().item())
             generator = torch.Generator()
@@ -72,8 +72,8 @@ class RandomSamplerWithDependency(Sampler[int]):
                 weights -= weights_update
                 # return rand element of dataset in case conversation is already empty
                 weights = torch.clip(weights, 0)
-                yield from [self.dependent_samples[conv].pop() for conv
-                            in selected_convs if len(self.dependent_samples[conv]) > 0]
+                yield from [dependent_samples[conv].pop() for conv
+                            in selected_convs if len(dependent_samples[conv]) > 0]
 
     def __len__(self) -> int:
         return self.num_samples
