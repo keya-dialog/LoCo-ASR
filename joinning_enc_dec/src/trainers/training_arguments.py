@@ -162,7 +162,7 @@ class ModelArgumentsContext(ModelArguments):
 @dataclass
 class GeneralTrainingArgumentsContext(GeneralTrainingArguments):
     freeze_others: bool = field(
-        default=False, metadata={"help": "Whether to freeze cross attentions"}
+        default=False, metadata={"help": "Whether to freeze rest of the model"}
     )
     conv_ids_column_name: str = field(
         default=None, metadata={"help": "Conv ids column."}
