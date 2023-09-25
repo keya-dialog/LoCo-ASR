@@ -93,6 +93,9 @@ class DataTrainingArguments:
     min_duration_in_seconds: Optional[float] = field(
         default=0.0, metadata={"help": "Filter audio files that are shorter than `min_duration_in_seconds` seconds"}
     )
+    val_only: bool = field(
+        default=False, metadata={"help": "Whether to only evaluate on validation set"}
+    )
 
 
 def average_dicts(*dicts):
@@ -173,6 +176,9 @@ if __name__ == '__main__':
     logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
+
+    if data_args.val_only:
+        exit(0)
 
     predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True)
     logger.info(compute_metrics(tokenizer, predictions))
