@@ -419,11 +419,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 expand_size, dim=0
             )
             if encoder_outputs.get("logits") is not None:
-                encoder_outputs["logits"] = encoder_outputs.logits.repeat_interleave(
-                    expand_size, dim=0
-                )
-
-            self.decoder.expand_context_states(expand_size)
+                encoder_outputs["logits"] = encoder_outputs.logits.repeat_interleave(expand_size, dim=0)
+            if hasattr(self.decoder, "expand_context_states"):
+                self.decoder.expand_context_states(expand_size)
 
             model_kwargs["encoder_outputs"] = encoder_outputs
             decoder_attention_mask = model_kwargs.get("decoder_attention_mask")
