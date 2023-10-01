@@ -6,7 +6,7 @@
 #SBATCH --nodes 1
 #SBATCH --time 24:00:00
 
-EXPERIMENT="AED_conformer_80M_label_smoothing_MELUXINA_mel_fe_augmentations"
+EXPERIMENT="AED_conformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations"
 PROJECT="LoCo-ASR_v2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 DATASET_DIR="${WORK_DIR}/datasets/fisher"
@@ -23,7 +23,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
@@ -46,7 +46,7 @@ torchrun --standalone \
   --group_by_length="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="24" \
+  --dataloader_num_workers="4" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_loss" \
@@ -67,4 +67,5 @@ torchrun --standalone \
   --lsm_factor="0.1" \
   --use_fbanks \
   --apply_augmentations \
-  --audio_column_name="input_values"
+  --audio_column_name="input_values" \
+  --predict_with_generate
