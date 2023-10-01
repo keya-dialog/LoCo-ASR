@@ -134,3 +134,61 @@ if __name__ == '__main__':
 
     feature_extractor = Speech2TextFeatureExtractor(**config)
     feature_extractor.push_to_hub("fisher_log_mel_extractor")
+
+    from transformers import Wav2Vec2ConformerConfig, Wav2Vec2ConformerModel
+
+    configuration = Wav2Vec2ConformerConfig()
+    configuration.num_hidden_layers = 14
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.num_attention_heads = 4
+    configuration.hidden_act = "swish"
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 2048
+    configuration.conv_dim = [256, 256]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 84
+    configuration.max_source_positions = 1024
+
+    # Initializing a model (with random weights) from the facebook/wav2vec2-base-960h style configuration
+    encoder = Wav2Vec2ConformerModel(configuration)
+    print(encoder.num_parameters())
+    encoder.push_to_hub("fisher_conformer_enc_14_layers_smaller_hidden")
+
+    from transformers import Wav2Vec2Config, Wav2Vec2Model
+
+    # Initializing a Wav2Vec2 facebook/wav2vec2-base-960h style configuration
+    configuration = Wav2Vec2Config()
+    configuration.num_hidden_layers = 32
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 2048
+    configuration.conv_dim = [256, 256]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 84
+    configuration.max_source_positions = 1024
+
+    # Initializing a model (with random weights) from the facebook/wav2vec2-base-960h style configuration
+    encoder = Wav2Vec2Model(configuration)
+    print(encoder.num_parameters())
+    encoder.push_to_hub("fisher_enc_32_layers_smaller_hidden")
+
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 24
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.n_head = 4
+
+    # Initializing a model (with random weights) from the configuration
+    decoder = GPT2Model(configuration)
+    print(decoder.num_parameters())
+
+    decoder.push_to_hub("fisher_dec_24_layers_smaller_hidden")
