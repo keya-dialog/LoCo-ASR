@@ -47,20 +47,21 @@ def wav2vec2_for_ctc_forward_hook(model: AutoModelForCTC, input: Any, output: Ca
 
 
 class MelFeatureExtractor(nn.Module):
-    def __init__(self, hidden_size, hidden_act, num_mel_bins, max_source_positions):
+    def __init__(self, config):
         super().__init__()
-        # TODO: Make this work with any config
         self.conv = torch.nn.Sequential(
-            nn.Conv2d(1, hidden_size, kernel_size=(3, 3), stride=(2, 2)),
-            ACT2FN[hidden_act],
-            nn.Conv2d(hidden_size, hidden_size, kernel_size=(3, 3), stride=(2, 2)),
-            ACT2FN[hidden_act],
+            *[nn.Sequential(nn.Conv2d(conv_in, out_channels=conv_out, kernel_size=(conv_kernel, conv_kernel),
+                                      stride=(conv_stride, conv_stride)),
+                            ACT2FN[config.encoder.feat_extract_activation]) for
+              conv_in, conv_out, conv_kernel, conv_stride in
+              zip([1, *config.encoder.conv_dim], config.encoder.conv_dim, config.encoder.conv_kernel,
+                  config.encoder.conv_stride)],
         )
 
-        linear_in_dim = hidden_size * (((num_mel_bins - 1) // 2 - 1) // 2)
-        self.out = torch.nn.Linear(linear_in_dim, hidden_size, bias=True)
+        linear_in_dim = config.encoder.conv_dim[-1] * (((config.encoder.num_mel_bins - 1) // 2 - 1) // 2)
+        self.out = torch.nn.Linear(linear_in_dim, config.encoder.hidden_size, bias=True)
         self.dropout = torch.nn.Dropout(p=0.3)
-        self.pos_encoding = torch.nn.Embedding(max_source_positions, hidden_size)
+        self.pos_encoding = torch.nn.Embedding(config.encoder.max_source_positions, config.encoder.hidden_size)
 
     def forward(self, input_values):
         hidden_states = self.conv(input_values[:, None, ...])
@@ -107,11 +108,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             encoder = AutoModelForCTC.from_config(config.encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
         if config.use_fbanks:
-            # TODO: Read all params from config
-            encoder.base_model.feature_extractor = MelFeatureExtractor(hidden_size=config.encoder.hidden_size,
-                                                                       hidden_act=config.encoder.hidden_act,
-                                                                       num_mel_bins=config.num_mel_bins,
-                                                                       max_source_positions=1024)
+            encoder.base_model.feature_extractor = MelFeatureExtractor(config)
 
         if decoder is None:
             decoder = AutoModelForCausalLM.from_config(config.decoder)
@@ -194,9 +191,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                     encoder_pretrained_model_name_or_path, **kwargs_encoder, return_unused_kwargs=True
                 )
 
-                encoder_config.architectures = ["Wav2Vec2ForCTC"]
-                # encoder_config.prefix = 'wav2vec2'
-
                 if encoder_config.is_decoder is True or encoder_config.add_cross_attention is True:
                     logger.info(
                         f"Initializing {encoder_pretrained_model_name_or_path} as a encoder model "
@@ -210,17 +204,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             encoder = AutoModelForCTC.from_pretrained(encoder_pretrained_model_name_or_path,
                                                       *model_args,
                                                       **kwargs_encoder)
-            # if config.use_fbanks:
-            #     # config.encoder['encoder_conv_kernel'] = [3, 3]
-            #     # config.encoder['encoder_conv_stride'] = [2, 2]
-            #     # config.encoder['encoder_conv_dim'] = [512, 512]
-            #     # config.encoder['encoder_num_feat_extract_layers'] = 2
-            #     # config.encoder["num_mel_bins"] = config["num_mel_bins"]
-            #     # config.encoder["max_source_positions"] = 1024
-            #     encoder.base_model.feature_extractor = MelFeatureExtractor(hidden_size=config.encoder.hidden_size,
-            #                                                                hidden_act=config.encoder.hidden_act,
-            #                                                                num_mel_bins=config.num_mel_bins,
-            #                                                                max_source_positions=1024)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
 
         decoder = kwargs_decoder.pop("model", None)
@@ -259,7 +242,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             decoder = AutoModelForCausalLM.from_pretrained(decoder_pretrained_model_name_or_path, **kwargs_decoder)
 
         # instantiate config with corresponding kwargs
-        config = SpeechEncoderDecoderConfig.from_encoder_decoder_configs(encoder.config, decoder.config, **kwargs)
+        config = JointCTCAttentionEncoderDecoderConfig.from_encoder_decoder_configs(encoder.config, decoder.config,
+                                                                                    **kwargs)
 
         # make sure input & output embeddings is not tied
         config.tie_word_embeddings = False

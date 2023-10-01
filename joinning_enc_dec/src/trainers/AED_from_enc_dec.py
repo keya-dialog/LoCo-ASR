@@ -99,7 +99,7 @@ if __name__ == '__main__':
             model_args.from_pretrained,
             config=config)
     else:
-        model = AutoModelForSpeechSeq2Seq.from_encoder_decoder_pretrained(
+        model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
             encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config
