@@ -31,7 +31,7 @@ torchrun --standalone \
   --dataset_name="${DATASET_DIR}" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
-  --base_encoder_model="Lakoc/fisher_enc_12_layers_xls_r_fe" \
+  --base_encoder_model="Lakoc/fisher_enc_12_layers_mel_feature_extractor" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
   --tokenizer_name="Lakoc/fisher_bpe" \
