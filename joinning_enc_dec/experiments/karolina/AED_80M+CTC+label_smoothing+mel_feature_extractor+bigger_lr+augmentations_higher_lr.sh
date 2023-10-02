@@ -73,4 +73,4 @@ torchrun --standalone \
   --audio_column_name="input_values" \
   --predict_with_generate
 
-cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_higher_lr.out $EXPERIMENT_PATH
+cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_higher_lr.out $EXPERIMENT_PATH/
