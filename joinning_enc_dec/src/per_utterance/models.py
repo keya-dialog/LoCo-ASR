@@ -329,7 +329,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             encoder_attention_mask=encoder_attention_mask,
             inputs_embeds=decoder_inputs_embeds,
             output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
+            output_hidden_states=True if hasattr(self.decoder, "head_weights") and len(
+                self.decoder.head_weights) > 1 else output_hidden_states,
             use_cache=use_cache,
             past_key_values=past_key_values,
             return_dict=return_dict,
@@ -338,11 +339,22 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
         # Compute loss independent from decoder (as some shift the logits inside them)
         loss = enc_loss = dec_loss = None
+
         if labels is not None:
-            dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
+
             loss_fct = CrossEntropyLoss(label_smoothing=self.lsm_factor)
-            dec_loss = loss_fct(dec_logits.reshape(-1, self.decoder.config.vocab_size), labels.reshape(-1))
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
+            if hasattr(self.decoder, "head_weights") and len(self.decoder.head_weights) > 1:
+                dec_loss = torch.zeros_like(enc_loss)
+                for index, lm_head, lm_weight in zip([*self.decoder.head_locations, -1],
+                                                     [*self.decoder.additional_lm_heads, self.decoder.lm_head],
+                                                     self.decoder.head_weights):
+                    lm_logits = lm_head(decoder_outputs.hidden_states[index])
+                    dec_loss += lm_weight * loss_fct(lm_logits.reshape(-1, self.decoder.config.vocab_size),
+                                                     labels.reshape(-1))
+            else:
+                dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
+                dec_loss = loss_fct(dec_logits.reshape(-1, self.decoder.config.vocab_size), labels.reshape(-1))
             loss = self.enc_loss_weight * enc_loss + self.dec_loss_weight * dec_loss
 
         if not return_dict:

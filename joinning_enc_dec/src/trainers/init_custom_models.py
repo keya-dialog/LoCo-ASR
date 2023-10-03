@@ -124,6 +124,24 @@ if __name__ == '__main__':
 
     decoder.push_to_hub("fisher_dec_6_layers")
 
+    from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2MultiHeadConfig()
+    configuration.n_layer = 6
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 512
+    configuration.output_hidden_size = 512
+    configuration.n_head = 4
+    configuration.head_locations = [3]
+    configuration.head_weights = [0.3, 0.7]
+
+    # Initializing a model (with random weights) from the configuration
+    decoder = GPT2LMMultiHeadModel(configuration)
+    print(decoder.num_parameters())
+
+    decoder.push_to_hub("fisher_dec_6_layers_multi_head")
+
     from transformers import Speech2TextFeatureExtractor
 
     config = {
@@ -192,3 +210,27 @@ if __name__ == '__main__':
     print(decoder.num_parameters())
 
     decoder.push_to_hub("fisher_dec_24_layers_smaller_hidden")
+
+    from transformers import Wav2Vec2Config, Wav2Vec2Model
+
+    configuration = Wav2Vec2Config()
+    configuration.num_hidden_layers = 12
+    configuration.hidden_size = 512
+    configuration.output_hidden_size = 512
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 2048
+    configuration.num_adapter_layers = 2
+    configuration.feat_extract_norm = "layer"
+    configuration.conv_bias = True
+    configuration.conv_dim = [512, 512]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 84
+    configuration.max_source_positions = 1024
+
+    # Initializing a model (with random weights) from the facebook/wav2vec2-base-960h style configuration
+    encoder = Wav2Vec2Model(configuration)
+    print(encoder.num_parameters())
+
+    encoder.push_to_hub("fisher_enc_12_layers_mel_feature_extractor")
