@@ -4,7 +4,7 @@
 #SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 24:00:00
+#SBATCH --time 2-00:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_multi_lm_heads.out
 
 EXPERIMENT="ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_multi_lm_heads"
