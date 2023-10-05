@@ -124,6 +124,22 @@ if __name__ == '__main__':
 
     decoder.push_to_hub("fisher_dec_6_layers")
 
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 6
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 544
+    configuration.output_hidden_size = 544
+    configuration.n_head = 4
+
+    # Initializing a model (with random weights) from the configuration
+    decoder = GPT2Model(configuration)
+    print(decoder.num_parameters())
+
+    decoder.push_to_hub("fisher_dec_6_layers_params_as_additional_head")
+
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
     # Initializing a GPT2 configuration
