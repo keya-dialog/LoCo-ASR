@@ -246,6 +246,31 @@ if __name__ == '__main__':
     print(encoder.num_parameters())
     encoder.push_to_hub("fisher_conformer_enc_14_layers_smaller_hidden")
 
+    from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerModel
+
+    configuration = Wav2Vec2BranchformerConfig()
+    configuration.num_hidden_layers = 12
+    configuration.hidden_size = 512
+    configuration.output_hidden_size = 512
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 2048
+    configuration.conv_dim = [512, 512]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 84
+    configuration.max_source_positions = 1024
+    configuration.branchformer_conv_dropout = 0.1
+    configuration.csgu_activation = "identity"
+    configuration.csgu_kernel_size = 31
+    configuration.csgu_use_linear_after_conv = False
+
+    encoder = Wav2Vec2BranchformerModel(configuration)
+    print(encoder.num_parameters())
+
+    encoder.push_to_hub("fisher_branchformer_enc_12_layers")
+
+
     from transformers import Wav2Vec2Config, Wav2Vec2Model
 
     # Initializing a Wav2Vec2 facebook/wav2vec2-base-960h style configuration

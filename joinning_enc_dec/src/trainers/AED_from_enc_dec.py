@@ -5,10 +5,11 @@ import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_from_disk
 from torch.optim import AdamW
-from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
-    AutoTokenizer, EarlyStoppingCallback, HfArgumentParser
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCTC, AutoModelForCausalLM, \
+    AutoModelForSpeechSeq2Seq, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser
 from transformers.utils import logging
 
+from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
@@ -21,6 +22,9 @@ AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointC
 
 AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
 AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
+
+AutoConfig.register("wav2vec2-branchformer", Wav2Vec2BranchformerConfig)
+AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)
 
 if __name__ == '__main__':
     logging.set_verbosity_debug()

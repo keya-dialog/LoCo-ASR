@@ -52,16 +52,16 @@ class MelFeatureExtractor(nn.Module):
         self.conv = torch.nn.Sequential(
             *[nn.Sequential(nn.Conv2d(conv_in, out_channels=conv_out, kernel_size=(conv_kernel, conv_kernel),
                                       stride=(conv_stride, conv_stride)),
-                            ACT2FN[config.encoder.feat_extract_activation]) for
+                            ACT2FN[config.feat_extract_activation]) for
               conv_in, conv_out, conv_kernel, conv_stride in
-              zip([1, *config.encoder.conv_dim], config.encoder.conv_dim, config.encoder.conv_kernel,
-                  config.encoder.conv_stride)],
+              zip([1, *config.conv_dim], config.conv_dim, config.conv_kernel,
+                  config.conv_stride)],
         )
 
-        linear_in_dim = config.encoder.conv_dim[-1] * (((config.encoder.num_mel_bins - 1) // 2 - 1) // 2)
-        self.out = torch.nn.Linear(linear_in_dim, config.encoder.hidden_size, bias=True)
+        linear_in_dim = config.conv_dim[-1] * (((config.num_mel_bins - 1) // 2 - 1) // 2)
+        self.out = torch.nn.Linear(linear_in_dim, config.hidden_size, bias=True)
         self.dropout = torch.nn.Dropout(p=0.3)
-        self.pos_encoding = torch.nn.Embedding(config.encoder.max_source_positions, config.encoder.hidden_size)
+        self.pos_encoding = torch.nn.Embedding(config.max_source_positions, config.hidden_size)
 
     def forward(self, input_values):
         hidden_states = self.conv(input_values[:, None, ...])
@@ -108,7 +108,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             encoder = AutoModelForCTC.from_config(config.encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
         if config.use_fbanks:
-            encoder.base_model.feature_extractor = MelFeatureExtractor(config)
+            encoder.base_model.feature_extractor = MelFeatureExtractor(config.encoder)
 
         if decoder is None:
             decoder = AutoModelForCausalLM.from_config(config.decoder)
