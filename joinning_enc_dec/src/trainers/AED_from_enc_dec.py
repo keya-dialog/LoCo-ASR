@@ -9,6 +9,7 @@ from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCTC, Auto
     AutoModelForSpeechSeq2Seq, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser
 from transformers.utils import logging
 
+from per_utterance.Ebranchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
 from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
@@ -25,6 +26,9 @@ AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
 
 AutoConfig.register("wav2vec2-branchformer", Wav2Vec2BranchformerConfig)
 AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)
+
+AutoConfig.register("wav2vec2-ebranchformer", Wav2Vec2EBranchformerConfig)
+AutoModelForCTC.register(Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC)
 
 if __name__ == '__main__':
     logging.set_verbosity_debug()
