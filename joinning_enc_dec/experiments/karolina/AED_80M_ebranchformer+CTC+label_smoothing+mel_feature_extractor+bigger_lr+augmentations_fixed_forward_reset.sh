@@ -7,14 +7,14 @@
 #SBATCH --time 2-00:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2-AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_fixed_forward_reset.out
 
-EXPERIMENT="AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_fixed_forward_reset"
+EXPERIMENT="AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_fixed_forward"
 PROJECT="LoCo-ASR_v2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 DATASET_DIR="${WORK_DIR}/datasets/fisher"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 
 export WANDB_PROJECT=$PROJECT
-export WANDB_RUN_ID=$EXPERIMENT
+export WANDB_RUN_ID="${EXPERIMENT}_reset"
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64

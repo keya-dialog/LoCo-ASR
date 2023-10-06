@@ -425,7 +425,7 @@ if __name__ == '__main__':
     configuration.hidden_size = 512
     configuration.output_hidden_size = 512
     configuration.n_head = 4
-    configuration.connected_residuals = [3, 5]
+    configuration.connected_residuals = [4, 6]
     configuration.tie_word_embeddings = False
 
     # Initializing a model (with random weights) from the configuration
