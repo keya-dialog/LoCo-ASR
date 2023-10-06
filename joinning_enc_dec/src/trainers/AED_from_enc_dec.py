@@ -13,6 +13,7 @@ from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2Branc
 from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
 from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
@@ -23,6 +24,9 @@ AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointC
 
 AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
 AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
+
+AutoConfig.register("gpt2-residuals-head", GPT2ResidualsLMHeadConfig)
+AutoModelForCausalLM.register(GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel)
 
 AutoConfig.register("wav2vec2-branchformer", Wav2Vec2BranchformerConfig)
 AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)

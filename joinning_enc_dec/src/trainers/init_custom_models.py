@@ -415,3 +415,20 @@ if __name__ == '__main__':
     print(encoder.num_parameters())
 
     encoder.push_to_hub("fisher_enc_12_layers_mel_feature_extractor")
+
+    from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadModel, GPT2ResidualsLMHeadConfig
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2ResidualsLMHeadConfig()
+    configuration.n_layer = 6
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 512
+    configuration.output_hidden_size = 512
+    configuration.n_head = 4
+    configuration.connected_residuals = [3, 5]
+    configuration.tie_word_embeddings = False
+
+    # Initializing a model (with random weights) from the configuration
+    decoder = GPT2ResidualsLMHeadModel(configuration)
+    print(decoder.num_parameters())
+    decoder.push_to_hub("fisher_dec_6_layers_residual4")

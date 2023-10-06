@@ -25,6 +25,7 @@ from transformers.pytorch_utils import torch_int_div
 from transformers.utils import logging
 
 from evaluation.ctc_scorer import CTCPrefixScoreTH
+from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel
 
 logger = logging.get_logger("transformers")
 
@@ -344,7 +345,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
             loss_fct = CrossEntropyLoss(label_smoothing=self.lsm_factor)
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
-            if hasattr(self.decoder, "head_weights") and len(self.decoder.head_weights) > 1:
+            if isinstance(self.decoder, GPT2LMMultiHeadModel) and len(self.decoder.head_weights) > 1:
                 dec_loss = torch.zeros_like(enc_loss)
                 for index, lm_head, lm_weight in zip([*self.decoder.head_locations, -1],
                                                      [*self.decoder.additional_lm_heads, self.decoder.lm_head],
