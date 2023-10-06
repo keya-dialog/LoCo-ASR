@@ -75,7 +75,8 @@ class GPT2ResidualsLMHeadModel(GPT2LMHeadModel):
             torch.cuda.set_device(self.transformer.first_device)
             hidden_states = hidden_states.to(self.lm_head.weight.device)
 
-        lm_logits = self.lm_head(torch.concat([hidden_states[index] for index in self.connected_residuals], dim=-1))
+        hidden_states = torch.concat([hidden_states[index] for index in self.connected_residuals], dim=-1)
+        lm_logits = self.lm_head(hidden_states)
 
         loss = None
         if labels is not None:
