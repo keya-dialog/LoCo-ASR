@@ -275,7 +275,7 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             max_source_positions=5000,
             num_mel_bins=84,
             use_fbanks=False,
-            Ebranchformer_conv_dropout=0.1,
+            ebranchformer_conv_dropout=0.1,
             csgu_activation="identity",
             csgu_kernel_size=31,
             csgu_use_linear_after_conv=False,
@@ -370,7 +370,7 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         # EBranchformer related params
         self.csgu_kernel_size = csgu_kernel_size
         self.csgu_activation = csgu_activation
-        self.csgu_conv_dropout = Ebranchformer_conv_dropout
+        self.csgu_conv_dropout = ebranchformer_conv_dropout
         self.csgu_use_linear_after_conv = csgu_use_linear_after_conv
         self.merge_conv_kernel = merge_conv_kernel
         self.use_macaron_ff = use_macaron_ff
@@ -502,41 +502,48 @@ class Wav2Vec2EBranchformerEncoderLayer(nn.Module):
             relative_position_embeddings: Optional[torch.Tensor] = None,
             output_attentions: bool = False,
     ):
-        residual = hidden_states
-
-        # Optional ff1
+        # 1. Optional ff1
         if self.ff1:
-            hidden_states = residual + 0.5 * self.ff1(hidden_states)
             residual = hidden_states
+            hidden_states = residual + 0.5 * self.ff1(hidden_states)
 
-        # 1. Self-Attention branch
-        x1 = self.self_attn_layer_norm(hidden_states)
-        x1, attn_weigts = self.self_attn(
-            hidden_states=x1,
+        # 2. Split input to three branches
+        residual = hidden_states
+        global_branch = hidden_states
+        local_branch = hidden_states
+
+        # 3. Self-Attention branch
+        global_branch = self.self_attn_layer_norm(global_branch)
+        global_branch, attn_weigts = self.self_attn(
+            hidden_states=global_branch,
             attention_mask=attention_mask,
             relative_position_embeddings=relative_position_embeddings,
             output_attentions=output_attentions,
         )
-        x1 = self.self_attn_dropout(x1)
+        global_branch = self.self_attn_dropout(global_branch)
 
-        # 2. cgMLP Branch
-        x2 = self.cgMLP_layer_norm(hidden_states)
-        x2 = self.cgMLP(x2)
+        # 4. cgMLP Branch
+        local_branch = self.cgMLP_layer_norm(local_branch)
+        local_branch = self.cgMLP(local_branch)
 
-        # 3. Merge
+        # 5. Merge operator
         # a, concat
-        hidden_states = torch.cat([x1, x2], dim=-1)
-        residual = hidden_states
-        # b, depthwise conv to mix
-        hidden_states = residual + self.depthwise_conv_fusion(hidden_states.transpose(1, 2)).transpose(1, 2)
+        hidden_states = torch.cat([global_branch, local_branch], dim=-1)
+        merge_residual = hidden_states
+        # b, depth-wise conv mixing
+        hidden_states = merge_residual + self.depthwise_conv_fusion(hidden_states.transpose(1, 2)).transpose(1, 2)
         # c, project back to original size and final dropout
         hidden_states = self.final_dropout(self.merge_proj(hidden_states))
 
-        # Optional ff2
+        # 6. Add residual
+        hidden_states = residual + hidden_states
+
+        # 7. Optional ff2
         if self.ff2:
             residual = hidden_states
             hidden_states = residual + 0.5 * self.ff2(hidden_states)
 
+        # 8. Final layer norm
         hidden_states = self.final_layer_norm(hidden_states)
         return hidden_states, attn_weigts
 
