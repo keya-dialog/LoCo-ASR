@@ -71,7 +71,7 @@ python joinning_enc_dec/src/trainers/LoCo_v2.py \
   --dataloader_num_workers="4" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
-  --metric_for_best_model="eval_loss" \
+  --metric_for_best_model="eval_wer" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \

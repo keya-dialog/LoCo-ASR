@@ -53,7 +53,7 @@ torchrun --standalone \
   --auto_find_batch_size="True" \
   --dataloader_num_workers="16" \
   --load_best_model_at_end="True" \
-  --metric_for_best_model="eval_loss" \
+  --metric_for_best_model="eval_wer" \
   --early_stopping_patience="10" \
   --remove_unused_columns="False" \
   --save_total_limit="2" \
