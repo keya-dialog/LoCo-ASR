@@ -345,7 +345,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                     lm_logits_per_layer.append(lm_logits)
                 if self.decoder.config.average_logits:
                     decoder_outputs.logits = (torch.tensor(self.decoder.head_weights, device=lm_logits.device)[:, None,
-                                              None] * torch.concat(lm_logits_per_layer)).mean(dim=0)
+                                              None] * torch.stack(lm_logits_per_layer)).mean(dim=0)
 
             else:
                 dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
