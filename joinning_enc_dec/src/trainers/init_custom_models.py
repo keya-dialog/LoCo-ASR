@@ -183,6 +183,25 @@ if __name__ == '__main__':
     configuration.hidden_size = 512
     configuration.output_hidden_size = 512
     configuration.n_head = 4
+    configuration.head_locations = [3]
+    configuration.head_weights = [0.3, 0.7]
+    configuration.tie_additional_weights = True
+    # Initializing a model (with random weights) from the configuration
+    decoder = GPT2LMMultiHeadModel(configuration)
+    print(decoder.num_parameters())
+
+    decoder.push_to_hub("fisher_dec_6_layers_multi_head3_tied")
+
+
+    from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2MultiHeadConfig()
+    configuration.n_layer = 6
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 512
+    configuration.output_hidden_size = 512
+    configuration.n_head = 4
     configuration.head_locations = [3, 4]
     configuration.head_weights = [0.3, 0.3, 0.7]
 

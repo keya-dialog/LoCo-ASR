@@ -14,10 +14,11 @@ from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 class GPT2MultiHeadConfig(GPT2Config):
     model_type = "gpt2-multi-head"
 
-    def __init__(self, head_locations=None, head_weights=None, *args, **kwargs):
+    def __init__(self, head_locations=None, head_weights=None, tie_additional_weights=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.head_locations = head_locations
         self.head_weights = head_weights
+        self.tie_additional_weights = tie_additional_weights
 
 
 class GPT2LMMultiHeadModel(GPT2LMHeadModel):
@@ -36,6 +37,36 @@ class GPT2LMMultiHeadModel(GPT2LMHeadModel):
             self.head_locations = []
             self.additional_lm_heads = nn.ModuleList([])
             self.head_weights = [1.0]
+        self.post_init()
+
+    def tie_weights(self):
+        """
+        Tie the weights between the input embeddings and the output embeddings.
+
+        If the `torchscript` flag is set in the configuration, can't handle parameter sharing so we are cloning the
+        weights instead.
+        """
+        super().tie_weights()
+        if hasattr(self, "additional_lm_heads") and getattr(self.config, "tie_additional_weights", False):
+            input_embeddings = self.get_input_embeddings()
+            for classifier in self.additional_lm_heads:
+                if self.config.torchscript:
+                    classifier.weight = nn.Parameter(input_embeddings.weight.clone())
+                else:
+                    classifier.weight = input_embeddings.weight
+
+                if getattr(classifier, "bias", None) is not None:
+                    classifier.bias.data = nn.functional.pad(
+                        classifier.bias.data,
+                        (
+                            0,
+                            classifier.weight.shape[0] - classifier.bias.shape[0],
+                        ),
+                        "constant",
+                        0,
+                    )
+                if hasattr(classifier, "out_features") and hasattr(input_embeddings, "num_embeddings"):
+                    classifier.out_features = input_embeddings.num_embeddings
 
     def forward(
             self,
