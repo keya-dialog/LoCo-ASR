@@ -4,8 +4,8 @@
 #SBATCH --partition qgpu
 #SBATCH --gpus 1
 #SBATCH --nodes 1
-#SBATCH --time 4:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/decoding/logits_averaging.out
+#SBATCH --time 24:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/decoding/logits_averaging+ctc_joint0.06.out
 
 PROJECT="LoCo-ASR_v2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
@@ -25,7 +25,7 @@ cd $WORK_DIR
 python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataset_name="${DATASET_DIR}" \
   --model="${MODEL_PATH}" \
-  --output_dir="test_logits_averaging" \
+  --output_dir="test_logits_averaging_ctc_joint0.06" \
   --predict_with_generate="True" \
   --validation_split="dev_6" \
   --per_device_eval_batch_size="32" \
@@ -33,4 +33,6 @@ python joinning_enc_dec/src/evaluation/evaluate_wer_base_seq2seq.py \
   --dataloader_num_workers="4" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
-  --decoder_average_logits
+  --decoder_average_logits \
+  --with_ctc \
+  --ctc_weight="0.06"
