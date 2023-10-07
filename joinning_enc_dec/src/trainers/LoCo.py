@@ -11,7 +11,8 @@ from context_aware.decoder import GPT2ConfigWithContext, GPT2WithContextLMHeadMo
 from context_aware.encoder import Wav2Vec2ConfigWithContext, Wav2Vec2WithContextForCTC
 from context_aware.trainer import ContextAwareTrainer
 from context_aware.utils import ContextContainer
-from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
+    JointCTCAttentionEncoderDecoderConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArgumentsContext, GenerationArguments, \
     ModelArgumentsContext
 from utils import Seq2SeqDataCollatorWithPaddingAndConvId, compute_metrics, filter_out_sequence_from_dataset

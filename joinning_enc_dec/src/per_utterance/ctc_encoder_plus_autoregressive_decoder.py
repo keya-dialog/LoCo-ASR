@@ -8,7 +8,6 @@ from torch import nn
 from torch.nn import CrossEntropyLoss
 from transformers import AutoConfig, AutoModelForCTC, AutoModelForCausalLM, PreTrainedModel, PretrainedConfig, \
     SpeechEncoderDecoderConfig, SpeechEncoderDecoderModel
-from transformers.activations import ACT2FN
 from transformers.generation.beam_search import BeamScorer, BeamSearchScorer
 from transformers.generation.logits_process import (
     LogitsProcessorList,
@@ -25,10 +24,25 @@ from transformers.pytorch_utils import torch_int_div
 from transformers.utils import logging
 
 from evaluation.ctc_scorer import CTCPrefixScoreTH
-from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel
+from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
+from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
+from per_utterance.extractors import MelFeatureExtractor
+from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel
 
 logger = logging.get_logger("transformers")
 
+AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
+AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
+
+AutoConfig.register("gpt2-residuals-head", GPT2ResidualsLMHeadConfig)
+AutoModelForCausalLM.register(GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel)
+
+AutoConfig.register("wav2vec2-branchformer", Wav2Vec2BranchformerConfig)
+AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)
+
+AutoConfig.register("wav2vec2-ebranchformer", Wav2Vec2EBranchformerConfig)
+AutoModelForCTC.register(Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC)
 
 class JointCTCAttentionEncoderDecoderConfig(SpeechEncoderDecoderConfig):
     model_type = "joint_aed_ctc_speech-encoder-decoder"
@@ -45,32 +59,6 @@ class Seq2SeqLMOutputLosses(Seq2SeqLMOutput):
 def wav2vec2_for_ctc_forward_hook(model: AutoModelForCTC, input: Any, output: CausalLMOutput):
     if "hidden_states" in output:
         output.last_hidden_state = output.hidden_states[-1]
-
-
-class MelFeatureExtractor(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.conv = torch.nn.Sequential(
-            *[nn.Sequential(nn.Conv2d(conv_in, out_channels=conv_out, kernel_size=(conv_kernel, conv_kernel),
-                                      stride=(conv_stride, conv_stride)),
-                            ACT2FN[config.feat_extract_activation]) for
-              conv_in, conv_out, conv_kernel, conv_stride in
-              zip([1, *config.conv_dim], config.conv_dim, config.conv_kernel,
-                  config.conv_stride)],
-        )
-
-        linear_in_dim = config.conv_dim[-1] * (((config.num_mel_bins - 1) // 2 - 1) // 2)
-        self.out = torch.nn.Linear(linear_in_dim, config.hidden_size, bias=True)
-        self.dropout = torch.nn.Dropout(p=0.3)
-        self.pos_encoding = torch.nn.Embedding(config.max_source_positions, config.hidden_size)
-
-    def forward(self, input_values):
-        hidden_states = self.conv(input_values[:, None, ...])
-        hidden_states = self.out(hidden_states.transpose(1, 2).flatten(2, 3))
-        position_ids = torch.arange(0, hidden_states.shape[-2], dtype=torch.long, device=hidden_states.device)
-        hidden_states = self.pos_encoding(position_ids) + hidden_states
-        hidden_states = self.dropout(hidden_states)
-        return hidden_states.transpose(1, 2)
 
 
 class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
@@ -347,12 +335,18 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
             if isinstance(self.decoder, GPT2LMMultiHeadModel) and len(self.decoder.head_weights) > 1:
                 dec_loss = torch.zeros_like(enc_loss)
+                lm_logits_per_layer = []
                 for index, lm_head, lm_weight in zip([*self.decoder.head_locations, -1],
                                                      [*self.decoder.additional_lm_heads, self.decoder.lm_head],
                                                      self.decoder.head_weights):
                     lm_logits = lm_head(decoder_outputs.hidden_states[index])
                     dec_loss += lm_weight * loss_fct(lm_logits.reshape(-1, self.decoder.config.vocab_size),
                                                      labels.reshape(-1))
+                    lm_logits_per_layer.append(lm_logits)
+                if self.decoder.config.average_logits:
+                    decoder_outputs.logits = (torch.tensor(self.decoder.head_weights, device=lm_logits.device)[:, None,
+                                              None] * torch.concat(lm_logits_per_layer)).mean(dim=0)
+
             else:
                 dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
                 dec_loss = loss_fct(dec_logits.reshape(-1, self.decoder.config.vocab_size), labels.reshape(-1))

@@ -5,15 +5,12 @@ import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_from_disk
 from torch.optim import AdamW
-from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCTC, AutoModelForCausalLM, \
-    AutoModelForSpeechSeq2Seq, AutoTokenizer, EarlyStoppingCallback, HfArgumentParser
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
+    EarlyStoppingCallback, HfArgumentParser
 from transformers.utils import logging
 
-from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
-from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
-from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
-from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
-from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
+    JointCTCAttentionEncoderDecoderConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
@@ -21,18 +18,6 @@ from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, F
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
-
-AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
-AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
-
-AutoConfig.register("gpt2-residuals-head", GPT2ResidualsLMHeadConfig)
-AutoModelForCausalLM.register(GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel)
-
-AutoConfig.register("wav2vec2-branchformer", Wav2Vec2BranchformerConfig)
-AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)
-
-AutoConfig.register("wav2vec2-ebranchformer", Wav2Vec2EBranchformerConfig)
-AutoModelForCTC.register(Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC)
 
 if __name__ == '__main__':
     logging.set_verbosity_debug()

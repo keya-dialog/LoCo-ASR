@@ -13,7 +13,8 @@ from transformers import (AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSe
                           StoppingCriteriaList)
 from transformers.trainer_pt_utils import find_batch_size
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
+    JointCTCAttentionEncoderDecoderConfig
 from trainers.training_arguments import DataTrainingArguments, ModelArguments
 from utils import Seq2SeqDataCollatorWithPadding, filter_out_sequence_from_dataset
 

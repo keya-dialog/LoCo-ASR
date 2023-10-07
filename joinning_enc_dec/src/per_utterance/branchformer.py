@@ -45,7 +45,7 @@ from transformers.utils import (
     logging,
 )
 
-from per_utterance.models import MelFeatureExtractor
+from per_utterance.extractors import MelFeatureExtractor
 
 logger = logging.get_logger(__name__)
 

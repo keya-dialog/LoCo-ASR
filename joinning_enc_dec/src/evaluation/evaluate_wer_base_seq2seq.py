@@ -11,7 +11,9 @@ from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq
     LogitsProcessor, LogitsProcessorList, Seq2SeqTrainer, Seq2SeqTrainingArguments
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder, JointCTCAttentionEncoderDecoderConfig
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
+    JointCTCAttentionEncoderDecoderConfig
+from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel
 from utils import Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
@@ -64,6 +66,9 @@ class ModelArguments:
     )
     ctc_beam_width: Optional[int] = field(
         default=None, metadata={"help": "Width of the CTC beam."}
+    )
+    decoder_average_logits: bool = field(
+        default=False, metadata={"help": "Whether to average logits from intermediate layers"}
     )
 
 
@@ -150,6 +155,10 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_path)
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path)
+
+    if model_args.decoder_average_logits and isinstance(model.decoder, GPT2LMMultiHeadModel):
+        model.decoder.config.average_logits = model_args.decoder_average_logits
+
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    tokenizer=tokenizer,
                                                    padding=True)

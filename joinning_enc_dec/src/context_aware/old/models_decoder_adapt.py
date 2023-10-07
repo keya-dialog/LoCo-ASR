@@ -19,7 +19,7 @@ from transformers.utils import (
     logging,
 )
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder
 
 logger = logging.get_logger("transformers")
 

@@ -14,11 +14,13 @@ from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 class GPT2MultiHeadConfig(GPT2Config):
     model_type = "gpt2-multi-head"
 
-    def __init__(self, head_locations=None, head_weights=None, tie_additional_weights=False, *args, **kwargs):
+    def __init__(self, head_locations=None, head_weights=None, tie_additional_weights=False, average_logits=False,
+                 *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.head_locations = head_locations
         self.head_weights = head_weights
         self.tie_additional_weights = tie_additional_weights
+        self.average_logits = average_logits
 
 
 class GPT2LMMultiHeadModel(GPT2LMHeadModel):
@@ -119,17 +121,22 @@ class GPT2LMMultiHeadModel(GPT2LMHeadModel):
         loss = None
         if labels is not None:
             loss = torch.zeros(1).to(hidden_states[-1].device)
+            lm_logits = []
             loss_fct = CrossEntropyLoss()
 
             for index, lm_head, lm_weight in zip([*self.head_locations, -1], [*self.additional_lm_heads, self.lm_head],
                                                  self.head_weights):
-                lm_logits = lm_head(hidden_states[index])
+                lm_logits.append(lm_head(hidden_states[index]))
                 # Shift so that tokens < n predict n
-                shift_logits = lm_logits[..., :-1, :].contiguous()
+                shift_logits = lm_logits[-1][..., :-1, :].contiguous()
                 shift_labels = labels[..., 1:].contiguous()
                 # Flatten the tokens
                 loss += lm_weight * loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
 
+            if self.config.average_logits:
+                lm_logits = (torch.vstack(lm_logits) * torch.tensor(self.head_weights)).mean(dim=0)
+            else:
+                lm_logits = lm_logits[-1]
         if not return_dict:
             output = (lm_logits,) + transformer_outputs[1:]
             return ((loss,) + output) if loss is not None else output

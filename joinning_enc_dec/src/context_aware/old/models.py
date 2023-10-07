@@ -13,7 +13,7 @@ from transformers.models.wav2vec2.configuration_wav2vec2 import Wav2Vec2Config
 from transformers.models.wav2vec2.modeling_wav2vec2 import _HIDDEN_STATES_START_POSITION
 from transformers.utils import logging
 
-from per_utterance.models import JointCTCAttentionEncoderDecoder
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder
 
 logger = logging.get_logger("transformers")
 
