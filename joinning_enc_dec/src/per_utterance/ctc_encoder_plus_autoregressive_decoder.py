@@ -44,6 +44,7 @@ AutoModelForCTC.register(Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC)
 AutoConfig.register("wav2vec2-ebranchformer", Wav2Vec2EBranchformerConfig)
 AutoModelForCTC.register(Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC)
 
+
 class JointCTCAttentionEncoderDecoderConfig(SpeechEncoderDecoderConfig):
     model_type = "joint_aed_ctc_speech-encoder-decoder"
     is_composition = True
@@ -344,8 +345,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                                                      labels.reshape(-1))
                     lm_logits_per_layer.append(lm_logits)
                 if self.decoder.config.average_logits:
-                    decoder_outputs.logits = (torch.tensor(self.decoder.head_weights, device=lm_logits.device)[:, None,
-                                              None] * torch.stack(lm_logits_per_layer)).mean(dim=0)
+                    decoder_outputs.logits = torch.matmul(torch.stack(lm_logits_per_layer).T,
+                                                          torch.tensor(self.decoder.head_weights,
+                                                                       device=lm_logits_per_layer[-1].device)).T
 
             else:
                 dec_logits = decoder_outputs.logits if return_dict else decoder_outputs[0]
