@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_lm_head3.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_lm_head3"
+EXPERIMENT="tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -33,7 +33,7 @@ torchrun --standalone \
   --min_duration_in_seconds="2.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/fisher_dec_6_layers_multi_head" \
+  --base_decoder_model="Lakoc/fisher_dec_6_layers" \
   --tokenizer_name="Lakoc/fisher_bpe" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
