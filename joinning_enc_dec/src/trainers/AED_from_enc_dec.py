@@ -128,7 +128,11 @@ if __name__ == '__main__':
     printing_callback = AdditionalLossPrinterCallback()
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    tokenizer=tokenizer,
-                                                   padding=True, sampling_rate=model_args.sampling_rate)
+                                                   padding=True,
+                                                   sampling_rate=model_args.sampling_rate,
+                                                   audio_path=data_args.audio_column_path,
+                                                   text_path=data_args.labels_column_path
+                                                   )
     optimizer = None
     if training_args.custom_optimizer:
         optimizer = AdamW(group_params(model, training_args.weight_decay, training_args.learning_rate,

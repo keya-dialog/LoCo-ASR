@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
 
 from transformers import Seq2SeqTrainingArguments
 
@@ -141,14 +141,20 @@ class DataTrainingArguments:
     apply_augmentations: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
     )
+    audio_column_path: Optional[List[str]] = field(
+        default=None, metadata={"help": "Audio column path in the feature dictionary."}
+    )
+    labels_column_path: Optional[List[str]] = field(
+        default=None, metadata={"help": "Labels column path in the feature dictionary."}
+    )
 
 
 @dataclass
 class ModelArgumentsContext(ModelArguments):
-    enc_memory_cells_location: list[int] = field(
+    enc_memory_cells_location: List[int] = field(
         default=None, metadata={"help": "Positions where to place memory cells in encoder"}
     )
-    dec_memory_cells_location: list[int] = field(
+    dec_memory_cells_location: List[int] = field(
         default=None, metadata={"help": "Positions where to place memory cells in decoder"}
     )
     enc_memory_dim: int = field(
