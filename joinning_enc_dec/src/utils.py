@@ -165,6 +165,10 @@ class AdditionalLossTrackerTrainer(Seq2SeqTrainer):
         return (loss, outputs) if return_outputs else loss
 
 
+def audio_object_stripper(audio, key="audio"):
+    return audio[key] if isinstance(audio, dict) and hasattr(audio, key) else audio
+
+
 @dataclass
 class Seq2SeqDataCollatorWithPadding:
     """
@@ -213,13 +217,15 @@ class Seq2SeqDataCollatorWithPadding:
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
-        input_features = self.feature_extractor([feature[self.audio_path] for feature in features],
-                                                padding=True,
-                                                sampling_rate=self.sampling_rate)
+        input_features = self.feature_extractor(
+            [audio_object_stripper(feature[self.audio_path]) for feature in features],
+            padding=True,
+            sampling_rate=self.sampling_rate)
         labels = self.tokenizer.batch_encode_plus(
             [self._encapsulate_utterance(feature[self.text_path]) for feature in features],
             return_attention_mask=True,
-            padding='longest', return_tensors='pt')
+            padding='longest',
+            return_tensors='pt')
 
         batch = self.feature_extractor.pad(
             input_features,

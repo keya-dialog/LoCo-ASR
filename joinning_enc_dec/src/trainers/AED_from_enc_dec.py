@@ -14,7 +14,8 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset, group_params
+    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_out_sequence_from_dataset, \
+    group_params
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -50,12 +51,10 @@ if __name__ == '__main__':
             Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
             TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
         ])
-        dataset[data_args.train_split].set_transform(
-            lambda batch: {
-                data_args.audio_column_name: [
-                    augmenter(np.array(audio, dtype=np.float32), sample_rate=model_args.sampling_rate) for audio
-                    in batch[data_args.audio_column_name]]},
-            columns=[data_args.audio_column_name], output_all_columns=True)
+        dataset[data_args.train_split].set_transform(lambda batch: {data_args.audio_column_name: [
+            augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=model_args.sampling_rate)
+            for audio in batch[data_args.audio_column_name]]}, columns=[data_args.audio_column_name],
+                                                     output_all_columns=True)
 
     if data_args.val_indexes_to_use:
         indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
