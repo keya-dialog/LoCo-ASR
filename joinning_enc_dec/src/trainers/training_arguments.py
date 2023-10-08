@@ -103,10 +103,10 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
 
-    dataset_name: Optional[str] = field(
-        default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
+    dataset_name: str = field(
+        metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
-    dataset_config: Optional[List[str]] = field(
+    dataset_config: Optional[str] = field(
         default=None, metadata={"help": "The config of the dataset to use (via the datasets library)."}
     )
     audio_column_name: Optional[str] = field(

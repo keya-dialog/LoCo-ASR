@@ -27,14 +27,10 @@ if __name__ == '__main__':
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
     # 1. Load dataset
-    if data_args.dataset_name is not None and data_args.dataset_config is not None:
-        raise ValueError("Please try to load only single dataset.")
-
-    if data_args.dataset_name is not None:
+    if data_args.dataset_config is not None:
+        dataset = load_dataset(data_args.dataset_name, data_args.dataset_config, keep_in_memory=False)
+    else:
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
-
-    elif data_args.dataset_config is not None:
-        dataset = load_dataset(*data_args.dataset_config, keep_in_memory=False)
 
     if training_args.length_column_name in dataset[data_args.train_split]:
         for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
