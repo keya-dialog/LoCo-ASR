@@ -103,8 +103,11 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
 
-    dataset_name: str = field(
-        metadata={"help": "The name of the dataset to use (via the datasets library)."}
+    dataset_name: Optional[str] = field(
+        default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
+    )
+    dataset_config: Optional[List[str]] = field(
+        default=None, metadata={"help": "The config of the dataset to use (via the datasets library)."}
     )
     audio_column_name: Optional[str] = field(
         default="audio",
@@ -140,12 +143,6 @@ class DataTrainingArguments:
     )
     apply_augmentations: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
-    )
-    audio_column_path: Optional[List[str]] = field(
-        default=None, metadata={"help": "Audio column path in the feature dictionary."}
-    )
-    labels_column_path: Optional[List[str]] = field(
-        default=None, metadata={"help": "Labels column path in the feature dictionary."}
     )
 
 

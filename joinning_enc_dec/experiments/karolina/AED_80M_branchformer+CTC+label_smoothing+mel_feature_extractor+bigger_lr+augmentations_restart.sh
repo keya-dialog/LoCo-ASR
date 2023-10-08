@@ -71,6 +71,7 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --audio_column_name="input_values" \
+  --text_column_name="labels" \
   --predict_with_generate \
   --restart_from="${EXPERIMENT_PATH}/checkpoint-66000/" \
   --ignore_data_skip

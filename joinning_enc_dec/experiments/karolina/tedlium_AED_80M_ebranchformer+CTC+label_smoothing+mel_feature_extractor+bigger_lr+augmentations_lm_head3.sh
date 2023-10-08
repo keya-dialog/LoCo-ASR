@@ -5,16 +5,15 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_multi_lm_heads2.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_lm_head3.out
 
-EXPERIMENT="ASR_v2_AED_80M_label_smoothing_MELUXINA_mel_fe_augmentations_multi_lm_heads2"
-PROJECT="LoCo-ASR_v2"
+EXPERIMENT="tedlium_AED_ebranchformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_lm_head3"
+PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-DATASET_DIR="${WORK_DIR}/datasets/fisher"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 
 export WANDB_PROJECT=$PROJECT
-export WANDB_RUN_ID=$EXPERIMENT
+export WANDB_RUN_ID="${EXPERIMENT}_reset"
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
@@ -24,21 +23,19 @@ source activate loco_asr
 
 cd $WORK_DIR
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
-  --dataset_name="${DATASET_DIR}" \
+  --dataset_config="LIUM/tedlium release3" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="2.0" \
-  --base_encoder_model="Lakoc/fisher_enc_12_layers_mel_feature_extractor" \
+  --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/fisher_dec_6_layers_additional_head2" \
+  --base_decoder_model="Lakoc/fisher_dec_6_layers_multi_head" \
   --tokenizer_name="Lakoc/fisher_bpe" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-4" \
-  --warmup_steps="20000" \
+  --learning_rate="2e-3" \
+  --warmup_steps="25000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
@@ -49,7 +46,7 @@ torchrun --standalone \
   --group_by_length="True" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="24" \
+  --dataloader_num_workers="16" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_wer" \
@@ -72,6 +69,6 @@ torchrun --standalone \
   --apply_augmentations \
   --audio_column_name="input_values" \
   --text_column_name="labels" \
-  --predict_with_generate
+  --predict_with_generate \
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

@@ -3,7 +3,7 @@ import pickle
 
 import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
-from datasets import load_from_disk
+from datasets import load_dataset, load_from_disk
 from torch.optim import AdamW
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
     EarlyStoppingCallback, HfArgumentParser
@@ -27,11 +27,20 @@ if __name__ == '__main__':
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
     # 1. Load dataset
-    dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
-    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
-        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
-                                                          max_input_len=data_args.max_duration_in_seconds,
-                                                          min_input_len=data_args.min_duration_in_seconds)
+    if data_args.dataset_name is not None and data_args.dataset_config is not None:
+        raise ValueError("Please try to load only single dataset.")
+
+    if data_args.dataset_name is not None:
+        dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
+
+    elif data_args.dataset_config is not None:
+        dataset = load_dataset(*data_args.dataset_config, keep_in_memory=False)
+
+    if training_args.length_column_name in dataset[data_args.train_split]:
+        for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
+            dataset[split] = filter_out_sequence_from_dataset(dataset[split],
+                                                              max_input_len=data_args.max_duration_in_seconds,
+                                                              min_input_len=data_args.min_duration_in_seconds)
 
     if data_args.apply_augmentations:
         augmenter = Compose([
@@ -130,8 +139,8 @@ if __name__ == '__main__':
                                                    tokenizer=tokenizer,
                                                    padding=True,
                                                    sampling_rate=model_args.sampling_rate,
-                                                   audio_path=data_args.audio_column_path,
-                                                   text_path=data_args.labels_column_path
+                                                   audio_path=data_args.audio_column_name,
+                                                   text_path=data_args.text_column_name
                                                    )
     optimizer = None
     if training_args.custom_optimizer:

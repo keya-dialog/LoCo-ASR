@@ -1,6 +1,5 @@
-import operator
 from dataclasses import dataclass, field, make_dataclass
-from functools import reduce
+from dataclasses import dataclass, field, make_dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -205,18 +204,8 @@ class Seq2SeqDataCollatorWithPadding:
     pad_to_multiple_of: Optional[int] = None
     pad_to_multiple_of_labels: Optional[int] = None
     sampling_rate: Optional[int] = 16_000
-    audio_path: List[str] = None
-    text_path: List[str] = None
-
-    def __post_init__(self):
-        if self.audio_path is None:
-            self.audio_path = ["input_values"]
-        if self.text_path is None:
-            self.text_path = ["labels"]
-
-    @staticmethod
-    def get_from_dict(data_dict, map_list):
-        return reduce(operator.getitem, map_list, data_dict)
+    audio_path: str = None
+    text_path: str = None
 
     def _encapsulate_utterance(self, utterance):
         return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
@@ -224,11 +213,11 @@ class Seq2SeqDataCollatorWithPadding:
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
-        input_features = self.feature_extractor([self.get_from_dict(feature, self.audio_path) for feature in features],
+        input_features = self.feature_extractor([feature[self.audio_path] for feature in features],
                                                 padding=True,
                                                 sampling_rate=self.sampling_rate)
         labels = self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(self.get_from_dict(feature, self.text_path)) for feature in features],
+            [self._encapsulate_utterance(feature[self.text_path]) for feature in features],
             return_attention_mask=True,
             padding='longest', return_tensors='pt')
 
@@ -280,9 +269,9 @@ class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
 
 
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,
-                                     min_input_len: float = 0.1) -> Dataset:
+                                     min_input_len: float = 0.1, length_column="input_len") -> Dataset:
     """Filters out sequences form dataset which are longer than provided threshold"""
-    lengths = np.array(df['input_len'])
+    lengths = np.array(df[length_column])
     indexes_ok = np.argwhere(np.logical_and(lengths <= max_input_len, lengths >= min_input_len))
     df = df.select(indexes_ok.flatten())
     return df

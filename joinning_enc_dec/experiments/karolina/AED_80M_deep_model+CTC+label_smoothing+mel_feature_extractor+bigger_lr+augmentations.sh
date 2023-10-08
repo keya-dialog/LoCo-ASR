@@ -68,4 +68,5 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --audio_column_name="input_values" \
+  --text_column_name="labels" \
   --predict_with_generate

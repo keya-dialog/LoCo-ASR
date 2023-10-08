@@ -71,6 +71,7 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --audio_column_name="input_values" \
+  --text_column_name="labels" \
   --predict_with_generate \
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

@@ -71,6 +71,7 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --audio_column_name="input_values" \
+  --text_column_name="labels" \
   --predict_with_generate
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-ASR_v2_AED_conformer_68M_label_smoothing_MELUXINA_mel_fe_augmentations_higher_lr.out $EXPERIMENT_PATH/
