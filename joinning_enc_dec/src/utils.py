@@ -166,7 +166,7 @@ class AdditionalLossTrackerTrainer(Seq2SeqTrainer):
 
 
 def audio_object_stripper(audio, key="array"):
-    return audio[key] if isinstance(audio, dict) and hasattr(audio, key) else audio
+    return audio[key] if isinstance(audio, dict) and key in audio else audio
 
 
 @dataclass
