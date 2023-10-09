@@ -13,4 +13,4 @@ export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 source activate loco_asr
 
 cd $WORK_DIR
-python joinning_enc_dec/src/trainers/train_tokenizer.py --dataset_name="LIUM/tedlium" --dataset_config="release3" --model_name="Lakoc/ted_tokenizer"
+python joinning_enc_dec/src/trainers/train_tokenizer.py --dataset_name="/mnt/proj1/open-28-58/lakoc/LoCo-ASR//datasets/fisher" --model_name="Lakoc/fisher_tokenizer"
