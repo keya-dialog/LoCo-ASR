@@ -187,6 +187,10 @@ class TokenizerTrainingArguments:
     model_name: str = field(
         metadata={"help": "The name of the model to be created (via the transformers library)."}
     )
+    tmp_model_name: str = field(
+        default="tmp_tokenizer",
+        metadata={"help": "The name of the model to be created (via the transformers library)."}
+    )
     dataset_config: Optional[str] = field(
         default=None, metadata={"help": "The config of the dataset to use (via the datasets library)."}
     )

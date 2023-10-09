@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # 4. Train sentencepiece tokenizer
     spm.SentencePieceTrainer.Train(
         input=tokenizer_args.raw_text_file,
-        model_prefix=tokenizer_args.model_name,
+        model_prefix=tokenizer_args.tmp_model_name,
         pad_id=3,
         pad_piece='<pad>',
         vocab_size=tokenizer_args.vocab_size,
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # 5. Instantiate tokenizer and push to hub
     tokenizer_deberta = DebertaV2Tokenizer(
-        vocab_file=f"{tokenizer_args.model_name}.model",
+        vocab_file=f"{tokenizer_args.tmp_model_name}.model",
         bos_token='<s>',
         cls_token='<s>',
         sep_token='</s>',
