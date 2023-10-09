@@ -10,7 +10,7 @@ if __name__ == '__main__':
     logger = logging.get_logger("transformers")
     parser = HfArgumentParser((TokenizerTrainingArguments,))
 
-    tokenizer_args = parser.parse_args_into_dataclasses()
+    tokenizer_args, = parser.parse_args_into_dataclasses()
     # 1. Load dataset
     if tokenizer_args.dataset_config is not None:
         dataset = load_dataset(tokenizer_args.dataset_name, tokenizer_args.dataset_config, keep_in_memory=False)
