@@ -184,6 +184,9 @@ class TokenizerTrainingArguments:
     dataset_name: str = field(
         metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
+    model_name: str = field(
+        metadata={"help": "The name of the model to be created (via the transformers library)."}
+    )
     dataset_config: Optional[str] = field(
         default=None, metadata={"help": "The config of the dataset to use (via the datasets library)."}
     )
@@ -196,4 +199,7 @@ class TokenizerTrainingArguments:
     )
     vocab_size: Optional[int] = field(
         default=5_000, metadata={"help": "Vocab size."}
+    )
+    raw_text_file: Optional[str] = field(
+        default="raw_text", metadata={"help": "Path to raw text file."}
     )
