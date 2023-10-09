@@ -68,6 +68,9 @@ if __name__ == '__main__':
                              utt_id in indexes]
         dataset[data_args.validation_split] = dataset[data_args.validation_split].select(indexes_to_select)
 
+    if training_args.preprocess_dataset_only:
+        exit(0)
+
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
     tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)

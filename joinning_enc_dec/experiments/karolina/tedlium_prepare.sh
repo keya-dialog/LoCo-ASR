@@ -1,13 +1,10 @@
 #!/usr/bin/bash
-#SBATCH --job-name LoCo
+#SBATCH --job-name TED
 #SBATCH --account OPEN-28-58
-#SBATCH --partition qgpu
-#SBATCH --gpus 4
-#SBATCH --nodes 1
-#SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer.out
+#SBATCH --partition qcpu
+#SBATCH --time 24:00:00
 
-EXPERIMENT="tedlium_AED_ebranchformer"
+EXPERIMENT="tedlium_AED_ebranchformer_test"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -23,9 +20,7 @@ source activate loco_asr
 
 cd $WORK_DIR
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -69,6 +64,5 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --preprocessing_num_workers="64"
-
-cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
+  --preprocessing_num_workers="128" \
+  --preprocess_dataset_only

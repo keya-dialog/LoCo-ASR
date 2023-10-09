@@ -85,6 +85,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     freeze_cross_attention: bool = field(
         default=False, metadata={"help": "Whether to freeze cross attentions"}
     )
+    preprocess_dataset_only: bool = field(
+        default=False, metadata={"help": "Whether to preprocess dataset only"}
+    )
 
 
 @dataclass
