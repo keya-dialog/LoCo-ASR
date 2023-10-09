@@ -144,6 +144,9 @@ class DataTrainingArguments:
     apply_augmentations: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
     )
+    preprocessing_num_workers: Optional[int] = field(
+        default=1, metadata={"help": "Number of processes to use for data preprocessing."}
+    )
 
 
 @dataclass

@@ -33,11 +33,17 @@ if __name__ == '__main__':
     else:
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
-    if training_args.length_column_name in dataset[data_args.train_split]:
-        for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
-            dataset[split] = filter_out_sequence_from_dataset(dataset[split],
-                                                              max_input_len=data_args.max_duration_in_seconds,
-                                                              min_input_len=data_args.min_duration_in_seconds)
+    if training_args.length_column_name not in dataset[data_args.train_split]:
+        dataset[data_args.train_split] = dataset[data_args.train_split].map(lambda x: {**x,
+                                                                                       training_args.length_column_name: len(
+                                                                                           audio_object_stripper(x[
+                                                                                                                     data_args.audio_column_name])) / model_args.sampling_rate},
+                                                                            num_proc=data_args.preprocessing_num_workers)
+
+    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
+        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
+                                                          max_input_len=data_args.max_duration_in_seconds,
+                                                          min_input_len=data_args.min_duration_in_seconds)
 
     if data_args.apply_augmentations:
         augmenter = Compose([
