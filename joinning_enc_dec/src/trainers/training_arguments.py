@@ -173,3 +173,27 @@ class GeneralTrainingArgumentsContext(GeneralTrainingArguments):
     turn_index_column_name: str = field(
         default=None, metadata={"help": "Turn index column."}
     )
+
+
+@dataclass
+class TokenizerTrainingArguments:
+    """
+    Arguments pertaining to what data we are going to input our model for training and eval.
+    """
+
+    dataset_name: str = field(
+        metadata={"help": "The name of the dataset to use (via the datasets library)."}
+    )
+    dataset_config: Optional[str] = field(
+        default=None, metadata={"help": "The config of the dataset to use (via the datasets library)."}
+    )
+    text_column_name: Optional[str] = field(
+        default="text",
+        metadata={"help": "The name of the dataset column containing the text data. Defaults to 'text'"},
+    )
+    train_split: Optional[str] = field(
+        default="train", metadata={"help": "Training split to be used."}
+    )
+    vocab_size: Optional[int] = field(
+        default=5_000, metadata={"help": "Vocab size."}
+    )
