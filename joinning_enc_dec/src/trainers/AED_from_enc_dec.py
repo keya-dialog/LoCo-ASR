@@ -34,7 +34,8 @@ if __name__ == '__main__':
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
     if training_args.length_column_name not in dataset[data_args.train_split].column_names:
-        dataset[data_args.train_split] = (dataset[data_args.train_split].
+        for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
+            dataset[split] = (dataset[split].
                                           map(lambda x: {**x, training_args.length_column_name: len(
             audio_object_stripper(x[data_args.audio_column_name])) / model_args.sampling_rate},
                                               num_proc=data_args.preprocessing_num_workers,
