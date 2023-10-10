@@ -150,6 +150,9 @@ class DataTrainingArguments:
     preprocessing_num_workers: Optional[int] = field(
         default=1, metadata={"help": "Number of processes to use for data preprocessing."}
     )
+    writer_batch_size: Optional[int] = field(
+        default=100, metadata={"help": "Batch size to use for writing to disk."}
+    )
 
 
 @dataclass
