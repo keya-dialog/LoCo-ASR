@@ -34,8 +34,18 @@ if __name__ == '__main__':
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
     if training_args.length_column_name not in dataset[data_args.train_split].column_names:
-        dataset = dataset.map(lambda x: {**x, training_args.length_column_name: len(
-            audio_object_stripper(x[data_args.audio_column_name])) / model_args.sampling_rate},
+        len_column = training_args.length_column_name
+        audio_column = data_args.audio_column_name
+        sampling_rate = model_args.sampling_rate
+
+
+        def preprocess(example):
+            example[len_column] = len(
+                audio_object_stripper(example[audio_column])) / sampling_rate
+            return example
+
+
+        dataset = dataset.map(preprocess,
                               num_proc=data_args.preprocessing_num_workers,
                               writer_batch_size=data_args.writer_batch_size)
 

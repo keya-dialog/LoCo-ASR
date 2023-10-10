@@ -4,13 +4,9 @@
 #SBATCH --partition qcpu
 #SBATCH --time 24:00:00
 
-EXPERIMENT="tedlium_AED_ebranchformer_test"
-PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 
-export WANDB_PROJECT=$PROJECT
-export WANDB_RUN_ID="${EXPERIMENT}"
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
@@ -40,7 +36,7 @@ python \
   --eval_steps="1000" \
   --per_device_train_batch_size="64" \
   --per_device_eval_batch_size="32" \
-  --report_to="wandb" \
+  --report_to="none" \
   --optim="adamw_torch" \
   --dataloader_num_workers="16" \
   --length_column_name="input_len" \
