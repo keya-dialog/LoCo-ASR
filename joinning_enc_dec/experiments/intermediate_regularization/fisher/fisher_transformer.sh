@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-#SBATCH --job-name FISHER
+#SBATCH --job-name FISHER_V2
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qgpu
 #SBATCH --gpus 4
@@ -8,7 +8,7 @@
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/fisher_AED_transformer.out
 
 EXPERIMENT="fisher_AED_transformer"
-PROJECT="FISHER"
+PROJECT="FISHER_V2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 DATASET_DIR="${WORK_DIR}/datasets/fisher"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -19,8 +19,7 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-ml Anaconda3/2021.05
-source activate loco_asr
+source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
 
 cd $WORK_DIR
 
