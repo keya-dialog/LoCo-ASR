@@ -33,7 +33,7 @@ if __name__ == '__main__':
     else:
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
-    if training_args.length_column_name not in dataset[data_args.train_split]:
+    if training_args.length_column_name not in dataset[data_args.train_split].column_names:
         dataset[data_args.train_split] = dataset[data_args.train_split].map(lambda x: {**x,
                                                                                        training_args.length_column_name: len(
                                                                                            audio_object_stripper(x[
