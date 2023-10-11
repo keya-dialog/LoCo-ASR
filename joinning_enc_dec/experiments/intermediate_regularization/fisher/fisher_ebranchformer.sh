@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/fisher_AED_ebranchformer.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/fisher_AED_ebranchformer_bigger_lr.out
 
-EXPERIMENT="fisher_AED_ebranchformer"
+EXPERIMENT="fisher_AED_ebranchformer_bigger_lr"
 PROJECT="FISHER_V2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 DATASET_DIR="${WORK_DIR}/datasets/fisher"
@@ -36,8 +36,8 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/fisher_bpe" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-4" \
-  --warmup_steps="20000" \
+  --learning_rate="2e-3" \
+  --warmup_steps="25000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \

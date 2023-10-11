@@ -36,8 +36,8 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/fisher_bpe" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-4" \
-  --warmup_steps="20000" \
+  --learning_rate="2e-3" \
+  --warmup_steps="25000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="5000" \
