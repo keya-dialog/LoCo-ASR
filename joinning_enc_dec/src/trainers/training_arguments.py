@@ -37,7 +37,10 @@ class ModelArguments:
         default=False, metadata={"help": "Add adapters to the decoder."}
     )
     sampling_rate: Optional[int] = field(
-        default=16_000, metadata={"help": "Sampling rate for the model"}
+        default=16_000, metadata={"help": "Sampling rate for the model."}
+    )
+    tokenizer_type: Optional[str] = field(
+        default="unigram", metadata={"help": "Type of tokenizer to create if does not exists."}
     )
 
 
