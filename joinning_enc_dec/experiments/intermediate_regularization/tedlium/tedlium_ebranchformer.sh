@@ -18,12 +18,13 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-ml Anaconda3/2021.05
-source activate loco_asr
+source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
 
 cd $WORK_DIR
 
-python \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -42,7 +43,7 @@ python \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="64" \
+  --per_device_train_batch_size="32" \
   --per_device_eval_batch_size="32" \
   --report_to="wandb" \
   --optim="adamw_torch" \
