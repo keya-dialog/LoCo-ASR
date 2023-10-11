@@ -29,7 +29,8 @@ if __name__ == '__main__':
 
     # 1. Load dataset
     if data_args.dataset_config is not None:
-        dataset = load_dataset(data_args.dataset_name, data_args.dataset_config, keep_in_memory=False)
+        dataset = load_dataset(data_args.dataset_name, data_args.dataset_config, keep_in_memory=False,
+                               num_proc=data_args.preprocessing_num_workers)
     else:
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
