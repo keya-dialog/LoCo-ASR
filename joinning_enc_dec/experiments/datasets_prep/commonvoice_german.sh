@@ -59,5 +59,5 @@ python \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --preprocessing_num_workers="128" \
+  --preprocessing_num_workers="32" \
   --preprocess_dataset_only
