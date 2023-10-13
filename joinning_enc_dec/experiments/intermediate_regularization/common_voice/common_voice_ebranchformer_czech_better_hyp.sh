@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_bigger_lr.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_bigger_lr_wo_warmup.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_bigger_lr"
+EXPERIMENT="common_voice_AED_ebranchformer_bigger_lr_wo_warmup"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -39,7 +39,7 @@ torchrun --standalone \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="5e-3" \
-  --warmup_steps="25000" \
+  --warmup_steps="2000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="1000" \
