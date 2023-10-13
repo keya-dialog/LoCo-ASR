@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_bigger_lr_wo_warmup.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_bigger_lr_warm.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_bigger_lr_wo_warmup"
+EXPERIMENT="common_voice_AED_ebranchformer_bigger_lr_warm"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -38,13 +38,13 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/common_voice_czech_tokenizer" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="5e-3" \
-  --warmup_steps="2000" \
+  --learning_rate="5e-4" \
+  --warmup_steps="5000" \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="1000" \
+  --save_steps="500" \
   --evaluation_strategy="steps" \
-  --eval_steps="1000" \
+  --eval_steps="500" \
   --per_device_train_batch_size="32" \
   --per_device_eval_batch_size="32" \
   --report_to="wandb" \
@@ -61,7 +61,7 @@ torchrun --standalone \
   --greater_is_better="False" \
   --group_by_length="True" \
   --bf16 \
-  --ctc_weight="0.8" \
+  --ctc_weight="0.9" \
   --bos_token="<s>" \
   --eos_token="</s>" \
   --pad_token="<pad>" \
