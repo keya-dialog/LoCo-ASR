@@ -7,10 +7,10 @@ from trainers.training_arguments import TokenizerTrainingArguments
 
 
 def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=5000, tmp_model_name="tmp_tokenizer",
-                    raw_text_file="raw_text"):
+                    raw_text_file="raw_text", apply_regularization=False):
     if tokenizer_type == "unigram":
         # 3. Save to file, sentence per line
-        sentence_per_line = "\n".join(text_iterator)
+        sentence_per_line = "\n".join([sample.lower() for sample in text_iterator])
         with open(raw_text_file, "w") as f:
             f.write(sentence_per_line)
 
@@ -34,7 +34,7 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
             unk_token='<unk>',
             pad_token='<pad>',
             sp_model_kwargs={
-                'enable_sampling': True,
+                'enable_sampling': True if apply_regularization else False,
                 'nbest_size': -1,
                 'alpha': 0.1,
             })

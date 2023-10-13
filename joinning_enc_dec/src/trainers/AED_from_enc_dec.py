@@ -88,7 +88,8 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
     except OSError:
         train_tokenizer("unigram", model_args.tokenizer_name,
-                        dataset[data_args.train_split][data_args.text_column_name])
+                        dataset[data_args.train_split][data_args.text_column_name],
+                        apply_regularization=model_args.tokenizer_apply_regularization)
         tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name, use_fast=False)
     tokenizer.bos_token_id = tokenizer.vocab[model_args.bos_token]
     tokenizer.eos_token_id = tokenizer.vocab[model_args.eos_token]

@@ -42,6 +42,9 @@ class ModelArguments:
     tokenizer_type: Optional[str] = field(
         default="unigram", metadata={"help": "Type of tokenizer to create if does not exists."}
     )
+    tokenizer_apply_regularization: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply regularization to tokenizer."}
+    )
 
 
 @dataclass
@@ -218,4 +221,7 @@ class TokenizerTrainingArguments:
     )
     raw_text_file: Optional[str] = field(
         default="raw_text", metadata={"help": "Path to raw text file."}
+    )
+    apply_regularization: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply regularization."}
     )
