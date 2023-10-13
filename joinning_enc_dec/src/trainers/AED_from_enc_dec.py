@@ -11,7 +11,6 @@ from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
     JointCTCAttentionEncoderDecoderConfig
-from train_tokenizer import train_tokenizer
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
@@ -84,21 +83,8 @@ if __name__ == '__main__':
 
     # 2. Create feature extractor and tokenizer
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
-    except OSError:
-        train_tokenizer("unigram", model_args.tokenizer_name,
-                        dataset[data_args.train_split][data_args.text_column_name],
-                        vocab_size=model_args.tokenizer_vocab_size,
-                        apply_regularization=model_args.tokenizer_apply_regularization)
-        tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name, use_fast=False)
-    tokenizer.bos_token_id = tokenizer.vocab[model_args.bos_token]
-    tokenizer.eos_token_id = tokenizer.vocab[model_args.eos_token]
-    tokenizer.pad_token_id = tokenizer.vocab[model_args.pad_token]
 
-    tokenizer.add_special_tokens({
-        "additional_special_tokens": [model_args.pad_token, model_args.bos_token, model_args.eos_token]
-    })
+    tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
 
     base_model_config = {
         "bos_token_id": tokenizer.bos_token_id,

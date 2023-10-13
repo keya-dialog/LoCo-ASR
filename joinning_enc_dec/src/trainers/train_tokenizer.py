@@ -1,46 +1,64 @@
-import sentencepiece as spm
 from datasets import load_dataset, load_from_disk
-from transformers import DebertaV2Tokenizer, HfArgumentParser
+from tokenizers import Tokenizer, decoders, normalizers, pre_tokenizers, processors, trainers
+from tokenizers.models import Unigram
+from transformers import HfArgumentParser, PreTrainedTokenizerFast
 from transformers.utils import logging
 
 from trainers.training_arguments import TokenizerTrainingArguments
 
 
-def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=5000, tmp_model_name="tmp_tokenizer",
-                    raw_text_file="raw_text", apply_regularization=False):
-    if tokenizer_type == "unigram":
-        # 3. Save to file, sentence per line
-        sentence_per_line = "\n".join([sample.lower() for sample in text_iterator])
-        with open(raw_text_file, "w") as f:
-            f.write(sentence_per_line)
-
-        # 4. Train sentencepiece tokenizer
-        spm.SentencePieceTrainer.Train(
-            input=raw_text_file,
-            model_prefix=tmp_model_name,
-            pad_id=3,
-            pad_piece='<pad>',
-            vocab_size=vocab_size,
-            model_type='unigram'
-        )
-
-        # 5. Instantiate tokenizer and push to hub
-        tokenizer_deberta = DebertaV2Tokenizer(
-            vocab_file=f"{tmp_model_name}.model",
-            bos_token='<s>',
-            cls_token='<s>',
-            sep_token='</s>',
-            eos_token='</s>',
-            unk_token='<unk>',
-            pad_token='<pad>',
-            sp_model_kwargs={
-                'enable_sampling': True if apply_regularization else False,
-                'nbest_size': -1,
-                'alpha': 0.1,
-            })
-        tokenizer_deberta.push_to_hub(tokenizer_name)
-    else:
+def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=5000, apply_regularization=False):
+    if apply_regularization:
         raise NotImplementedError
+
+    if tokenizer_type == 'BPE':
+        # tokenizer = Tokenizer(BPE(unk_token=unk_token))
+        # trainer = BpeTrainer(special_tokens=spl_tokens)
+        raise NotImplementedError
+    elif tokenizer_type == 'unigram':
+        tokenizer = Tokenizer(Unigram())
+        tokenizer.normalizer = normalizers.Sequence(
+            [normalizers.Replace("``", '"'), normalizers.Replace("''", '"'), normalizers.Lowercase()]
+        )
+        tokenizer.pre_tokenizer = pre_tokenizers.Metaspace()
+        trainer = trainers.UnigramTrainer(vocab_size=vocab_size,
+                                          special_tokens=["<s>", "</s>", "<unk>", "<pad>", "<mask>"],
+                                          unk_token="<unk>")
+        tokenizer.decoder = decoders.Metaspace()
+
+    elif tokenizer_type == 'WPC':
+        # tokenizer = Tokenizer(WordPiece(unk_token=unk_token))
+        # trainer = WordPieceTrainer(special_tokens=spl_tokens)
+        raise NotImplementedError
+
+    else:
+        # tokenizer = Tokenizer(WordLevel(unk_token=unk_token))
+        # trainer = WordLevelTrainer(special_tokens=spl_tokens)
+        raise NotImplementedError
+
+    tokenizer.train_from_iterator(text_iterator, trainer=trainer)
+
+    tokenizer.post_processor = processors.TemplateProcessing(
+        single="<s> $A </s>",
+        pair="<s> $A </s> <s>:1 $B:1 </s>:1",
+        special_tokens=[
+            ("<s>", tokenizer.token_to_id("<s>")),
+            ("</s>", tokenizer.token_to_id("</s>")),
+        ],
+    )
+
+    wrapped_tokenizer = PreTrainedTokenizerFast(
+        tokenizer_object=tokenizer,
+        bos_token="<s>",
+        eos_token="</s>",
+        pad_token='<pad>',
+        unk_token='<unk>',
+        mask_token='<mask>',
+    )
+
+    wrapped_tokenizer.push_to_hub(tokenizer_name)
+
+    return tokenizer
 
 
 if __name__ == '__main__':
@@ -57,5 +75,4 @@ if __name__ == '__main__':
 
     # 2. Extract text
     text = dataset[tokenizer_args.train_split][tokenizer_args.text_column_name]
-    train_tokenizer("unigram", tokenizer_args.tokenizer_name, text, tokenizer_args.vocab_size,
-                    tokenizer_args.tmp_model_name, tokenizer_args.raw_text_file)
+    train_tokenizer(tokenizer_args.tokenizer_type, tokenizer_args.tokenizer_name, text, tokenizer_args.vocab_size)

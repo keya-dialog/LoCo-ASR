@@ -39,15 +39,6 @@ class ModelArguments:
     sampling_rate: Optional[int] = field(
         default=16_000, metadata={"help": "Sampling rate for the model."}
     )
-    tokenizer_type: Optional[str] = field(
-        default="unigram", metadata={"help": "Type of tokenizer to create if does not exists."}
-    )
-    tokenizer_apply_regularization: Optional[bool] = field(
-        default=False, metadata={"help": "Whether to apply regularization to tokenizer."}
-    )
-    tokenizer_vocab_size: Optional[int] = field(
-        default=5_000, metadata={"help": "Vocab size."}
-    )
 
 
 @dataclass
@@ -202,11 +193,7 @@ class TokenizerTrainingArguments:
     dataset_name: str = field(
         metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
-    model_name: str = field(
-        metadata={"help": "The name of the model to be created (via the transformers library)."}
-    )
-    tmp_model_name: str = field(
-        default="tmp_tokenizer",
+    tokenizer_name: str = field(
         metadata={"help": "The name of the model to be created (via the transformers library)."}
     )
     dataset_config: Optional[str] = field(
@@ -222,9 +209,9 @@ class TokenizerTrainingArguments:
     vocab_size: Optional[int] = field(
         default=5_000, metadata={"help": "Vocab size."}
     )
-    raw_text_file: Optional[str] = field(
-        default="raw_text", metadata={"help": "Path to raw text file."}
-    )
     apply_regularization: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply regularization."}
+    )
+    tokenizer_type: Optional[str] = field(
+        default="unigram", metadata={"help": "Type of tokenizer to create if does not exists."}
     )
