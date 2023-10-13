@@ -45,6 +45,9 @@ class ModelArguments:
     tokenizer_apply_regularization: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply regularization to tokenizer."}
     )
+    tokenizer_vocab_size: Optional[int] = field(
+        default=5_000, metadata={"help": "Vocab size."}
+    )
 
 
 @dataclass
