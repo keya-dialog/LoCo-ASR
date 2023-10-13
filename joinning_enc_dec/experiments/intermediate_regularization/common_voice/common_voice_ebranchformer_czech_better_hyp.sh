@@ -18,7 +18,7 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-ml Anaconda3/2023.07-2
+#ml Anaconda3/2023.07-2
 
 source activate loco_asr
 
