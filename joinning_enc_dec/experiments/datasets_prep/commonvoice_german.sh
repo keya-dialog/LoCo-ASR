@@ -11,7 +11,7 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
+source activate loco_asr
 
 cd $WORK_DIR
 
