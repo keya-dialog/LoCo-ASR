@@ -14,7 +14,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_out_sequence_from_dataset, \
+    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range, \
     group_params
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
@@ -34,12 +34,13 @@ if __name__ == '__main__':
     else:
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
+    len_column = training_args.length_column_name
+    audio_column = data_args.audio_column_name
+    sampling_rate = model_args.sampling_rate
+    max_input_len = data_args.max_duration_in_seconds,
+    min_input_len = data_args.min_duration_in_seconds
+
     if training_args.length_column_name not in dataset[data_args.train_split].column_names:
-        len_column = training_args.length_column_name
-        audio_column = data_args.audio_column_name
-        sampling_rate = model_args.sampling_rate
-
-
         def preprocess(example):
             example[len_column] = len(
                 audio_object_stripper(example[audio_column])) / sampling_rate
@@ -50,10 +51,12 @@ if __name__ == '__main__':
                               num_proc=data_args.preprocessing_num_workers,
                               writer_batch_size=data_args.writer_batch_size)
 
-    for split in [data_args.train_split, data_args.validation_split, data_args.test_split]:
-        dataset[split] = filter_out_sequence_from_dataset(dataset[split],
-                                                          max_input_len=data_args.max_duration_in_seconds,
-                                                          min_input_len=data_args.min_duration_in_seconds)
+    logger.info(f'Filtering out too long and too short sequences from dataset.')
+    dataset = dataset.filter(filter_sequences_in_range,
+                             batched=True,
+                             input_columns=[len_column],
+                             num_proc=data_args.preprocessing_num_workers,
+                             fn_kwargs={"max_input_len": max_input_len, "min_input_len": min_input_len})
 
     if data_args.apply_augmentations:
         augmenter = Compose([

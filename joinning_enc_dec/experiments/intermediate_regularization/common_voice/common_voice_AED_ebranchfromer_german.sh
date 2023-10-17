@@ -68,6 +68,7 @@ torchrun --standalone \
   --apply_augmentations \
   --predict_with_generate \
   --early_stopping_patience="100" \
-  --preprocessing_num_workers="128"
+  --text_column_name="sentence" \
+  --preprocessing_num_workers="64"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

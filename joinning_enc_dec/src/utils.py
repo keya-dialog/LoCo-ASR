@@ -278,6 +278,11 @@ class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
         return batch
 
 
+def filter_sequences_in_range(batch: List[int], max_input_len: int, min_input_len: int):
+    arr = np.array(batch)
+    return (arr <= max_input_len) & (arr >= min_input_len)
+
+
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,
                                      min_input_len: float = 0.1, length_column="input_len") -> Dataset:
     """Filters out sequences form dataset which are longer than provided threshold"""
