@@ -2,9 +2,9 @@
 #SBATCH --job-name CommonVoice
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qgpu
-#SBATCH --gpus 4
+#SBATCH --gpus 1
 #SBATCH --nodes 1
-#SBATCH --time 2-00:00:00
+#SBATCH --time 1:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german.out
 
 EXPERIMENT="common_voice_AED_ebranchformer_german"
@@ -22,14 +22,14 @@ source activate loco_asr
 
 cd $WORK_DIR
 
-python joinning_enc_dec/src/trainers/train_tokenizer.py \
-  --dataset_name="mozilla-foundation/common_voice_13_0" \
-  --dataset_config="de" \
-  --tokenizer_name="Lakoc/common_voice_german" \
-  --vocab_size=5000 \
-  --tokenizer_type="unigram" \
-  --text_column_name="sentence" \
-  --train_split="train"
+#python joinning_enc_dec/src/trainers/train_tokenizer.py \
+#  --dataset_name="mozilla-foundation/common_voice_13_0" \
+#  --dataset_config="de" \
+#  --tokenizer_name="Lakoc/common_voice_german" \
+#  --vocab_size=5000 \
+#  --tokenizer_type="unigram" \
+#  --text_column_name="sentence" \
+#  --train_split="train"
 
 python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
@@ -40,7 +40,7 @@ python \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
-  --tokenizer_name="Lakoc/ted_tokenizer" \
+  --tokenizer_name="Lakoc/common_voice_german" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
@@ -50,8 +50,8 @@ python \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="32" \
-  --per_device_eval_batch_size="32" \
+  --per_device_train_batch_size="4" \
+  --per_device_eval_batch_size="4" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="16" \

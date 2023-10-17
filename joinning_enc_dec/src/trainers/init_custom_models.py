@@ -361,7 +361,7 @@ if __name__ == '__main__':
     configuration.conv_kernel = [3, 3]
     configuration.conv_stride = [2, 2]
     configuration.num_mel_bins = 84
-    configuration.max_source_positions = 1024
+    configuration.max_source_positions = 4096
     configuration.ebranchformer_conv_dropout = 0.1
     configuration.csgu_activation = "identity"
     configuration.csgu_kernel_size = 31
