@@ -18,13 +18,20 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
+source activate loco_asr
 
 cd $WORK_DIR
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python joinning_enc_dec/src/trainers/train_tokenizer.py \
+  --dataset_name="mozilla-foundation/common_voice_13_0" \
+  --dataset_config="de" \
+  --tokenizer_name="Lakoc/common_voice_german" \
+  --vocab_size=5000 \
+  --tokenizer_type="unigram" \
+  --text_column_name="sentence" \
+  --train_split="train"
+
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="de" \

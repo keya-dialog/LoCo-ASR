@@ -106,6 +106,7 @@ if __name__ == '__main__':
         "encoder_ctc_loss_reduction": "mean",
         "encoder_pad_token_id": tokenizer.pad_token_id,
         "encoder_vocab_size": len(tokenizer),
+        "decoder_vocab_size": len(tokenizer),
         "lsm_factor": training_args.lsm_factor,
         "shared_lm_head": training_args.shared_lm_head,
         "use_fbanks": training_args.use_fbanks,
