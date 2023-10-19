@@ -213,10 +213,7 @@ class Seq2SeqDataCollatorWithPadding:
 
     def _encapsulate_utterance(self, utterance):
         utterance = utterance.lower()
-        if self.tokenizer.bos_token_id != utterance[0]:
-            return self.tokenizer.bos_token + utterance + self.tokenizer.eos_token
-        else:
-            return utterance
+        return utterance
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
