@@ -24,6 +24,9 @@ class ModelArguments:
     pad_token: Optional[str] = field(
         default='|', metadata={"help": "PAD token"}
     )
+    mask_token: Optional[str] = field(
+        default='+', metadata={"help": "MASK token"}
+    )
     bos_token: Optional[str] = field(
         default='<', metadata={"help": "BOS token"}
     )
@@ -60,9 +63,6 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     )
     steps_to_freeze_dec: Optional[int] = field(
         default=0, metadata={"help": "Steps to freeze decoder"}
-    )
-    custom_optimizer: Optional[bool] = field(
-        default=False, metadata={"help": "Custom optimizer for decoder"}
     )
     cross_attention_scaling_factor: Optional[float] = field(
         default=1, metadata={"help": "Custom scaling factor for cross attention weights"}

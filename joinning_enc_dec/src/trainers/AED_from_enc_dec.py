@@ -4,9 +4,8 @@ import pickle
 import numpy as np
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_dataset, load_from_disk
-from torch.optim import AdamW
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
-    EarlyStoppingCallback, HfArgumentParser
+    EarlyStoppingCallback, GenerationConfig, HfArgumentParser
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
@@ -14,8 +13,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range, \
-    group_params
+    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -93,6 +91,7 @@ if __name__ == '__main__':
         "bos_token_id": tokenizer.bos_token_id,
         "eos_token_id": tokenizer.eos_token_id,
         "pad_token_id": tokenizer.pad_token_id,
+        "mask_token_id": tokenizer.mask_token_id,
         "encoder_feat_proj_dropout": 0.0,
         "encoder_layerdrop": 0.0,
         "min_length": 0,
@@ -110,7 +109,9 @@ if __name__ == '__main__':
         "lsm_factor": training_args.lsm_factor,
         "shared_lm_head": training_args.shared_lm_head,
         "use_fbanks": training_args.use_fbanks,
-        "num_mel_bins": feature_extractor.num_mel_bins if hasattr(feature_extractor, "num_mel_bins") else None
+        "num_mel_bins": feature_extractor.num_mel_bins if hasattr(feature_extractor, "num_mel_bins") else None,
+        "output_hidden_states": True,
+        "decoder_start_token_id": tokenizer.bos_token_id,
     }
 
     # 3. Initialize seq2seq model
@@ -127,16 +128,20 @@ if __name__ == '__main__':
             **base_model_config
         )
 
+    gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
+                                  pad_token_id=base_model_config['pad_token_id'],
+                                  decoder_start_token_id=base_model_config['bos_token_id'],
+                                  early_stopping=base_model_config['early_stopping'],
+                                  eos_token_id=base_model_config['eos_token_id'],
+                                  max_length=base_model_config['max_length'],
+                                  output_hidden_states=base_model_config['output_hidden_states'],
+                                  num_beams=base_model_config['num_beams'])
+    logger.info(f'Model updated gen config:\n {str(gen_config)}.')
+    model.generation_config = gen_config
+
     if training_args.decoder_cold_start:
         logger.info('Reinitializing decoder weights')
         model.decoder.apply(model.decoder._init_weights)
-
-    model.config.decoder_start_token_id = tokenizer.bos_token_id
-    model.config.pad_token_id = tokenizer.pad_token_id
-    model.config.eos_token_id = tokenizer.eos_token_id
-
-    # Ensure encoder return hidden states and predictions are generated
-    model.config.output_hidden_states = True
 
     if model_args.dec_adapters:
         model.decoder.add_adapter("dec_adapters", set_active=True)
@@ -154,10 +159,6 @@ if __name__ == '__main__':
                                                    audio_path=data_args.audio_column_name,
                                                    text_path=data_args.text_column_name
                                                    )
-    optimizer = None
-    if training_args.custom_optimizer:
-        optimizer = AdamW(group_params(model, training_args.weight_decay, training_args.learning_rate,
-                                       model_args.cross_attention_scaling_factor), lr=training_args.learning_rate)
 
     trainer = AdditionalLossTrackerTrainer(
         args=training_args,
@@ -167,7 +168,6 @@ if __name__ == '__main__':
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
         compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
-        optimizers=(optimizer, None)
     )
 
     # 5. Train

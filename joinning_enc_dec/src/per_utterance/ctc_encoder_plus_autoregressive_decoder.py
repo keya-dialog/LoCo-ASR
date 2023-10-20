@@ -156,7 +156,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         }
 
         kwargs_decoder = {
-            argument[len("decoder_"):]: value for argument, value in kwargs.items() if argument.startswith("decoder_")
+            argument[len("decoder_"):]: value for argument, value in kwargs.items() if
+            argument.startswith("decoder_") and argument != "decoder_start_token_id"
         }
 
         # remove encoder, decoder kwargs from kwargs
