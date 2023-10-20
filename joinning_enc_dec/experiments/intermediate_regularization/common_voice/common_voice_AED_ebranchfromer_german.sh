@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german4.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german5.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_german4"
+EXPERIMENT="common_voice_AED_ebranchformer_german5"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -53,8 +53,8 @@ torchrun --standalone \
   --save_steps="1000" \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
-  --per_device_train_batch_size="32" \
-  --per_device_eval_batch_size="32" \
+  --per_device_train_batch_size="8" \
+  --per_device_eval_batch_size="8" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="24" \
@@ -63,7 +63,6 @@ torchrun --standalone \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --auto_find_batch_size \
   --num_train_epochs="100" \
   --num_beams="5" \
   --max_len="128" \
