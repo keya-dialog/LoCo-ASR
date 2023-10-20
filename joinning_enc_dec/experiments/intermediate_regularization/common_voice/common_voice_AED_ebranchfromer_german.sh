@@ -80,6 +80,6 @@ torchrun --standalone \
   --early_stopping_patience="100" \
   --text_column_name="sentence" \
   --preprocessing_num_workers="64" \
-  --validation_split="2000"
+  --validation_slice="2000"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
