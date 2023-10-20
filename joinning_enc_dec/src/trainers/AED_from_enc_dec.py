@@ -73,11 +73,9 @@ if __name__ == '__main__':
             for audio in batch[data_args.audio_column_name]]}, columns=[data_args.audio_column_name],
                                                      output_all_columns=True)
 
-    if data_args.val_indexes_to_use:
-        indexes = set(open(data_args.val_indexes_to_use).read().splitlines())
-        indexes_to_select = [index for index, utt_id in enumerate(dataset[data_args.validation_split]['uttid']) if
-                             utt_id in indexes]
-        dataset[data_args.validation_split] = dataset[data_args.validation_split].select(indexes_to_select)
+    if data_args.validation_slice:
+        dataset[data_args.validation_split] = dataset[data_args.validation_split].select(
+            range(data_args.validation_slice))
 
     if training_args.preprocess_dataset_only:
         exit(0)

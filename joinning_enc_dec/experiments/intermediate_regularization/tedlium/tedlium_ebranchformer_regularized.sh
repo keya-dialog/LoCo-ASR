@@ -33,7 +33,7 @@ torchrun --standalone \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers_multi_head" \
-  --tokenizer_name="Lakoc/ted_tokenizer" \
+  --tokenizer_name="Lakoc/ted_tokenizer_v2" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
@@ -63,6 +63,7 @@ torchrun --standalone \
   --bos_token="<s>" \
   --eos_token="</s>" \
   --pad_token="<pad>" \
+  --mask_token="<mask>" \
   --lsm_factor="0.1" \
   --use_fbanks \
   --apply_augmentations \
