@@ -142,7 +142,7 @@ class DataTrainingArguments:
         default="test", metadata={"help": "Test split to be used."}
     )
     validation_slice: Optional[int] = field(
-        default="", metadata={"help": "Part of the validation split to be used."}
+        default=None, metadata={"help": "Part of the validation split to be used."}
     )
     apply_augmentations: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply on-the fly augmentations."}
