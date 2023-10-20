@@ -18,7 +18,8 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-loco
+conda deactivate
+source activate loco_asr
 
 cd $WORK_DIR
 
