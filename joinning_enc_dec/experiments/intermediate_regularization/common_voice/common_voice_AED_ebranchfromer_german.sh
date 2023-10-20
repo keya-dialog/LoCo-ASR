@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german2.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german4.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_german2"
+EXPERIMENT="common_voice_AED_ebranchformer_german4"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -26,8 +26,8 @@ cd $WORK_DIR
 #python joinning_enc_dec/src/trainers/train_tokenizer.py \
 #  --dataset_name="mozilla-foundation/common_voice_13_0" \
 #  --dataset_config="de" \
-#  --tokenizer_name="Lakoc/common_voice_german" \
-#  --vocab_size=5000 \
+#  --tokenizer_name="Lakoc/common_voice_german0.5k" \
+#  --vocab_size=500 \
 #  --tokenizer_type="unigram" \
 #  --text_column_name="sentence" \
 #  --train_split="train"
@@ -43,26 +43,27 @@ torchrun --standalone \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
-  --tokenizer_name="Lakoc/common_voice_german" \
+  --tokenizer_name="Lakoc/common_voice_german0.5k" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
   --warmup_steps="25000" \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="5000" \
+  --save_steps="1000" \
   --evaluation_strategy="steps" \
-  --eval_steps="5000" \
-  --per_device_train_batch_size="4" \
-  --per_device_eval_batch_size="4" \
+  --eval_steps="1000" \
+  --per_device_train_batch_size="32" \
+  --per_device_eval_batch_size="32" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="16" \
+  --dataloader_num_workers="24" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
+  --auto_find_batch_size \
   --num_train_epochs="100" \
   --num_beams="5" \
   --max_len="128" \
