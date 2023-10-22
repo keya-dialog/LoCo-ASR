@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_transformer_regularized_new_tokenizer.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_transformer_regularized_new_tokenizer2.out
 
-EXPERIMENT="tedlium_AED_transformer_regularized_new_tokenizer"
+EXPERIMENT="tedlium_AED_transformer_regularized_new_tokenizer2"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -37,7 +37,7 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/ted_tokenizer_v2" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-3" \
+  --learning_rate="2e-4" \
   --warmup_steps="25000" \
   --logging_steps="10" \
   --save_strategy="steps" \
@@ -70,6 +70,9 @@ torchrun --standalone \
   --apply_augmentations \
   --predict_with_generate \
   --early_stopping_patience="100" \
-  --preprocessing_num_workers="128"
+  --preprocessing_num_workers="128" \
+  --fix_apostrophes \
+  --remove_train_unks \
+
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

@@ -280,6 +280,18 @@ def filter_sequences_in_range(batch: List[int], max_input_len: int, min_input_le
     return (arr <= max_input_len) & (arr >= min_input_len)
 
 
+def filter_wrongly_annotated_segments(batch: List[str]):
+    return map(lambda x: x != "ignore_time_segment_in_scoring", batch)
+
+
+def remove_unks_batched(batch: List[str], unk_token: str):
+    return [sequence.replace(unk_token, "") for sequence in batch]
+
+
+def fix_apostrophes(batch: List[str]):
+    return [sequence.replace(r"\s+ '", r" '") for sequence in batch]
+
+
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,
                                      min_input_len: float = 0.1, length_column="input_len") -> Dataset:
     """Filters out sequences form dataset which are longer than provided threshold"""
@@ -325,3 +337,13 @@ def group_params(model, weight_decay, learning_rate, cross_attention_scaling_fac
             "lr": learning_rate * cross_attention_scaling_factor
         },
     ]
+
+# def unpack_predictions(file_path, tokenizer_name):
+#     import pickle
+#     from transformers import AutoTokenizer
+#     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+#
+#     with open(file_path, 'rb') as f:
+#         predictions = pickle.load(f)
+#     ref = tokenizer.batch_decode(predictions.label_ids, skip_special_tokens=True)
+#     hyp = tokenizer.batch_decode(predictions.predictions, skip_special_tokens=True)

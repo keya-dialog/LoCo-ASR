@@ -13,7 +13,8 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range
+    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range, \
+    filter_wrongly_annotated_segments, fix_apostrophes, remove_unks_batched
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -25,7 +26,12 @@ if __name__ == '__main__':
 
     model_args, data_args, training_args, gen_args = parser.parse_args_into_dataclasses()
 
-    # 1. Load dataset
+    # 1. Create feature extractor and tokenizer
+    feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
+
+    # 2. Load dataset
     if data_args.dataset_config is not None:
         dataset = load_dataset(data_args.dataset_name, data_args.dataset_config, keep_in_memory=False,
                                num_proc=data_args.preprocessing_num_workers)
@@ -33,6 +39,7 @@ if __name__ == '__main__':
         dataset = load_from_disk(data_args.dataset_name, keep_in_memory=False)
 
     len_column = training_args.length_column_name
+    text_column = data_args.text_column_name
     audio_column = data_args.audio_column_name
     sampling_rate = model_args.sampling_rate
     max_input_len = data_args.max_duration_in_seconds,
@@ -55,6 +62,27 @@ if __name__ == '__main__':
                              input_columns=[len_column],
                              num_proc=data_args.preprocessing_num_workers,
                              fn_kwargs={"max_input_len": max_input_len, "min_input_len": min_input_len})
+
+    logger.info(f'Filtering unlabeled data from dataset.')
+    dataset = dataset.filter(filter_wrongly_annotated_segments,
+                             batched=True,
+                             input_columns=[text_column],
+                             num_proc=data_args.preprocessing_num_workers)
+
+    if data_args.remove_train_unks:
+        logger.info(f'Removing UNKs from training data.')
+        dataset[data_args.train_split] = dataset[data_args.train_split].map(remove_unks_batched,
+                                                                            batched=True,
+                                                                            input_columns=[text_column],
+                                                                            num_proc=data_args.preprocessing_num_workers,
+                                                                            fn_kwargs={
+                                                                                "unk_token": tokenizer.unk_token})
+    if data_args.fix_apostrophes:
+        logger.info(f'Fixing apostrophes in dataset.')
+        dataset = dataset.map(fix_apostrophes,
+                              input_columns=[text_column],
+                              batched=True,
+                              num_proc=data_args.preprocessing_num_workers)
 
     if data_args.apply_augmentations:
         augmenter = Compose([
@@ -79,11 +107,6 @@ if __name__ == '__main__':
 
     if training_args.preprocess_dataset_only:
         exit(0)
-
-    # 2. Create feature extractor and tokenizer
-    feature_extractor = AutoFeatureExtractor.from_pretrained(model_args.feature_extractor_name)
-
-    tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name)
 
     base_model_config = {
         "bos_token_id": tokenizer.bos_token_id,
