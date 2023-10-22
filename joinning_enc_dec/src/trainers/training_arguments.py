@@ -151,7 +151,7 @@ class DataTrainingArguments:
         default=1, metadata={"help": "Number of processes to use for data preprocessing."}
     )
     writer_batch_size: Optional[int] = field(
-        default=100, metadata={"help": "Batch size to use for writing to disk."}
+        default=500, metadata={"help": "Batch size to use for writing to disk."}
     )
     remove_train_unks: Optional[bool] = field(
         default=False, metadata={"help": "Whether to remove UNKs from training data."}

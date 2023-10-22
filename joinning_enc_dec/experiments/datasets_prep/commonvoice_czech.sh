@@ -1,17 +1,17 @@
 #!/usr/bin/bash
-#SBATCH --job-name CommonVoice
+#SBATCH --job-name CV_cs
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qcpu
 #SBATCH --time 24:00:00
 
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
+EXPERIMENT_PATH="process_CV_cs"
 
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
+source activate loco_asr
 
 cd $WORK_DIR
 

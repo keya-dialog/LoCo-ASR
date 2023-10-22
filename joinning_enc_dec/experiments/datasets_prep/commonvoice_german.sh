@@ -1,11 +1,11 @@
 #!/usr/bin/bash
-#SBATCH --job-name CommonVoice
+#SBATCH --job-name CV_de
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qcpu
 #SBATCH --time 24:00:00
 
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
+EXPERIMENT_PATH="process_CV_de"
 
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
@@ -24,7 +24,7 @@ python \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
-  --tokenizer_name="Lakoc/ted_tokenizer" \
+  --tokenizer_name="Lakoc/common_voice_german0.5k" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
@@ -59,5 +59,5 @@ python \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --preprocessing_num_workers="64" \
+  --preprocessing_num_workers="128" \
   --preprocess_dataset_only

@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field, make_dataclass
-from dataclasses import dataclass, field, make_dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
+from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import Dataset
 from jiwer import cer, compute_measures
 from transformers import BatchFeature, PreTrainedTokenizerFast, Seq2SeqTrainer, SpeechEncoderDecoderModel, \
@@ -275,21 +275,41 @@ class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
         return batch
 
 
-def filter_sequences_in_range(batch: List[int], max_input_len: int, min_input_len: int):
+def filter_sequences_in_range_batched(batch: List[int], max_input_len: int, min_input_len: int):
     arr = np.array(batch)
     return (arr <= max_input_len) & (arr >= min_input_len)
 
 
-def filter_wrongly_annotated_segments(batch: List[str]):
+def extract_lens_batched(audios: List[List[float]], len_column: str, sampling_rate: int):
+    lens = [len(audio_object_stripper(example)) / sampling_rate for example in audios]
+    batch = {len_column: lens}
+    return batch
+
+
+def filter_wrongly_annotated_segments_batched(batch: List[str]):
     return map(lambda x: x != "ignore_time_segment_in_scoring", batch)
 
 
-def remove_unks_batched(batch: List[str], unk_token: str):
-    return [sequence.replace(unk_token, "") for sequence in batch]
+def remove_unks_batched(batch: List[str], unk_token: str, label_column: str):
+    return {label_column: [sequence.replace(unk_token, "") for sequence in batch]}
 
 
-def fix_apostrophes(batch: List[str]):
-    return [sequence.replace(r"\s+ '", r" '") for sequence in batch]
+def fix_apostrophes_batched(batch: List[str], label_column: str):
+    return {label_column: [sequence.replace(r"\s+ '", r" '") for sequence in batch]}
+
+
+def preprocess_cv_labels(batch: List[str], label_column: str):
+    processed = []
+    for transcription in batch:
+        if transcription.startswith('"') and transcription.endswith('"'):
+            # we can remove trailing quotation marks as they do not affect the transcription
+            transcription = transcription[1:-1]
+
+        if transcription[-1] not in [".", "?", "!"]:
+            # append a full-stop to sentences that do not end in punctuation
+            transcription = transcription + "."
+        processed.append(transcription)
+    return {label_column: processed}
 
 
 def filter_out_sequence_from_dataset(df: Dataset, max_input_len: float = 5.0,
@@ -337,6 +357,86 @@ def group_params(model, weight_decay, learning_rate, cross_attention_scaling_fac
             "lr": learning_rate * cross_attention_scaling_factor
         },
     ]
+
+
+def prepare_dataset(dataset, dataset_name,
+                    length_column_name, text_column_name, audio_column_name,
+                    preprocessing_num_workers, writer_batch_size,
+                    train_split, validation_split,
+                    fix_apostrophes, remove_train_unks, apply_augmentations,
+                    unk_token, sampling_rate, max_input_len, min_input_len, validation_slice):
+    if length_column_name not in dataset[train_split].column_names:
+        logger.info(f'Extracting audio lens.')
+        dataset = dataset.map(extract_lens_batched,
+                              num_proc=preprocessing_num_workers,
+                              input_columns=[audio_column_name],
+                              batched=True,
+                              writer_batch_size=writer_batch_size,
+                              fn_kwargs={"sampling_rate": sampling_rate, "len_column": length_column_name})
+
+    logger.info(f'Filtering out too long and too short sequences from dataset.')
+    dataset = dataset.filter(filter_sequences_in_range_batched,
+                             batched=True,
+                             input_columns=[length_column_name],
+                             num_proc=preprocessing_num_workers,
+                             writer_batch_size=writer_batch_size,
+                             fn_kwargs={"max_input_len": max_input_len, "min_input_len": min_input_len})
+
+    logger.info(f'Filtering unlabeled data from dataset.')
+    dataset = dataset.filter(filter_wrongly_annotated_segments_batched,
+                             batched=True,
+                             input_columns=[text_column_name],
+                             writer_batch_size=writer_batch_size,
+                             num_proc=preprocessing_num_workers)
+
+    if remove_train_unks:
+        logger.info(f'Removing UNKs from training data.')
+        dataset[train_split] = dataset[train_split].map(remove_unks_batched,
+                                                        batched=True,
+                                                        input_columns=[text_column_name],
+                                                        num_proc=preprocessing_num_workers,
+                                                        writer_batch_size=writer_batch_size,
+                                                        fn_kwargs={
+                                                            "unk_token": unk_token,
+                                                            "label_column": text_column_name})
+    if fix_apostrophes:
+        logger.info(f'Fixing apostrophes in dataset.')
+        dataset = dataset.map(fix_apostrophes_batched,
+                              input_columns=[text_column_name],
+                              batched=True,
+                              num_proc=preprocessing_num_workers,
+                              writer_batch_size=writer_batch_size,
+                              fn_kwargs={"label_column": text_column_name})
+
+    if dataset_name == 'mozilla-foundation/common_voice_13_0':
+        dataset = dataset.map(preprocess_cv_labels,
+                              input_columns=[text_column_name],
+                              batched=True,
+                              writer_batch_size=writer_batch_size,
+                              num_proc=preprocessing_num_workers,
+                              fn_kwargs={"label_column": text_column_name})
+
+    if apply_augmentations:
+        augmenter = Compose([
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            TimeMask(max_band_part=0.05, p=0.05),
+            AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
+            TimeStretch(min_rate=0.8, max_rate=1.2, p=0.2),
+            PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
+            Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
+            TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
+        ])
+        dataset[train_split].set_transform(lambda batch: {audio_column_name: [
+            augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=sampling_rate)
+            for audio in batch[audio_column_name]]}, columns=[audio_column_name],
+                                           output_all_columns=True)
+
+    if validation_slice:
+        dataset[validation_split] = dataset[validation_split].select(
+            range(validation_slice))
+    return dataset
 
 # def unpack_predictions(file_path, tokenizer_name):
 #     import pickle

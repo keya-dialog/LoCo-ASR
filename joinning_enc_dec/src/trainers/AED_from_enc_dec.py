@@ -1,8 +1,6 @@
 import os
 import pickle
 
-import numpy as np
-from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
     EarlyStoppingCallback, GenerationConfig, HfArgumentParser
@@ -13,8 +11,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, audio_object_stripper, compute_metrics, filter_sequences_in_range, \
-    filter_wrongly_annotated_segments, fix_apostrophes, remove_unks_batched
+    Seq2SeqDataCollatorWithPadding, compute_metrics, prepare_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -45,65 +42,26 @@ if __name__ == '__main__':
     max_input_len = data_args.max_duration_in_seconds,
     min_input_len = data_args.min_duration_in_seconds
 
-    if training_args.length_column_name not in dataset[data_args.train_split].column_names:
-        def preprocess(example):
-            example[len_column] = len(
-                audio_object_stripper(example[audio_column])) / sampling_rate
-            return example
-
-
-        dataset = dataset.map(preprocess,
-                              num_proc=data_args.preprocessing_num_workers,
-                              writer_batch_size=data_args.writer_batch_size)
-
-    logger.info(f'Filtering out too long and too short sequences from dataset.')
-    dataset = dataset.filter(filter_sequences_in_range,
-                             batched=True,
-                             input_columns=[len_column],
-                             num_proc=data_args.preprocessing_num_workers,
-                             fn_kwargs={"max_input_len": max_input_len, "min_input_len": min_input_len})
-
-    logger.info(f'Filtering unlabeled data from dataset.')
-    dataset = dataset.filter(filter_wrongly_annotated_segments,
-                             batched=True,
-                             input_columns=[text_column],
-                             num_proc=data_args.preprocessing_num_workers)
-
-    if data_args.remove_train_unks:
-        logger.info(f'Removing UNKs from training data.')
-        dataset[data_args.train_split] = dataset[data_args.train_split].map(remove_unks_batched,
-                                                                            batched=True,
-                                                                            input_columns=[text_column],
-                                                                            num_proc=data_args.preprocessing_num_workers,
-                                                                            fn_kwargs={
-                                                                                "unk_token": tokenizer.unk_token})
-    if data_args.fix_apostrophes:
-        logger.info(f'Fixing apostrophes in dataset.')
-        dataset = dataset.map(fix_apostrophes,
-                              input_columns=[text_column],
-                              batched=True,
-                              num_proc=data_args.preprocessing_num_workers)
-
-    if data_args.apply_augmentations:
-        augmenter = Compose([
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
-            TimeStretch(min_rate=0.8, max_rate=1.2, p=0.2),
-            PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
-            Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
-            TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
-        ])
-        dataset[data_args.train_split].set_transform(lambda batch: {data_args.audio_column_name: [
-            augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=model_args.sampling_rate)
-            for audio in batch[data_args.audio_column_name]]}, columns=[data_args.audio_column_name],
-                                                     output_all_columns=True)
-
-    if data_args.validation_slice:
-        dataset[data_args.validation_split] = dataset[data_args.validation_split].select(
-            range(data_args.validation_slice))
+    # 3. Preprocess dataset
+    dataset = prepare_dataset(
+        dataset=dataset,
+        dataset_name=data_args.dataset_name,
+        length_column_name=len_column,
+        text_column_name=text_column,
+        audio_column_name=audio_column,
+        preprocessing_num_workers=data_args.preprocessing_num_workers,
+        writer_batch_size=data_args.writer_batch_size,
+        train_split=data_args.train_split,
+        validation_split=data_args.validation_split,
+        fix_apostrophes=data_args.fix_apostrophes,
+        remove_train_unks=data_args.remove_train_unks,
+        apply_augmentations=data_args.apply_augmentations,
+        unk_token=tokenizer.unk_token,
+        sampling_rate=sampling_rate,
+        max_input_len=max_input_len,
+        min_input_len=min_input_len,
+        validation_slice=data_args.validation_slice
+    )
 
     if training_args.preprocess_dataset_only:
         exit(0)
@@ -135,7 +93,7 @@ if __name__ == '__main__':
         "decoder_start_token_id": tokenizer.bos_token_id,
     }
 
-    # 3. Initialize seq2seq model
+    # 4. Initialize seq2seq model
     if model_args.from_pretrained:
         config = AutoConfig.from_pretrained(model_args.from_pretrained)
         config.update(base_model_config)
@@ -168,7 +126,7 @@ if __name__ == '__main__':
         model.decoder.add_adapter("dec_adapters", set_active=True)
         model.decoder.train_adapter("dec_adapters")
 
-    # 4. Init trainer
+    # 5. Init trainer
     layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
                                                  training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec)
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
@@ -191,7 +149,7 @@ if __name__ == '__main__':
         compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
     )
 
-    # 5. Train
+    # 6. Train
     trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
     tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
@@ -202,7 +160,7 @@ if __name__ == '__main__':
     with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
         pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
 
-    # 6. Eval on test
+    # 7. Eval on test
     predictions = trainer.predict(dataset[data_args.test_split])
     logger.info(compute_metrics(tokenizer, predictions))
     with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.

@@ -5,13 +5,13 @@
 #SBATCH --time 24:00:00
 
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
+EXPERIMENT_PATH="process_TED"
 
 export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-source ~/miniconda3/bin/activate ~/miniconda3/envs/loco_asr
+source activate loco_asr
 
 cd $WORK_DIR
 
@@ -24,7 +24,7 @@ python \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
-  --tokenizer_name="Lakoc/ted_tokenizer" \
+  --tokenizer_name="Lakoc/ted_tokenizer_v2" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
@@ -60,4 +60,6 @@ python \
   --apply_augmentations \
   --predict_with_generate \
   --preprocessing_num_workers="128" \
+  --fix_apostrophes \
+  --remove_train_unks \
   --preprocess_dataset_only
