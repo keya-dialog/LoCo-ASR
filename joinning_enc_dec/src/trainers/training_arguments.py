@@ -104,6 +104,9 @@ class GenerationArguments:
     wandb_predictions_to_save: Optional[int] = field(
         default=100, metadata={"help": "Number of predictions to save to wandb."}
     )
+    length_penalty: Optional[float] = field(
+        default=1.0, metadata={"help": "Length penalty for generation."}
+    )
 
 
 @dataclass
