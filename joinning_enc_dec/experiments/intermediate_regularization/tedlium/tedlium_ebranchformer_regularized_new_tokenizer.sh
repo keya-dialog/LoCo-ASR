@@ -41,9 +41,9 @@ torchrun --standalone \
   --warmup_steps="25000" \
   --logging_steps="10" \
   --save_strategy="steps" \
-  --save_steps="1000" \
+  --save_steps="5000" \
   --evaluation_strategy="steps" \
-  --eval_steps="1000" \
+  --eval_steps="5000" \
   --per_device_train_batch_size="32" \
   --per_device_eval_batch_size="16" \
   --report_to="wandb" \
