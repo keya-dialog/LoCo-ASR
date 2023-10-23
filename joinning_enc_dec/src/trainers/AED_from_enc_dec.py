@@ -151,7 +151,7 @@ if __name__ == '__main__':
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
-        compute_metrics=lambda pred: compute_metrics(tokenizer, pred),
+        compute_metrics=lambda pred: compute_metrics(tokenizer, pred, gen_args.wandb_predictions_to_save),
     )
 
     # 6. Train

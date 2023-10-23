@@ -101,6 +101,9 @@ class GenerationArguments:
     max_len: Optional[int] = field(
         default=200, metadata={"help": "Max number of generated tokens."}
     )
+    wandb_predictions_to_save: Optional[int] = field(
+        default=100, metadata={"help": "Number of predictions to save to wandb."}
+    )
 
 
 @dataclass

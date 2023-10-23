@@ -18,7 +18,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 logger = logging.get_logger("transformers")
 
 
-def compute_metrics(tokenizer, pred):
+def compute_metrics(tokenizer, pred, wandb_pred_to_save=10):
     pred_ids = pred.predictions
 
     label_ids = pred.label_ids
@@ -32,7 +32,7 @@ def compute_metrics(tokenizer, pred):
     del metrics['truth']
     del metrics['hypothesis']
     if wandb.run is not None:
-        write_wandb_pred(pred_str, label_str)
+        write_wandb_pred(pred_str, label_str, rows_to_log=wandb_pred_to_save)
 
     return {"cer": cer(label_str, pred_str), **metrics}
 
