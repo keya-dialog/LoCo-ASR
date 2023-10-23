@@ -386,7 +386,7 @@ def write_wandb_pred(pred_str, label_str, rows_to_log=10):
     wandb.log(
         {f"eval_predictions/step_{int(current_step)}": wandb.Table(columns=columns,
                                                                    data=[[i, ref, hyp] for i, hyp, ref in
-                                                                         zip(range(len(min(pred_str, rows_to_log))),
+                                                                         zip(range(min(len(pred_str), rows_to_log)),
                                                                              pred_str,
                                                                              label_str)])}, current_step)
 
