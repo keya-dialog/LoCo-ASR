@@ -107,6 +107,12 @@ class GenerationArguments:
     length_penalty: Optional[float] = field(
         default=1.0, metadata={"help": "Length penalty for generation."}
     )
+    decoding_ctc_weight: Optional[float] = field(
+        default=None, metadata={"help": "CTC weight to bias hypothesis."}
+    )
+    ctc_margin: Optional[float] = field(
+        default=0, metadata={"help": "Margin to stop generation."}
+    )
 
 
 @dataclass

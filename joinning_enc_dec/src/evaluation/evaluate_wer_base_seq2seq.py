@@ -8,43 +8,17 @@ from typing import Optional
 import torch
 from datasets import load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, HfArgumentParser, \
-    LogitsProcessor, LogitsProcessorList, Seq2SeqTrainer, Seq2SeqTrainingArguments
+    LogitsProcessorList, Seq2SeqTrainer, Seq2SeqTrainingArguments
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
     JointCTCAttentionEncoderDecoderConfig
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel
-from utils import Seq2SeqDataCollatorWithPadding, compute_metrics, filter_out_sequence_from_dataset
+from utils import EnforceEosIfCTCStops, Seq2SeqDataCollatorWithPadding, compute_metrics, \
+    filter_out_sequence_from_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
-
-
-class EnforceEosIfCTCStops(LogitsProcessor):
-    """Logits processor (to use with HuggingFace `generate()` method :
-    https://huggingface.co/docs/transformers/v4.24.0/en/main_classes/
-    text_generation#transformers.generation_utils.GenerationMixin).
-
-    This logit processor simply ensure that after hitting logzero likelihood for all tokens eos is generated.
-
-    Args:
-        eos_token_id (int): ID of the EOS token.
-        log_thr (float): Value to use for logzero.
-    """
-
-    def __init__(self, eos_token_id: int, log_thr: float = -10000000000.0):
-        super().__init__()
-        self.log_thr = log_thr
-        self.eos_token_id = eos_token_id
-
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.Tensor) -> torch.Tensor:
-        should_enforce_stop = scores.max(dim=1).values <= self.log_thr
-        mask = should_enforce_stop.unsqueeze(dim=-1).expand(scores.size())
-        eos_mask = torch.zeros_like(mask, dtype=torch.bool)
-        eos_mask[:, self.eos_token_id] = True
-        mask = mask & eos_mask
-        scores = torch.where(~mask, scores, self.log_thr / 2)
-        return scores
 
 
 @dataclass

@@ -11,7 +11,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, compute_metrics, fetch_AED_config, prepare_dataset
+    Seq2SeqDataCollatorWithPadding, activate_joint_decoding, compute_metrics, fetch_AED_config, prepare_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -111,6 +111,10 @@ if __name__ == '__main__':
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config
         )
+
+    if gen_args.decoding_ctc_weight is not None:
+        activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
+                                base_model_config['eos_token_id'])
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],
