@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
+import wandb
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import Dataset
 from jiwer import cer, compute_measures
@@ -30,6 +31,8 @@ def compute_metrics(tokenizer, pred):
     del metrics['ops']
     del metrics['truth']
     del metrics['hypothesis']
+    if wandb.run is not None:
+        write_wandb_pred(pred_str, label_str)
 
     return {"cer": cer(label_str, pred_str), **metrics}
 
@@ -296,8 +299,18 @@ def remove_unks_batched(batch: List[str], unk_token: str, label_column: str):
     return {label_column: [sequence.replace(unk_token, "") for sequence in batch]}
 
 
+tedlium_contractions = [" 's", " 't", " 're", " 've", " 'm", " 'll", " 'd", " 'clock", " 'all"]
+
+
+def replace_contractions(text):
+    for contraction in tedlium_contractions:
+        text = text.replace(contraction, contraction[1:])
+    return text
+
+
 def fix_apostrophes_batched(batch: List[str], label_column: str):
-    return {label_column: [sequence.replace(r"\s+ '", r" '") for sequence in batch]}
+    # replace spaced apostrophes with un-spaced (it 's -> it's)
+    return {label_column: [replace_contractions(sequence).replace(r"\s+ '", r" '") for sequence in batch]}
 
 
 def filter_empty_transcriptions(batch: List[str]):
@@ -314,7 +327,9 @@ def preprocess_cv_labels(batch: List[str], label_column: str):
         if transcription[-1] not in [".", "?", "!"]:
             # append a full-stop to sentences that do not end in punctuation
             transcription = transcription + "."
+        transcription = transcription.replace('""', '"')
         processed.append(transcription)
+
     return {label_column: processed}
 
 
@@ -363,6 +378,17 @@ def group_params(model, weight_decay, learning_rate, cross_attention_scaling_fac
             "lr": learning_rate * cross_attention_scaling_factor
         },
     ]
+
+
+def write_wandb_pred(pred_str, label_str, rows_to_log=10):
+    current_step = wandb.run.step
+    columns = ["id", "label_str", "hyp_str"]
+    wandb.log(
+        {f"eval_predictions/step_{int(current_step)}": wandb.Table(columns=columns,
+                                                                   data=[[i, ref, hyp] for i, hyp, ref in
+                                                                         zip(range(len(min(pred_str, rows_to_log))),
+                                                                             pred_str,
+                                                                             label_str)])}, current_step)
 
 
 def fetch_AED_config(enc_config_path, dec_config_path, base_config):
