@@ -393,7 +393,7 @@ def prepare_dataset(dataset, dataset_name,
                              writer_batch_size=writer_batch_size,
                              num_proc=preprocessing_num_workers)
 
-    dataset = dataset.map(filter_empty_transcriptions,
+    dataset = dataset.filter(filter_empty_transcriptions,
                           input_columns=[text_column_name],
                           batched=True,
                           writer_batch_size=writer_batch_size,
