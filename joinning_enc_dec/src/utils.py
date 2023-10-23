@@ -409,6 +409,7 @@ def prepare_dataset(dataset, dataset_name,
                               fn_kwargs={"label_column": text_column_name})
 
     if dataset_name == 'mozilla-foundation/common_voice_13_0':
+        logger.info(f'Fixing labels for commonvoice.')
         dataset = dataset.map(preprocess_cv_labels,
                               input_columns=[text_column_name],
                               batched=True,
@@ -417,6 +418,7 @@ def prepare_dataset(dataset, dataset_name,
                               fn_kwargs={"label_column": text_column_name})
 
     if apply_augmentations:
+        logger.info(f'Setting augmentations transform.')
         augmenter = Compose([
             TimeMask(max_band_part=0.05, p=0.05),
             TimeMask(max_band_part=0.05, p=0.05),
@@ -434,6 +436,7 @@ def prepare_dataset(dataset, dataset_name,
                                            output_all_columns=True)
 
     if validation_slice:
+        logger.info(f'Selecting specified part of validation indexes.')
         dataset[validation_split] = dataset[validation_split].select(
             range(validation_slice))
     return dataset

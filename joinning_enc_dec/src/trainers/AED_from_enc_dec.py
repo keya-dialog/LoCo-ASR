@@ -43,6 +43,7 @@ if __name__ == '__main__':
     min_input_len = data_args.min_duration_in_seconds
 
     # 3. Preprocess dataset
+    logger.info("Preprocessing dataset...")
     dataset = prepare_dataset(
         dataset=dataset,
         dataset_name=data_args.dataset_name,
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     )
 
     if training_args.preprocess_dataset_only:
+        logger.info("Finished preprocessing dataset.")
         exit(0)
 
     base_model_config = {
