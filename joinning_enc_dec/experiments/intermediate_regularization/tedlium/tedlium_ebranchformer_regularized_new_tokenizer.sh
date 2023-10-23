@@ -45,7 +45,7 @@ torchrun --standalone \
   --evaluation_strategy="steps" \
   --eval_steps="1000" \
   --per_device_train_batch_size="32" \
-  --per_device_eval_batch_size="32" \
+  --per_device_eval_batch_size="16" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="24" \
