@@ -42,6 +42,9 @@ class ModelArguments:
     sampling_rate: Optional[int] = field(
         default=16_000, metadata={"help": "Sampling rate for the model."}
     )
+    from_encoder_decoder_config: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to create model from encoder and decoder configs."}
+    )
 
 
 @dataclass

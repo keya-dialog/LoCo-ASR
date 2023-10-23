@@ -11,7 +11,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, compute_metrics, prepare_dataset
+    Seq2SeqDataCollatorWithPadding, compute_metrics, fetch_AED_config, prepare_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -102,6 +102,9 @@ if __name__ == '__main__':
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_args.from_pretrained,
             config=config)
+    elif model_args.from_encoder_decoder_config:
+        config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config)
+        model = JointCTCAttentionEncoderDecoder(config=config)
     else:
         model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
             encoder_pretrained_model_name_or_path=model_args.base_encoder_model,
@@ -117,7 +120,7 @@ if __name__ == '__main__':
                                   max_length=base_model_config['max_length'],
                                   output_hidden_states=base_model_config['output_hidden_states'],
                                   num_beams=base_model_config['num_beams'])
-    logger.info(f'Model updated gen config:\n {str(gen_config)}.')
+    logger.info(f'Model updated gen config:\n {str(gen_config)}')
     model.generation_config = gen_config
 
     if training_args.decoder_cold_start:

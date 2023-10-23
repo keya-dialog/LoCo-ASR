@@ -230,8 +230,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                     "`decoder_config` to `.from_encoder_decoder_pretrained(...)`"
                 )
 
-            decoder = AutoModelForCausalLM.from_pretrained(decoder_pretrained_model_name_or_path, **kwargs_decoder,
-                                                           ignore_mismatched_sizes=True)
+            decoder = AutoModelForCausalLM.from_pretrained(decoder_pretrained_model_name_or_path, **kwargs_decoder)
 
         # instantiate config with corresponding kwargs
         config = JointCTCAttentionEncoderDecoderConfig.from_encoder_decoder_configs(encoder.config, decoder.config,

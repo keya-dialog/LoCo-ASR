@@ -6,11 +6,13 @@ import torch
 from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
 from datasets import Dataset
 from jiwer import cer, compute_measures
-from transformers import BatchFeature, PreTrainedTokenizerFast, Seq2SeqTrainer, SpeechEncoderDecoderModel, \
+from transformers import AutoConfig, BatchFeature, PreTrainedTokenizerFast, Seq2SeqTrainer, SpeechEncoderDecoderModel, \
     TrainerCallback, TrainerControl, TrainerState, TrainingArguments, Wav2Vec2FeatureExtractor
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 from transformers.trainer_pt_utils import get_parameter_names
 from transformers.utils import logging
+
+from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoderConfig
 
 logger = logging.get_logger("transformers")
 
@@ -363,6 +365,24 @@ def group_params(model, weight_decay, learning_rate, cross_attention_scaling_fac
     ]
 
 
+def fetch_AED_config(enc_config_path, dec_config_path, base_config):
+    enc_config = AutoConfig.from_pretrained(enc_config_path)
+    dec_config = AutoConfig.from_pretrained(dec_config_path)
+    config = JointCTCAttentionEncoderDecoderConfig.from_encoder_decoder_configs(enc_config, dec_config)
+    kwargs_encoder = {
+        argument[len("encoder_"):]: value for argument, value in base_config.items() if
+        argument.startswith("encoder_")
+    }
+    kwargs_decoder = {
+        argument[len("decoder_"):]: value for argument, value in base_config.items() if
+        argument.startswith("decoder_") and argument != "decoder_start_token_id"
+    }
+    config.encoder.update(kwargs_encoder)
+    config.decoder.update(kwargs_decoder)
+    config.update(base_config)
+    return config
+
+
 def prepare_dataset(dataset, dataset_name,
                     length_column_name, text_column_name, audio_column_name,
                     preprocessing_num_workers, writer_batch_size,
@@ -394,10 +414,10 @@ def prepare_dataset(dataset, dataset_name,
                              num_proc=preprocessing_num_workers)
 
     dataset = dataset.filter(filter_empty_transcriptions,
-                          input_columns=[text_column_name],
-                          batched=True,
-                          writer_batch_size=writer_batch_size,
-                          num_proc=preprocessing_num_workers)
+                             input_columns=[text_column_name],
+                             batched=True,
+                             writer_batch_size=writer_batch_size,
+                             num_proc=preprocessing_num_workers)
 
     if remove_train_unks:
         logger.info(f'Removing UNKs from training data.')

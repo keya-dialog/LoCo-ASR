@@ -80,7 +80,8 @@ torchrun --standalone \
   --predict_with_generate \
   --early_stopping_patience="100" \
   --text_column_name="sentence" \
-  --preprocessing_num_workers="64" \
-  --validation_slice="2000"
+  --preprocessing_num_workers="128" \
+  --validation_slice="2000" \
+  --from_encoder_decoder_config
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
