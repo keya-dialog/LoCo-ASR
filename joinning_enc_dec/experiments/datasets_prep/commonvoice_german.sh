@@ -56,6 +56,7 @@ python \
   --eos_token="</s>" \
   --pad_token="<pad>" \
   --lsm_factor="0.1" \
+  --text_column_name="sentence" \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \

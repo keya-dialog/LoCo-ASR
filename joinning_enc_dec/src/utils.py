@@ -298,6 +298,10 @@ def fix_apostrophes_batched(batch: List[str], label_column: str):
     return {label_column: [sequence.replace(r"\s+ '", r" '") for sequence in batch]}
 
 
+def filter_empty_transcriptions(batch: List[str]):
+    return [example != "" for example in batch]
+
+
 def preprocess_cv_labels(batch: List[str], label_column: str):
     processed = []
     for transcription in batch:
@@ -388,6 +392,12 @@ def prepare_dataset(dataset, dataset_name,
                              input_columns=[text_column_name],
                              writer_batch_size=writer_batch_size,
                              num_proc=preprocessing_num_workers)
+
+    dataset = dataset.map(filter_empty_transcriptions,
+                          input_columns=[text_column_name],
+                          batched=True,
+                          writer_batch_size=writer_batch_size,
+                          num_proc=preprocessing_num_workers)
 
     if remove_train_unks:
         logger.info(f'Removing UNKs from training data.')
