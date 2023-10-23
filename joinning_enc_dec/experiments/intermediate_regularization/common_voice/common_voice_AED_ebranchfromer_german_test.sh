@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 #SBATCH --job-name CommonVoice
 #SBATCH --account OPEN-28-58
-#SBATCH --partition qgpu
-#SBATCH --gpus 4
+#SBATCH --partition qgpu_exp
+#SBATCH --gpus 8
 #SBATCH --nodes 1
-#SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german5.out
+#SBATCH --time 10:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_german_test.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_german5"
+EXPERIMENT="common_voice_AED_ebranchformer_german_test"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -34,7 +34,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=4 \
+  --nproc-per-node=8 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="de" \
@@ -63,7 +63,7 @@ torchrun --standalone \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs="100" \
+  --num_train_epochs="50" \
   --num_beams="5" \
   --max_len="128" \
   --greater_is_better="False" \
