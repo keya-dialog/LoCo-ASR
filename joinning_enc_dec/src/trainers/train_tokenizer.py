@@ -16,10 +16,11 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
         tokenizer.normalizer = normalizers.Sequence(
             [normalizers.Replace("``", '"'), normalizers.Replace("''", '"'), normalizers.Lowercase()]
         )
-        tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
+        tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
         trainer = trainers.BpeTrainer(vocab_size=vocab_size,
                                       special_tokens=["<s>", "</s>", "<unk>", "<pad>", "<mask>"],
                                       unk_token="<unk>")
+        tokenizer.decoder = decoders.ByteLevel()
     elif tokenizer_type == 'unigram':
         tokenizer = Tokenizer(Unigram())
         tokenizer.normalizer = normalizers.Sequence(
