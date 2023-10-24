@@ -22,15 +22,15 @@ conda deactivate
 source activate loco_asr
 
 cd $WORK_DIR
-
-python joinning_enc_dec/src/trainers/train_tokenizer.py \
-  --dataset_name="LIUM/tedlium" \
-  --dataset_config="release3" \
-  --tokenizer_name="Lakoc/ted_bpe500" \
-  --vocab_size=500 \
-  --tokenizer_type="bpe" \
-  --text_column_name="text" \
-  --train_split="train"
+#
+#python joinning_enc_dec/src/trainers/train_tokenizer.py \
+#  --dataset_name="LIUM/tedlium" \
+#  --dataset_config="release3" \
+#  --tokenizer_name="Lakoc/ted_bpe500" \
+#  --vocab_size=500 \
+#  --tokenizer_type="BPE" \
+#  --text_column_name="text" \
+#  --train_split="train"
 
 torchrun --standalone \
   --nnodes=1 \
@@ -50,9 +50,9 @@ torchrun --standalone \
   --warmup_steps="15000" \
   --logging_steps="10" \
   --save_strategy="steps" \
-  --save_steps="5000" \
+  --save_steps="2000" \
   --evaluation_strategy="steps" \
-  --eval_steps="5000" \
+  --eval_steps="2000" \
   --per_device_train_batch_size="64" \
   --per_device_eval_batch_size="64" \
   --report_to="wandb" \
