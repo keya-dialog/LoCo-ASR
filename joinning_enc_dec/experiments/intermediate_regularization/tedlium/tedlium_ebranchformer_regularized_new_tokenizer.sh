@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_regularized_new_tokenizer_joint0.1.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_regularized_new_tokenizer_20s_joint.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_regularized_new_tokenizer_joint0.1"
+EXPERIMENT="tedlium_AED_ebranchformer_regularized_new_tokenizer_20s_joint"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -29,7 +29,7 @@ torchrun --standalone \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
-  --max_duration_in_seconds="45.0" \
+  --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
@@ -73,7 +73,7 @@ torchrun --standalone \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
-  --wandb_predictions_to_save=100 \
-  --decoding_ctc_weight="0.1" \
+  --wandb_predictions_to_save=600 \
+  --decoding_ctc_weight="0.1"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
