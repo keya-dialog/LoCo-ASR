@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_regularized_higher_lr.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_20s.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_regularized_higher_lr"
+EXPERIMENT="tedlium_AED_ebranchformer_20s"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -23,6 +23,15 @@ source activate loco_asr
 
 cd $WORK_DIR
 
+python joinning_enc_dec/src/trainers/train_tokenizer.py \
+  --dataset_name="LIUM/tedlium" \
+  --dataset_config="release3" \
+  --tokenizer_name="Lakoc/ted_bpe500" \
+  --vocab_size=500 \
+  --tokenizer_type="bpe" \
+  --text_column_name="text" \
+  --train_split="train"
+
 torchrun --standalone \
   --nnodes=1 \
   --nproc-per-node=4 \
@@ -33,12 +42,12 @@ torchrun --standalone \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/fisher_dec_6_layers_multi_head" \
-  --tokenizer_name="Lakoc/ted_tokenizer_v2" \
+  --base_decoder_model="Lakoc/fisher_dec_6_layers" \
+  --tokenizer_name="Lakoc/ted_bpe500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="5e-3" \
-  --warmup_steps="25000" \
+  --learning_rate="2e-3" \
+  --warmup_steps="15000" \
   --logging_steps="10" \
   --save_strategy="steps" \
   --save_steps="5000" \
@@ -54,7 +63,7 @@ torchrun --standalone \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs="150" \
+  --num_train_epochs="50" \
   --num_beams="5" \
   --max_len="256" \
   --greater_is_better="False" \
@@ -73,6 +82,7 @@ torchrun --standalone \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
-  --wandb_predictions_to_save=600
+  --wandb_predictions_to_save=600 \
+  --from_encoder_decoder_config
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

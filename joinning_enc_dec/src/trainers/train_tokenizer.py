@@ -1,6 +1,6 @@
 from datasets import load_dataset, load_from_disk
 from tokenizers import Tokenizer, decoders, normalizers, pre_tokenizers, processors, trainers
-from tokenizers.models import Unigram
+from tokenizers.models import BPE, Unigram
 from transformers import HfArgumentParser, PreTrainedTokenizerFast
 from transformers.utils import logging
 
@@ -12,9 +12,15 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
         raise NotImplementedError
 
     if tokenizer_type == 'BPE':
-        # tokenizer = Tokenizer(BPE(unk_token=unk_token))
-        # trainer = BpeTrainer(special_tokens=spl_tokens)
-        raise NotImplementedError
+        tokenizer = Tokenizer(BPE())
+        tokenizer.normalizer = normalizers.Sequence(
+            [normalizers.Replace("``", '"'), normalizers.Replace("''", '"'), normalizers.Lowercase()]
+        )
+        tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
+        trainer = trainers.BpeTrainer(vocab_size=vocab_size,
+                                      special_tokens=["<s>", "</s>", "<unk>", "<pad>", "<mask>"],
+                                      unk_token="<unk>")
+        tokenizer.decoder = decoders.Whitespace()
     elif tokenizer_type == 'unigram':
         tokenizer = Tokenizer(Unigram())
         tokenizer.normalizer = normalizers.Sequence(
