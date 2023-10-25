@@ -46,7 +46,7 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/ted_bpe500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-3" \
+  --learning_rate="5e-3" \
   --warmup_steps="15000" \
   --logging_steps="10" \
   --save_strategy="steps" \
@@ -83,6 +83,8 @@ torchrun --standalone \
   --fix_apostrophes \
   --remove_train_unks \
   --wandb_predictions_to_save=600 \
-  --from_encoder_decoder_config
+  --from_encoder_decoder_config \
+  --weight_decay="1e-6" \
+  --max_grad_norm="5.0"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

@@ -70,7 +70,11 @@ if __name__ == '__main__':
 
     base_model_config = {
         "bos_token_id": tokenizer.bos_token_id,
+        "decoder_bos_token_id": tokenizer.bos_token_id,
+        "encoder_bos_token_id": tokenizer.bos_token_id,
         "eos_token_id": tokenizer.eos_token_id,
+        "decoder_eos_token_id": tokenizer.eos_token_id,
+        "encoder_eos_token_id": tokenizer.eos_token_id,
         "pad_token_id": tokenizer.pad_token_id,
         "mask_token_id": tokenizer.mask_token_id,
         "encoder_feat_proj_dropout": 0.0,
