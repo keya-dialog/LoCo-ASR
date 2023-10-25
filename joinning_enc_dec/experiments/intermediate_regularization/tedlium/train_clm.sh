@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 1-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm1.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm2.out
 
-EXPERIMENT="tedlium_clm1"
+EXPERIMENT="tedlium_clm2"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -35,8 +35,14 @@ python \
   --auto_find_batch_size \
   --do_train \
   --do_eval \
-  --num_train_epochs=40 \
-  --warmup_steps=25000 \
-  --learning_rate="1e-3" \
+  --logging_steps="5" \
+  --save_strategy="steps" \
+  --save_steps="1000" \
+  --evaluation_strategy="steps" \
+  --eval_steps="1000" \
+  --num_train_epochs=100 \
+  --warmup_steps=5000 \
+  --learning_rate="2e-3" \
   --bf16 \
+  --save_total_limit="2" \
   --output_dir $EXPERIMENT_PATH
