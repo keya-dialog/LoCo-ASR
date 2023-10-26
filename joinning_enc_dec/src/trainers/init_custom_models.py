@@ -356,12 +356,12 @@ if __name__ == '__main__':
     configuration.output_hidden_size = 256
     configuration.num_attention_heads = 4
     configuration.num_feat_extract_layers = 2
-    configuration.intermediate_size = 2048
+    configuration.intermediate_size = 1024
     configuration.conv_dim = [256, 256]
     configuration.conv_kernel = [3, 3]
     configuration.conv_stride = [2, 2]
     configuration.num_mel_bins = 84
-    configuration.max_source_positions = 4096
+    configuration.max_source_positions = 1024
     configuration.ebranchformer_conv_dropout = 0.1
     configuration.csgu_activation = "identity"
     configuration.csgu_kernel_size = 31

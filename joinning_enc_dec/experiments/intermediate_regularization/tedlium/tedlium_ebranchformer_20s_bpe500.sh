@@ -39,14 +39,14 @@ torchrun --standalone \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
   --max_duration_in_seconds="20.0" \
-  --min_duration_in_seconds="0.0" \
+  --min_duration_in_seconds="0.1" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/fisher_dec_6_layers" \
   --tokenizer_name="Lakoc/ted_bpe500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-3" \
+  --learning_rate="2e-3" \
   --warmup_steps="15000" \
   --logging_steps="10" \
   --save_strategy="steps" \
