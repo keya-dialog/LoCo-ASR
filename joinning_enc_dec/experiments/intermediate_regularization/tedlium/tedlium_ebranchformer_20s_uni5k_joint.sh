@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_20s_uni5k_joint.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_20s_uni5k_joint1.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_20s_uni5k_joint"
+EXPERIMENT="tedlium_AED_ebranchformer_20s_uni5k_joint1"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -53,8 +53,8 @@ torchrun --standalone \
   --save_steps="4000" \
   --evaluation_strategy="steps" \
   --eval_steps="4000" \
-  --per_device_train_batch_size="64" \
-  --per_device_eval_batch_size="64" \
+  --per_device_train_batch_size="32" \
+  --per_device_eval_batch_size="32" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="24" \
@@ -86,6 +86,6 @@ torchrun --standalone \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
   --max_grad_norm="5.0" \
-  --decoding_ctc_weight="0.1"
+  --decoding_ctc_weight="0.3"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
