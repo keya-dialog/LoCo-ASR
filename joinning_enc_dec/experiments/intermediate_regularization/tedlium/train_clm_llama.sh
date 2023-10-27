@@ -30,6 +30,7 @@ python \
   --tokenizer_name="Lakoc/ted_bpe500" \
   --dataset_name LIUM/tedlium \
   --dataset_config_name release3 \
+  --pad_token_id=3 \
   --per_device_train_batch_size 128 \
   --per_device_eval_batch_size 128 \
   --auto_find_batch_size \

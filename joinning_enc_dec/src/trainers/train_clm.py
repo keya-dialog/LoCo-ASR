@@ -55,7 +55,13 @@ class ModelArguments:
     """
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune, or train from scratch.
     """
-
+    pad_token_id: int = field(
+        metadata={
+            "help": (
+                "The ID of the padding token in the tokenizer vocabulary."
+            )
+        },
+    )
     model_name_or_path: Optional[str] = field(
         default=None,
         metadata={
@@ -377,6 +383,7 @@ def main():
         "revision": model_args.model_revision,
         "token": model_args.token,
         "trust_remote_code": model_args.trust_remote_code,
+        "pad_token_id": model_args.pad_token_id,
     }
     if model_args.config_name:
         config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
