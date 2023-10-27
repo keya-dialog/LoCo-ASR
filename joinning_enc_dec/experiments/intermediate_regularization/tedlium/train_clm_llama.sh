@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 1-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm3.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm4.out
 
-EXPERIMENT="tedlium_clm6"
+EXPERIMENT="tedlium_clm4"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -25,8 +25,8 @@ cd $WORK_DIR
 
 python \
   joinning_enc_dec/src/trainers/train_clm.py \
-  --model_type gpt2 \
-  --config_overrides="n_embd=512,n_head=8,n_layer=16,vocab_size=500,bos_token_id=0,eos_token_id=1,pad_token_id=3,n_positions=256" \
+  --model_type llama \
+  --config_overrides="hidden_size=256,intermediate_size=1024,num_attention_heads=8,num_hidden_layers=8,vocab_size=500,bos_token_id=0,eos_token_id=1,pad_token_id=3,max_position_embeddings=512" \
   --tokenizer_name="Lakoc/ted_bpe500" \
   --dataset_name LIUM/tedlium \
   --dataset_config_name release3 \
@@ -42,7 +42,7 @@ python \
   --eval_steps="500" \
   --num_train_epochs=50 \
   --warmup_steps=2000 \
-  --learning_rate="1e-3" \
+  --learning_rate="2e-3" \
   --bf16 \
   --save_total_limit="2" \
   --output_dir $EXPERIMENT_PATH \
