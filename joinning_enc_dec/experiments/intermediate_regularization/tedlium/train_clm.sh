@@ -7,7 +7,7 @@
 #SBATCH --time 1-00:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm_gpt2.out
 
-EXPERIMENT="tedlium_clm_gpt2_test"
+EXPERIMENT="tedlium_clm_gpt2"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
