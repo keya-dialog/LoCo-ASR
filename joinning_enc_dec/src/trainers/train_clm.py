@@ -301,14 +301,16 @@ def main():
         raw_datasets = load_dataset(
             data_args.dataset_name,
             data_args.dataset_config_name,
-            token=model_args.token,
-            streaming=data_args.streaming,
+            # cache_dir=model_args.cache_dir,
+            # token=model_args.token,
+            # streaming=data_args.streaming,
         )
         if "validation" not in raw_datasets.keys():
             raw_datasets["validation"] = load_dataset(
                 data_args.dataset_name,
                 data_args.dataset_config_name,
                 split=f"train[:{data_args.validation_split_percentage}%]",
+                cache_dir=model_args.cache_dir,
                 token=model_args.token,
                 streaming=data_args.streaming,
             )
@@ -316,6 +318,7 @@ def main():
                 data_args.dataset_name,
                 data_args.dataset_config_name,
                 split=f"train[{data_args.validation_split_percentage}%:]",
+                cache_dir=model_args.cache_dir,
                 token=model_args.token,
                 streaming=data_args.streaming,
             )
@@ -337,6 +340,7 @@ def main():
         raw_datasets = load_dataset(
             extension,
             data_files=data_files,
+            cache_dir=model_args.cache_dir,
             token=model_args.token,
             **dataset_args,
         )
@@ -346,6 +350,7 @@ def main():
                 extension,
                 data_files=data_files,
                 split=f"train[:{data_args.validation_split_percentage}%]",
+                cache_dir=model_args.cache_dir,
                 token=model_args.token,
                 **dataset_args,
             )
@@ -353,6 +358,7 @@ def main():
                 extension,
                 data_files=data_files,
                 split=f"train[{data_args.validation_split_percentage}%:]",
+                cache_dir=model_args.cache_dir,
                 token=model_args.token,
                 **dataset_args,
             )
@@ -411,6 +417,7 @@ def main():
             model_args.model_name_or_path,
             from_tf=bool(".ckpt" in model_args.model_name_or_path),
             config=config,
+            cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             token=model_args.token,
             trust_remote_code=model_args.trust_remote_code,
