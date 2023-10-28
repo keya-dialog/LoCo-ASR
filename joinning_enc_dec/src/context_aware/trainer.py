@@ -11,7 +11,7 @@ from transformers.dependency_versions_check import dep_version_check
 from transformers.integrations import (  # isort: split
     is_fairscale_available,
 )
-from transformers.pytorch_utils import is_torch_greater_or_equal_than_1_10
+# from transformers.pytorch_utils import is_torch_greater_or_equal_than_1_10
 from transformers.trainer_callback import (
     DefaultFlowCallback,
     ProgressCallback,
@@ -31,7 +31,7 @@ from context_aware.utils import RandomSamplerWithDependency
 
 # Integrations must be imported before ML frameworks:
 
-_is_native_cpu_amp_available = is_torch_greater_or_equal_than_1_10
+# _is_native_cpu_amp_available = is_torch_greater_or_equal_than_1_10
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback

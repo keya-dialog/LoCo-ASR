@@ -20,7 +20,6 @@ from transformers.generation.stopping_criteria import (
 from transformers.generation.utils import BeamSearchDecoderOnlyOutput, BeamSearchEncoderDecoderOutput, BeamSearchOutput
 from transformers.modeling_outputs import BaseModelOutput, CausalLMOutput, Seq2SeqLMOutput
 from transformers.models.speech_encoder_decoder.modeling_speech_encoder_decoder import shift_tokens_right
-from transformers.pytorch_utils import torch_int_div
 from transformers.utils import logging
 
 from evaluation.ctc_scorer import CTCPrefixScoreTH
@@ -706,7 +705,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 next_token_scores, 2 * num_beams, dim=1, largest=True, sorted=True
             )
 
-            next_indices = torch_int_div(next_tokens, vocab_size)
+            next_indices = torch.div(next_tokens, vocab_size, rounding_mode='floor')
             next_tokens = next_tokens % vocab_size
 
             # stateless
