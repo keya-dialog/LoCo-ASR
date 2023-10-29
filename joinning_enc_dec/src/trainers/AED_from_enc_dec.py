@@ -2,8 +2,8 @@ import os
 import pickle
 
 from datasets import load_dataset, load_from_disk
-from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForSpeechSeq2Seq, AutoTokenizer, \
-    EarlyStoppingCallback, GenerationConfig, HfArgumentParser
+from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
+    AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
@@ -116,9 +116,12 @@ if __name__ == '__main__':
             **base_model_config
         )
 
-    if gen_args.decoding_ctc_weight is not None:
+    if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
+        external_lm = None
+        if gen_args.external_lm is not None:
+            external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
         activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
-                                base_model_config['eos_token_id'])
+                                base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],

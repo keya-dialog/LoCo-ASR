@@ -108,11 +108,18 @@ class GenerationArguments:
         default=1.0, metadata={"help": "Length penalty for generation."}
     )
     decoding_ctc_weight: Optional[float] = field(
-        default=None, metadata={"help": "CTC weight to bias hypothesis."}
+        default=0.0, metadata={"help": "CTC weight to bias hypothesis."}
     )
     ctc_margin: Optional[float] = field(
         default=0, metadata={"help": "Margin to stop generation."}
     )
+    external_lm: Optional[str] = field(
+        default=None, metadata={"help": "Path to external LM."}
+    )
+    external_lm_weight: Optional[float] = field(
+        default=0.0, metadata={"help": "Weight of external LM."}
+    )
+
 
 
 @dataclass

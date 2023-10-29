@@ -526,7 +526,7 @@ def prepare_dataset(dataset, dataset_name,
     return dataset
 
 
-def activate_joint_decoding(model, ctc_weight, ctc_margin, num_tokens, eos_token):
+def activate_joint_decoding(model, ctc_weight, ctc_margin, num_tokens, eos_token, external_lm, external_lm_weight):
     def new_beam(*args, **kwargs):
         logits_processor = LogitsProcessorList(
             [EnforceEosIfCTCStops(eos_token,
@@ -535,7 +535,9 @@ def activate_joint_decoding(model, ctc_weight, ctc_margin, num_tokens, eos_token
         return model.joint_beam_search(*args, **kwargs,
                                        ctc_weight=ctc_weight,
                                        margin=ctc_margin,
-                                       ctc_beam_width=num_tokens)
+                                       ctc_beam_width=num_tokens,
+                                       external_lm=external_lm,
+                                       external_lm_weight=external_lm_weight)
 
     model.beam_search = new_beam
 

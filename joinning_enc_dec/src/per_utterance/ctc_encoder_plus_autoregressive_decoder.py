@@ -618,6 +618,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         ctc_beam_width = model_kwargs['ctc_beam_width']
         ctc_states = None
         att_w = None
+        external_lm = model_kwargs['external_lm'].to(self.device)
+        external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
         # of the first beam are considered to avoid sampling the exact same tokens across all beams.
@@ -660,6 +662,16 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             next_token_scores = nn.functional.log_softmax(
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
+
+            if external_lm is not None:
+                external_lm_logits = external_lm(input_ids, labels=None, output_hidden_states=False,
+                                                 return_dict=True).logits
+                external_lm_logits = external_lm_logits[:, -1, :]
+                external_lm_logits = self.adjust_logits_during_generation(external_lm_logits, cur_len=cur_len)
+                external_lm_scores = nn.functional.log_softmax(
+                    external_lm_logits, dim=-1
+                )
+                next_token_scores = next_token_scores + external_lm_weight * external_lm_scores
 
             """
             Sample next tokens that will be used for CTC prefix computation and compute CTC cumulative prefix scores

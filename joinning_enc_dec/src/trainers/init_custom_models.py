@@ -192,7 +192,6 @@ if __name__ == '__main__':
 
     decoder.push_to_hub("fisher_dec_6_layers_multi_head3_tied")
 
-
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
     # Initializing a GPT2 configuration
@@ -451,3 +450,39 @@ if __name__ == '__main__':
     decoder = GPT2ResidualsLMHeadModel(configuration)
     print(decoder.num_parameters())
     decoder.push_to_hub("fisher_dec_6_layers_residual4")
+
+    from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerModel
+
+    configuration = Wav2Vec2EBranchformerConfig()
+    configuration.num_hidden_layers = 12
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 1024
+    configuration.conv_dim = [256, 256]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 84
+    configuration.max_source_positions = 1024
+    configuration.ebranchformer_conv_dropout = 0.1
+    configuration.csgu_activation = "identity"
+    configuration.csgu_kernel_size = 31
+    configuration.csgu_use_linear_after_conv = False
+    configuration.merge_conv_kernel = 31
+    configuration.use_macaron_ff = True
+    configuration.use_fbanks = True
+
+    configuration.push_to_hub("fisher_ebranchformer_enc_12_tiny")
+
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 12
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.n_head = 4
+
+    configuration.push_to_hub("gpt2_tiny_decoder")
