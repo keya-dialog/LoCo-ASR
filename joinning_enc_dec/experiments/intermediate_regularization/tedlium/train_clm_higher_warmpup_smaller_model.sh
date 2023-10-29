@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 1-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm_gpt2_smaller.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm_gpt2_smaller_longer_training.out
 
-EXPERIMENT="tedlium_clm_gpt2_smaller"
+EXPERIMENT="tedlium_clm_gpt2_smaller_longer_training"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -41,9 +41,9 @@ python \
   --save_steps="500" \
   --evaluation_strategy="steps" \
   --eval_steps="500" \
-  --num_train_epochs=50 \
-  --warmup_steps=5000 \
-  --learning_rate="5e-4" \
+  --num_train_epochs=100 \
+  --warmup_steps=10000 \
+  --learning_rate="1e-3" \
   --bf16 \
   --save_total_limit="2" \
   --output_dir $EXPERIMENT_PATH \
