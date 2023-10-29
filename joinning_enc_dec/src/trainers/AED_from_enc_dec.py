@@ -120,6 +120,7 @@ if __name__ == '__main__':
         external_lm = None
         if gen_args.external_lm is not None:
             external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
+            external_lm.eval()
         activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
                                 base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
 
