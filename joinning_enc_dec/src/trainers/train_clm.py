@@ -327,15 +327,15 @@ def main():
                 data_args.dataset_name,
                 data_args.dataset_config_name,
                 split=f"train[:{data_args.validation_split_percentage}%]",
-                cache_dir=model_args.cache_dir,
-                streaming=data_args.streaming,
+                # cache_dir=model_args.cache_dir,
+                # streaming=data_args.streaming,
             )
             raw_datasets["train"] = load_dataset(
                 data_args.dataset_name,
                 data_args.dataset_config_name,
                 split=f"train[{data_args.validation_split_percentage}%:]",
-                cache_dir=model_args.cache_dir,
-                streaming=data_args.streaming,
+                # cache_dir=model_args.cache_dir,
+                # streaming=data_args.streaming,
             )
     else:
         data_files = {}
@@ -355,7 +355,7 @@ def main():
         raw_datasets = load_dataset(
             extension,
             data_files=data_files,
-            cache_dir=model_args.cache_dir,
+            # cache_dir=model_args.cache_dir,
             **dataset_args,
         )
         # If no validation data is there, validation_split_percentage will be used to divide the dataset.
@@ -364,14 +364,14 @@ def main():
                 extension,
                 data_files=data_files,
                 split=f"train[:{data_args.validation_split_percentage}%]",
-                cache_dir=model_args.cache_dir,
+                # cache_dir=model_args.cache_dir,
                 **dataset_args,
             )
             raw_datasets["train"] = load_dataset(
                 extension,
                 data_files=data_files,
                 split=f"train[{data_args.validation_split_percentage}%:]",
-                cache_dir=model_args.cache_dir,
+                # cache_dir=model_args.cache_dir,
                 **dataset_args,
             )
 
@@ -386,7 +386,7 @@ def main():
         external_data = load_dataset(
             extension,
             data_files=data_files,
-            cache_dir=model_args.cache_dir,
+            # cache_dir=model_args.cache_dir,
             **dataset_args,
         )
         raw_datasets["train"] = concatenate_datasets([raw_datasets["train"], external_data["train"]])
@@ -445,7 +445,7 @@ def main():
             model_args.model_name_or_path,
             from_tf=bool(".ckpt" in model_args.model_name_or_path),
             config=config,
-            cache_dir=model_args.cache_dir,
+            # cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             token=model_args.token,
             trust_remote_code=model_args.trust_remote_code,
@@ -486,14 +486,17 @@ def main():
             )
         return output
 
+    proc_num_workers = data_args.preprocessing_num_workers
+    load_from_cache_file = not data_args.overwrite_cache
     with training_args.main_process_first(desc="dataset map tokenization"):
+
         if not data_args.streaming:
             tokenized_datasets = raw_datasets.map(
                 tokenize_function,
                 batched=True,
-                num_proc=data_args.preprocessing_num_workers,
+                num_proc=proc_num_workers,
                 remove_columns=column_names,
-                load_from_cache_file=not data_args.overwrite_cache,
+                load_from_cache_file=load_from_cache_file,
                 desc="Running tokenizer on dataset",
             )
         else:
@@ -547,8 +550,8 @@ def main():
             lm_datasets = tokenized_datasets.map(
                 group_texts,
                 batched=True,
-                num_proc=data_args.preprocessing_num_workers,
-                load_from_cache_file=not data_args.overwrite_cache,
+                num_proc=proc_num_workers,
+                load_from_cache_file=load_from_cache_file,
                 desc=f"Grouping texts in chunks of {block_size}",
             )
         else:
