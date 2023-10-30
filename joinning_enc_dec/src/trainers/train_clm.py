@@ -321,7 +321,6 @@ def main():
                 data_args.dataset_config_name,
                 split=f"train[:{data_args.validation_split_percentage}%]",
                 cache_dir=model_args.cache_dir,
-                token=model_args.token,
                 streaming=data_args.streaming,
             )
             raw_datasets["train"] = load_dataset(
@@ -329,7 +328,6 @@ def main():
                 data_args.dataset_config_name,
                 split=f"train[{data_args.validation_split_percentage}%:]",
                 cache_dir=model_args.cache_dir,
-                token=model_args.token,
                 streaming=data_args.streaming,
             )
     else:
@@ -351,7 +349,6 @@ def main():
             extension,
             data_files=data_files,
             cache_dir=model_args.cache_dir,
-            token=model_args.token,
             **dataset_args,
         )
         # If no validation data is there, validation_split_percentage will be used to divide the dataset.
@@ -361,7 +358,6 @@ def main():
                 data_files=data_files,
                 split=f"train[:{data_args.validation_split_percentage}%]",
                 cache_dir=model_args.cache_dir,
-                token=model_args.token,
                 **dataset_args,
             )
             raw_datasets["train"] = load_dataset(
@@ -369,7 +365,6 @@ def main():
                 data_files=data_files,
                 split=f"train[{data_args.validation_split_percentage}%:]",
                 cache_dir=model_args.cache_dir,
-                token=model_args.token,
                 **dataset_args,
             )
 
@@ -385,7 +380,6 @@ def main():
             extension,
             data_files=data_files,
             cache_dir=model_args.cache_dir,
-            token=model_args.token,
             **dataset_args,
         )
         raw_datasets["train"] = concatenate_datasets([raw_datasets["train"], external_data["train"]])
