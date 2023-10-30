@@ -376,9 +376,8 @@ def main():
     if data_args.additional_raw_data:
         data_files = {}
         dataset_args = {}
-        if data_args.train_file is not None:
-            data_files["train"] = data_args.additional_raw_data
-        extension = data_args.train_file.split(".")[-1]
+        data_files["train"] = data_args.additional_raw_data
+        extension = data_args.additional_raw_data.split(".")[-1]
         if extension == "txt":
             extension = "text"
             dataset_args["keep_linebreaks"] = data_args.keep_linebreaks
