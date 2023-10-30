@@ -12,7 +12,8 @@ PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 LM_DATA="${WORK_DIR}/data/ted_lm_raw.txt"
-TOKENIZER_NAME="Lakoc/ted_uni500"
+USER="lakoc"
+TOKENIZER_NAME="ted_uni500"
 
 export WANDB_PROJECT=$PROJECT
 export WANDB_RUN_ID="${EXPERIMENT}"
@@ -34,7 +35,7 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --text_column_name="text" \
   --train_split="train" \
   --additional_raw_data $LM_DATA
-  --skip_if_exists="Lakoc/${TOKENIZER_NAME}"
+  --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
 torchrun --standalone \
   --nnodes=1 \
@@ -42,7 +43,7 @@ torchrun --standalone \
   joinning_enc_dec/src/trainers/train_clm.py \
   --model_type gpt2 \
   --config_overrides="n_embd=512,n_head=8,n_layer=16,vocab_size=500,bos_token_id=0,eos_token_id=1,n_positions=256" \
-  --tokenizer_name=$TOKENIZER_NAME \
+  --tokenizer_name="${USER}/${TOKENIZER_NAME}" \
   --dataset_name LIUM/tedlium \
   --pad_token_id=3 \
   --dataset_config_name release3 \
