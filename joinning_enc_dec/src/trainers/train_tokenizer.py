@@ -81,4 +81,7 @@ if __name__ == '__main__':
 
     # 2. Extract text
     text = dataset[tokenizer_args.train_split][tokenizer_args.text_column_name]
+    if tokenizer_args.additional_raw_data is not None:
+        text += load_dataset("text", data_files=tokenizer_args.additional_raw_data, keep_linebreaks=True)["train"][
+            "text"]
     train_tokenizer(tokenizer_args.tokenizer_type, tokenizer_args.tokenizer_name, text, tokenizer_args.vocab_size)

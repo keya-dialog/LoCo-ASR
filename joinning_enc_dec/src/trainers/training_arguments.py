@@ -243,3 +243,7 @@ class TokenizerTrainingArguments:
     tokenizer_type: Optional[str] = field(
         default="unigram", metadata={"help": "Type of tokenizer to create if does not exists."}
     )
+    additional_raw_data: Optional[str] = field(
+        default=None,
+        metadata={"help": "The input additional raw data file (a text file)."},
+    )

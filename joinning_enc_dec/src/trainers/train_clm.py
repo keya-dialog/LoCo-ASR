@@ -34,7 +34,7 @@ import datasets
 import evaluate
 import torch
 import transformers
-from datasets import load_dataset
+from datasets import concatenate_datasets, load_dataset
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer, CONFIG_MAPPING, HfArgumentParser,
                           MODEL_FOR_CAUSAL_LM_MAPPING, Trainer, TrainingArguments, default_data_collator,
                           is_torch_tpu_available, set_seed)
@@ -215,6 +215,10 @@ class DataTrainingArguments:
     keep_linebreaks: bool = field(
         default=True, metadata={"help": "Whether to keep line breaks when using TXT files or not."}
     )
+    additional_raw_data: Optional[str] = field(
+        default=None,
+        metadata={"help": "The input additional raw data file (a text file)."},
+    )
 
     def __post_init__(self):
         if self.streaming:
@@ -369,6 +373,23 @@ def main():
                 **dataset_args,
             )
 
+    if data_args.additional_raw_data:
+        data_files = {}
+        dataset_args = {}
+        if data_args.train_file is not None:
+            data_files["train"] = data_args.additional_raw_data
+        extension = data_args.train_file.split(".")[-1]
+        if extension == "txt":
+            extension = "text"
+            dataset_args["keep_linebreaks"] = data_args.keep_linebreaks
+        external_data = load_dataset(
+            extension,
+            data_files=data_files,
+            cache_dir=model_args.cache_dir,
+            token=model_args.token,
+            **dataset_args,
+        )
+        raw_datasets["train"] = concatenate_datasets([raw_datasets["train"], external_data["train"]])
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
