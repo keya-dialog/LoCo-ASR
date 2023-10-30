@@ -35,6 +35,7 @@ import evaluate
 import torch
 import transformers
 from datasets import concatenate_datasets, load_dataset
+from huggingface_hub import repo_exists
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer, CONFIG_MAPPING, HfArgumentParser,
                           MODEL_FOR_CAUSAL_LM_MAPPING, Trainer, TrainingArguments, default_data_collator,
                           is_torch_tpu_available, set_seed)
@@ -146,6 +147,10 @@ class ModelArguments:
         },
     )
 
+    skip_if_exists: Optional[str] = field(
+        default=None, metadata={"help": "Whether to check if tokenizer exists."}
+    )
+
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
             raise ValueError(
@@ -253,6 +258,10 @@ def main():
         if model_args.token is not None:
             raise ValueError("`token` and `use_auth_token` are both specified. Please set only the argument `token`.")
         model_args.token = model_args.use_auth_token
+
+    if model_args.skip_if_exists is not None and repo_exists(model_args.skip_if_exists):
+        logger.warning(f"LM {model_args.skip_if_exists} already exists. Skipping training.")
+        exit(0)
 
     # Setup logging
     logging.basicConfig(

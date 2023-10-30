@@ -2,12 +2,12 @@
 #SBATCH --job-name TED_LM
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qgpu
-#SBATCH --gpus 1
+#SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 1-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_clm_gpt2_additional_data.out
+#SBATCH --time 2-00:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/gpt2_tedlium.out
 
-EXPERIMENT="tedlium_clm_gpt2_additional_data"
+EXPERIMENT="gpt2_tedlium"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -34,8 +34,11 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --text_column_name="text" \
   --train_split="train" \
   --additional_raw_data $LM_DATA
+  --skip_if_exists="Lakoc/${TOKENIZER_NAME}"
 
-python \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/train_clm.py \
   --model_type gpt2 \
   --config_overrides="n_embd=512,n_head=8,n_layer=16,vocab_size=500,bos_token_id=0,eos_token_id=1,n_positions=256" \
@@ -50,14 +53,17 @@ python \
   --do_eval \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="1000" \
+  --save_steps="5000" \
   --evaluation_strategy="steps" \
-  --eval_steps="1000" \
-  --num_train_epochs=40 \
+  --eval_steps="5000" \
+  --num_train_epochs=30 \
   --warmup_steps=25000 \
   --learning_rate="1e-3" \
   --bf16 \
   --save_total_limit="2" \
   --output_dir $EXPERIMENT_PATH \
   --load_best_model_at_end \
-  --additional_raw_data $LM_DATA
+  --preprocessing_num_workers 64 \
+  --additional_raw_data $LM_DATA \
+  --skip_if_exists="Lakoc/${EXPERIMENT}" \
+  --push_to_hub

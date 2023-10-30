@@ -210,6 +210,10 @@ class GeneralTrainingArgumentsContext(GeneralTrainingArguments):
     turn_index_column_name: str = field(
         default=None, metadata={"help": "Turn index column."}
     )
+    skip_if_exists: Optional[str] = field(
+        default=None, metadata={"help": "Whether to check if tokenizer exists."}
+    )
+
 
 
 @dataclass
@@ -246,4 +250,7 @@ class TokenizerTrainingArguments:
     additional_raw_data: Optional[str] = field(
         default=None,
         metadata={"help": "The input additional raw data file (a text file)."},
+    )
+    skip_if_exists: Optional[str] = field(
+        default=None, metadata={"help": "Whether to check if tokenizer exists."}
     )

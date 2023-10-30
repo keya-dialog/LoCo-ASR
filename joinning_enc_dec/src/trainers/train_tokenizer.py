@@ -1,4 +1,5 @@
 from datasets import load_dataset, load_from_disk
+from huggingface_hub import repo_exists
 from tokenizers import Tokenizer, decoders, normalizers, pre_tokenizers, processors, trainers
 from tokenizers.models import BPE, Unigram
 from transformers import HfArgumentParser, PreTrainedTokenizerFast
@@ -73,6 +74,11 @@ if __name__ == '__main__':
     parser = HfArgumentParser((TokenizerTrainingArguments,))
 
     tokenizer_args, = parser.parse_args_into_dataclasses()
+
+    if tokenizer_args.skip_if_exists is not None and repo_exists(tokenizer_args.skip_if_exists):
+        logger.warning(f"Tokenizer {tokenizer_args.skip_if_exists} already exists. Skipping training.")
+        exit(0)
+
     # 1. Load dataset
     if tokenizer_args.dataset_config is not None:
         dataset = load_dataset(tokenizer_args.dataset_name, tokenizer_args.dataset_config, keep_in_memory=False)
