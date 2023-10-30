@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/gpt2_tedlium.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/gpt2_tedlium2.out
 
-EXPERIMENT="gpt2_tedlium"
+EXPERIMENT="gpt2_tedlium2"
 PROJECT="TED_CLM"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -54,11 +54,11 @@ torchrun --standalone \
   --do_eval \
   --logging_steps="5" \
   --save_strategy="steps" \
-  --save_steps="5000" \
+  --save_steps="3000" \
   --evaluation_strategy="steps" \
-  --eval_steps="5000" \
-  --num_train_epochs=30 \
-  --warmup_steps=25000 \
+  --eval_steps="3000" \
+  --num_train_epochs=15 \
+  --warmup_steps=20000 \
   --learning_rate="1e-3" \
   --bf16 \
   --save_total_limit="2" \
@@ -67,4 +67,5 @@ torchrun --standalone \
   --preprocessing_num_workers 64 \
   --additional_raw_data $LM_DATA \
   --skip_if_exists="Lakoc/${EXPERIMENT}" \
-  --push_to_hub
+  --push_to_hub \
+  --early_stopping_patience="5"

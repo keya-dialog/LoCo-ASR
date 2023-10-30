@@ -50,7 +50,7 @@ class ModelArguments:
 @dataclass
 class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     early_stopping_patience: Optional[int] = field(
-        default=1, metadata={"help": "Patience for early stopping."}
+        default=-1, metadata={"help": "Patience for early stopping."}
     )
     decoder_cold_start: Optional[bool] = field(
         default=False, metadata={"help": "Whenever to reinitialize decoder weights"}
@@ -90,6 +90,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     )
     preprocess_dataset_only: bool = field(
         default=False, metadata={"help": "Whether to preprocess dataset only"}
+    )
+    skip_if_exists: Optional[str] = field(
+        default=None, metadata={"help": "Whether to check if tokenizer exists."}
     )
 
 
@@ -209,9 +212,6 @@ class GeneralTrainingArgumentsContext(GeneralTrainingArguments):
     )
     turn_index_column_name: str = field(
         default=None, metadata={"help": "Turn index column."}
-    )
-    skip_if_exists: Optional[str] = field(
-        default=None, metadata={"help": "Whether to check if tokenizer exists."}
     )
 
 

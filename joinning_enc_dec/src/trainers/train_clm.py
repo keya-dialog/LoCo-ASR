@@ -36,12 +36,14 @@ import torch
 import transformers
 from datasets import concatenate_datasets, load_dataset
 from huggingface_hub import repo_exists
-from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer, CONFIG_MAPPING, HfArgumentParser,
-                          MODEL_FOR_CAUSAL_LM_MAPPING, Trainer, TrainingArguments, default_data_collator,
+from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer, CONFIG_MAPPING, EarlyStoppingCallback,
+                          HfArgumentParser, MODEL_FOR_CAUSAL_LM_MAPPING, Trainer, default_data_collator,
                           is_torch_tpu_available, set_seed)
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils.versions import require_version
+
+from trainers.training_arguments import GeneralTrainingArguments
 
 require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/language-modeling/requirements.txt")
 
@@ -147,10 +149,6 @@ class ModelArguments:
         },
     )
 
-    skip_if_exists: Optional[str] = field(
-        default=None, metadata={"help": "Whether to check if tokenizer exists."}
-    )
-
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
             raise ValueError(
@@ -245,7 +243,7 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, GeneralTrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
@@ -259,8 +257,8 @@ def main():
             raise ValueError("`token` and `use_auth_token` are both specified. Please set only the argument `token`.")
         model_args.token = model_args.use_auth_token
 
-    if model_args.skip_if_exists is not None and repo_exists(model_args.skip_if_exists):
-        logger.warning(f"LM {model_args.skip_if_exists} already exists. Skipping training.")
+    if training_args.skip_if_exists is not None and repo_exists(training_args.skip_if_exists):
+        logger.warning(f"LM {training_args.skip_if_exists} already exists. Skipping training.")
         exit(0)
 
     # Setup logging
@@ -593,9 +591,13 @@ def main():
             return metric.compute(predictions=preds, references=labels)
 
     # Initialize our Trainer
+    callbacks = []
+    if training_args.early_stopping_patience > -1:
+        callbacks.append(EarlyStoppingCallback(early_stopping_patience=training_args.early_stopping_patience))
     trainer = Trainer(
         model=model,
         args=training_args,
+        callbacks=callbacks,
         train_dataset=train_dataset if training_args.do_train else None,
         eval_dataset=eval_dataset if training_args.do_eval else None,
         tokenizer=tokenizer,
