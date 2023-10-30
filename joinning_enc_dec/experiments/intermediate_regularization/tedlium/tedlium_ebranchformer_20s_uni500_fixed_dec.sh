@@ -64,7 +64,7 @@ torchrun --standalone \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
   --num_train_epochs="50" \
-  --num_beams="5" \
+  --num_beams="40" \
   --max_len="256" \
   --greater_is_better="False" \
   --group_by_length="True" \
