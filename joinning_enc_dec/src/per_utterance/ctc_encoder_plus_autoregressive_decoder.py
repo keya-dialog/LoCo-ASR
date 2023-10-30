@@ -25,7 +25,6 @@ from transformers.utils import logging
 from evaluation.ctc_scorer import CTCPrefixScoreTH
 from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
 from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
-from per_utterance.extractors import MelFeatureExtractor
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel
 
@@ -96,9 +95,6 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         if encoder is None:
             encoder = AutoModelForCTC.from_config(config.encoder)
             encoder.register_forward_hook(wav2vec2_for_ctc_forward_hook)
-        if config.use_fbanks:
-            encoder.base_model.feature_extractor = MelFeatureExtractor(config.encoder)
-
         if decoder is None:
             decoder = AutoModelForCausalLM.from_config(config.decoder)
 

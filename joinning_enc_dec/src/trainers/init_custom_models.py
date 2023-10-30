@@ -486,3 +486,17 @@ if __name__ == '__main__':
     configuration.n_head = 4
 
     configuration.push_to_hub("gpt2_tiny_decoder")
+
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 6
+    configuration.n_inner = 2048
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.n_head = 4
+    configuration.tie_word_embeddings = False
+
+    configuration.push_to_hub("gpt2_tiny_decoder_6_layers")

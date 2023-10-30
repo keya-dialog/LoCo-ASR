@@ -280,6 +280,8 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             csgu_use_linear_after_conv=False,
             merge_conv_kernel=31,
             use_macaron_ff=True,
+            feature_projection=False,
+            position_embeddings=False,
             **kwargs
     ):
         super().__init__(**kwargs, pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id)
@@ -373,6 +375,8 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         self.csgu_use_linear_after_conv = csgu_use_linear_after_conv
         self.merge_conv_kernel = merge_conv_kernel
         self.use_macaron_ff = use_macaron_ff
+        self.feature_projection = feature_projection
+        self.position_embeddings = position_embeddings
 
     @property
     def inputs_to_logits_ratio(self):
@@ -552,14 +556,13 @@ class Wav2Vec2EBranchformerEncoder(nn.Module):
         super().__init__()
         self.config = config
 
-        if config.position_embeddings_type == "relative":
+        if config.position_embeddings and config.position_embeddings_type == "relative":
             self.embed_positions = Wav2Vec2EBranchformerRelPositionalEmbedding(config)
-        elif config.position_embeddings_type == "rotary":
+        elif config.position_embeddings and config.position_embeddings_type == "rotary":
             self.embed_positions = Wav2Vec2EBranchformerRotaryPositionalEmbedding(config)
         else:
             self.embed_positions = None
 
-        self.pos_conv_embed = Wav2Vec2EBranchformerPositionalConvEmbedding(config)
         self.layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout)
         self.layers = nn.ModuleList(
@@ -758,7 +761,11 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
             self.feature_extractor = MelFeatureExtractor(config)
         else:
             self.feature_extractor = Wav2Vec2EBranchformerFeatureEncoder(config)
-        self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
+
+        if config.feature_projection:
+            self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
+        else:
+            self.feature_projection = nn.Identity()
 
         # model only needs masking vector if mask prob is > 0.0
         if config.mask_time_prob > 0.0 or config.mask_feature_prob > 0.0:

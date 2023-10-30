@@ -116,6 +116,10 @@ if __name__ == '__main__':
             **base_model_config
         )
 
+    if model_args.disable_decoder_wpe:
+        model.decoder.transformer.wpe.weight.requires_grad = False
+        model.decoder.transformer.wpe.weight.fill_(0.0)
+
     if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
         external_lm = None
         if gen_args.external_lm is not None:

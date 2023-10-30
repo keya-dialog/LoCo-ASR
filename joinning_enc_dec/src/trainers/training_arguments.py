@@ -45,6 +45,9 @@ class ModelArguments:
     from_encoder_decoder_config: Optional[bool] = field(
         default=False, metadata={"help": "Whether to create model from encoder and decoder configs."}
     )
+    disable_decoder_wpe: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to disable decoder WPE."}
+    )
 
 
 @dataclass
