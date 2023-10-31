@@ -359,7 +359,7 @@ if __name__ == '__main__':
     configuration.conv_dim = [256, 256]
     configuration.conv_kernel = [3, 3]
     configuration.conv_stride = [2, 2]
-    configuration.num_mel_bins = 84
+    configuration.num_mel_bins = 80
     configuration.max_source_positions = 1024
     configuration.ebranchformer_conv_dropout = 0.1
     configuration.csgu_activation = "identity"
@@ -368,10 +368,13 @@ if __name__ == '__main__':
     configuration.merge_conv_kernel = 31
     configuration.use_macaron_ff = True
     configuration.use_fbanks = True
+    configuration.fe_position_embeddings = False
+    configuration.ctc_zero_infinity = True
+    configuration.push_to_hub("fisher_ebranchformer_enc_12_layers_fixed")
 
-    encoder = Wav2Vec2EBranchformerModel(configuration)
-    print(encoder.num_parameters())
-    encoder.push_to_hub("fisher_ebranchformer_enc_12_layers_fixed")
+    # encoder = Wav2Vec2EBranchformerModel(configuration)
+    # print(encoder.num_parameters())
+    # encoder.push_to_hub("fisher_ebranchformer_enc_12_layers_fixed")
 
     from transformers import Wav2Vec2Config, Wav2Vec2Model
 

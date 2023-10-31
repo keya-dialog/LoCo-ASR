@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_20s_uni500_esp3.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_espnet_recipe.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_20s_uni500_esp3"
+EXPERIMENT="tedlium_AED_ebranchformer_espnet_recipe"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -22,15 +22,6 @@ conda deactivate
 source activate loco_asr
 
 cd $WORK_DIR
-#
-#python joinning_enc_dec/src/trainers/train_tokenizer.py \
-#  --dataset_name="LIUM/tedlium" \
-#  --dataset_config="release3" \
-#  --tokenizer_name="Lakoc/ted_bpe500" \
-#  --vocab_size=500 \
-#  --tokenizer_type="BPE" \
-#  --text_column_name="text" \
-#  --train_split="train"
 
 torchrun --standalone \
   --nnodes=1 \
@@ -39,7 +30,7 @@ torchrun --standalone \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
   --max_duration_in_seconds="20.0" \
-  --min_duration_in_seconds="0.1" \
+  --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
@@ -49,10 +40,8 @@ torchrun --standalone \
   --learning_rate="2e-3" \
   --warmup_steps="15000" \
   --logging_steps="10" \
-  --save_strategy="steps" \
-  --save_steps="2000" \
-  --evaluation_strategy="steps" \
-  --eval_steps="2000" \
+  --save_strategy="epoch" \
+  --evaluation_strategy="epoch" \
   --per_device_train_batch_size="64" \
   --per_device_eval_batch_size="16" \
   --report_to="wandb" \
@@ -63,7 +52,7 @@ torchrun --standalone \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs="50" \
+  --num_train_epochs="100" \
   --num_beams="40" \
   --max_len="256" \
   --greater_is_better="False" \
@@ -78,14 +67,13 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --early_stopping_patience="100" \
+  --early_stopping_patience="5" \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
   --wandb_predictions_to_save=600 \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
-  --max_grad_norm="5.0" \
-  --disable_decoder_wpe
+  --max_grad_norm="5.0"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
