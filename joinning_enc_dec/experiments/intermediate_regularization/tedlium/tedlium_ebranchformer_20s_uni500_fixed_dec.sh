@@ -42,7 +42,7 @@ torchrun --standalone \
   --min_duration_in_seconds="0.1" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layer" \
+  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
