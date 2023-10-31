@@ -120,7 +120,7 @@ class GPT2LMMultiHeadModel(GPT2LMHeadModel):
         lm_logits = self.lm_head(hidden_states[-1])
         loss = None
         if labels is not None:
-            loss = torch.zeros(1).to(hidden_states[-1].device)
+            loss = torch.tensor(0.0, device=hidden_states[-1].device)
             lm_logits = []
             loss_fct = CrossEntropyLoss()
 

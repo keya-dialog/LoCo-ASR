@@ -20,6 +20,12 @@ Here is the full list of checkpoints on the hub that can be fine-tuned by this s
 https://huggingface.co/models?filter=text-generation
 """
 # You can also adapt this script on your own causal language modeling task. Pointers for this are left as comments.
+from transformers import AutoConfig, AutoModelForCausalLM
+
+from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+
+AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
+AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
 
 import logging
 import math
