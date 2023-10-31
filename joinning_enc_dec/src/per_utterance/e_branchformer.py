@@ -280,7 +280,7 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             csgu_use_linear_after_conv=False,
             merge_conv_kernel=31,
             use_macaron_ff=True,
-            fe_position_embeddings=False,
+            fe_position_embeddings=True,
             **kwargs
     ):
         super().__init__(**kwargs, pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id)
@@ -561,6 +561,7 @@ class Wav2Vec2EBranchformerEncoder(nn.Module):
         else:
             self.embed_positions = None
 
+        self.pos_conv_embed = Wav2Vec2EBranchformerPositionalConvEmbedding(config)
         self.layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout)
         self.layers = nn.ModuleList(
@@ -759,7 +760,6 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
             self.feature_extractor = MelFeatureExtractor(config)
         else:
             self.feature_extractor = Wav2Vec2EBranchformerFeatureEncoder(config)
-
         self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
 
         # model only needs masking vector if mask prob is > 0.0
