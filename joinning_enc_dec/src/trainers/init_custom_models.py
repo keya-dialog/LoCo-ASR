@@ -267,7 +267,7 @@ if __name__ == '__main__':
     from transformers import Speech2TextFeatureExtractor
 
     config = {
-        "num_mel_bins": 84,
+        "num_mel_bins": 80,
         "return_attention_mask": True,
         "sampling_rate": 16000,
     }
