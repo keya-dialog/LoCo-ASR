@@ -34,7 +34,7 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --tokenizer_type="unigram" \
   --text_column_name="text" \
   --train_split="train" \
-  --additional_raw_data $LM_DATA
+  --additional_raw_data $LM_DATA \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
 torchrun --standalone \
