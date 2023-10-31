@@ -25,7 +25,7 @@ class MelFeatureExtractor(nn.Module):
         hidden_states = self.conv(input_values[:, None, ...])
         hidden_states = self.out(hidden_states.transpose(1, 2).flatten(2, 3))
         position_ids = torch.arange(0, hidden_states.shape[-2], dtype=torch.long, device=hidden_states.device)
-        if self.pos_encoding:
+        if hasattr(self, "pos_encoding"):
             hidden_states = self.pos_encoding(position_ids) + hidden_states
         hidden_states = self.dropout(hidden_states)
         return hidden_states.transpose(1, 2)
