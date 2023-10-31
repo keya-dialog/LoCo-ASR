@@ -18,7 +18,7 @@ class MelFeatureExtractor(nn.Module):
         linear_in_dim = config.conv_dim[-1] * (((config.num_mel_bins - 1) // 2 - 1) // 2)
         self.out = torch.nn.Linear(linear_in_dim, config.hidden_size, bias=True)
         self.dropout = torch.nn.Dropout(p=0.3)
-        if config.position_embeddings:
+        if config.fe_position_embeddings:
             self.pos_encoding = torch.nn.Embedding(config.max_source_positions, config.hidden_size)
 
     def forward(self, input_values):

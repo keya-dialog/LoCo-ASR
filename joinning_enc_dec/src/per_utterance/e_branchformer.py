@@ -280,6 +280,7 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             csgu_use_linear_after_conv=False,
             merge_conv_kernel=31,
             use_macaron_ff=True,
+            fe_position_embeddings=False,
             **kwargs
     ):
         super().__init__(**kwargs, pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id)
@@ -373,6 +374,7 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         self.csgu_use_linear_after_conv = csgu_use_linear_after_conv
         self.merge_conv_kernel = merge_conv_kernel
         self.use_macaron_ff = use_macaron_ff
+        self.fe_position_embeddings = fe_position_embeddings
 
     @property
     def inputs_to_logits_ratio(self):
