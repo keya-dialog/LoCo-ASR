@@ -280,7 +280,6 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             csgu_use_linear_after_conv=False,
             merge_conv_kernel=31,
             use_macaron_ff=True,
-            feature_projection=False,
             position_embeddings=False,
             **kwargs
     ):
@@ -375,7 +374,6 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         self.csgu_use_linear_after_conv = csgu_use_linear_after_conv
         self.merge_conv_kernel = merge_conv_kernel
         self.use_macaron_ff = use_macaron_ff
-        self.feature_projection = feature_projection
         self.position_embeddings = position_embeddings
 
     @property
@@ -762,10 +760,7 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         else:
             self.feature_extractor = Wav2Vec2EBranchformerFeatureEncoder(config)
 
-        if config.feature_projection:
-            self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
-        else:
-            self.feature_projection = nn.Identity()
+        self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
 
         # model only needs masking vector if mask prob is > 0.0
         if config.mask_time_prob > 0.0 or config.mask_feature_prob > 0.0:
