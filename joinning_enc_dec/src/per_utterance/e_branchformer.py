@@ -280,7 +280,6 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             csgu_use_linear_after_conv=False,
             merge_conv_kernel=31,
             use_macaron_ff=True,
-            position_embeddings=False,
             **kwargs
     ):
         super().__init__(**kwargs, pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id)
@@ -374,7 +373,6 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         self.csgu_use_linear_after_conv = csgu_use_linear_after_conv
         self.merge_conv_kernel = merge_conv_kernel
         self.use_macaron_ff = use_macaron_ff
-        self.position_embeddings = position_embeddings
 
     @property
     def inputs_to_logits_ratio(self):
@@ -554,9 +552,9 @@ class Wav2Vec2EBranchformerEncoder(nn.Module):
         super().__init__()
         self.config = config
 
-        if config.position_embeddings and config.position_embeddings_type == "relative":
+        if config.position_embeddings_type == "relative":
             self.embed_positions = Wav2Vec2EBranchformerRelPositionalEmbedding(config)
-        elif config.position_embeddings and config.position_embeddings_type == "rotary":
+        elif config.position_embeddings_type == "rotary":
             self.embed_positions = Wav2Vec2EBranchformerRotaryPositionalEmbedding(config)
         else:
             self.embed_positions = None
