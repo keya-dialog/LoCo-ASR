@@ -370,6 +370,7 @@ if __name__ == '__main__':
     configuration.use_fbanks = True
     configuration.fe_position_embeddings = False
     configuration.ctc_zero_infinity = True
+    configuration.apply_spec_augment = False
     configuration.push_to_hub("fisher_ebranchformer_enc_12_layers_fixed")
 
     # encoder = Wav2Vec2EBranchformerModel(configuration)

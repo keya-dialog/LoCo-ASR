@@ -97,6 +97,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     skip_if_exists: Optional[str] = field(
         default=None, metadata={"help": "Whether to check if tokenizer exists."}
     )
+    apply_spec_aug: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply spec augmentations."}
+    )
 
 
 @dataclass

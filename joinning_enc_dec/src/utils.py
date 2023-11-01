@@ -4,8 +4,9 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import torch
 import wandb
-from audiomentations import AddGaussianNoise, Compose, PitchShift, Shift, TanhDistortion, TimeMask, TimeStretch
+from audiomentations import Compose, TimeStretch
 from datasets import Dataset
+from espnet2.asr.specaug.specaug import SpecAug
 from jiwer import cer, compute_measures
 from transformers import AutoConfig, BatchFeature, LogitsProcessor, LogitsProcessorList, PreTrainedTokenizerFast, \
     Seq2SeqTrainer, SpeechEncoderDecoderModel, TrainerCallback, TrainerControl, TrainerState, TrainingArguments, \
@@ -243,6 +244,13 @@ class Seq2SeqDataCollatorWithPadding:
     sampling_rate: Optional[int] = 16_000
     audio_path: str = None
     text_path: str = None
+    apply_spec_aug: bool = False
+
+    def __post_init__(self):
+        if self.apply_spec_aug:
+            self.spec_aug = SpecAug(apply_time_warp=True, time_warp_window=5, time_warp_mode="bicubic",
+                                    apply_freq_mask=True, freq_mask_width_range=(0, 27), num_freq_mask=2,
+                                    apply_time_mask=True, time_mask_width_ratio_range=(0, 0.05), num_time_mask=5)
 
     def _encapsulate_utterance(self, utterance):
         utterance = utterance.lower()
@@ -255,6 +263,7 @@ class Seq2SeqDataCollatorWithPadding:
             [audio_object_stripper(feature[self.audio_path]) for feature in features],
             padding=True,
             sampling_rate=self.sampling_rate)
+
         labels = self.tokenizer.batch_encode_plus(
             [self._encapsulate_utterance(feature[self.text_path]) for feature in features],
             return_attention_mask=True,
@@ -275,6 +284,9 @@ class Seq2SeqDataCollatorWithPadding:
         if "input_features" in batch:
             batch["input_values"] = batch["input_features"]
             del batch["input_features"]
+
+        if self.apply_spec_aug:
+            batch["input_values"], _ = self.spec_aug(batch["input_values"], batch["attention_mask"].sum(dim=-1))
         return batch
 
 
@@ -504,15 +516,15 @@ def prepare_dataset(dataset, dataset_name,
     if apply_augmentations:
         logger.info(f'Setting augmentations transform.')
         augmenter = Compose([
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            TimeMask(max_band_part=0.05, p=0.05),
-            AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
-            TimeStretch(min_rate=0.8, max_rate=1.2, p=0.2),
-            PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
-            Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
-            TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
+            #     TimeMask(max_band_part=0.05, p=0.05),
+            #     TimeMask(max_band_part=0.05, p=0.05),
+            #     TimeMask(max_band_part=0.05, p=0.05),
+            #     TimeMask(max_band_part=0.05, p=0.05),
+            #     AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
+            TimeStretch(min_rate=0.9, max_rate=1.1, p=0.5),
+            #     PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
+            #     Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
+            #     TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
         ])
         dataset[train_split].set_transform(lambda batch: {audio_column_name: [
             augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=sampling_rate)

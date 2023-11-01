@@ -117,8 +117,9 @@ if __name__ == '__main__':
         )
 
     if model_args.disable_decoder_wpe:
-        model.decoder.transformer.wpe.weight.requires_grad = False
-        model.decoder.transformer.wpe.weight.fill_(0.0)
+        from per_utterance.embeddings import PositionalEmbeddingWPELike
+
+        model.decoder.transformer.wpe = PositionalEmbeddingWPELike(model.config.decoder.hidden_size)
 
     if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
         external_lm = None
@@ -158,7 +159,8 @@ if __name__ == '__main__':
                                                    padding=True,
                                                    sampling_rate=model_args.sampling_rate,
                                                    audio_path=data_args.audio_column_name,
-                                                   text_path=data_args.text_column_name
+                                                   text_path=data_args.text_column_name,
+                                                   apply_spec_aug=training_args.apply_spec_aug
                                                    )
 
     trainer = AdditionalLossTrackerTrainer(
