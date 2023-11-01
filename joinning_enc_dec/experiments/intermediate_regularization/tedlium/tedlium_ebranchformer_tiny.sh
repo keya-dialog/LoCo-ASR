@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_espnet_recipe.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_espnet_recipe2.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_espnet_recipe"
+EXPERIMENT="tedlium_AED_ebranchformer_espnet_recipe2"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -67,7 +67,7 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --early_stopping_patience="5" \
+  --early_stopping_patience="10" \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
