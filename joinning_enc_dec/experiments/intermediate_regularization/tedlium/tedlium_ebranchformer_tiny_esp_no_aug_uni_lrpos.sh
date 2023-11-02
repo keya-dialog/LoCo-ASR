@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 #SBATCH --job-name TED
 #SBATCH --account OPEN-28-58
-#SBATCH --partition qgpu_exp
+#SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 1:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos.out
+#SBATCH --time 2-00:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos_proper_scoring.out
 
-EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos_proper_scoring"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"

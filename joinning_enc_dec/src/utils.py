@@ -465,12 +465,13 @@ def prepare_dataset(dataset, dataset_name,
                               fn_kwargs={"sampling_rate": sampling_rate, "len_column": length_column_name})
 
     logger.info(f'Filtering out too long and too short sequences from dataset.')
-    dataset = dataset.filter(filter_sequences_in_range_batched,
-                             batched=True,
-                             input_columns=[length_column_name],
-                             num_proc=preprocessing_num_workers,
-                             writer_batch_size=writer_batch_size,
-                             fn_kwargs={"max_input_len": max_input_len, "min_input_len": min_input_len})
+    dataset[train_split] = dataset[train_split].filter(filter_sequences_in_range_batched,
+                                                       batched=True,
+                                                       input_columns=[length_column_name],
+                                                       num_proc=preprocessing_num_workers,
+                                                       writer_batch_size=writer_batch_size,
+                                                       fn_kwargs={"max_input_len": max_input_len,
+                                                                  "min_input_len": min_input_len})
 
     logger.info(f'Filtering unlabeled data from dataset.')
     dataset = dataset.filter(filter_wrongly_annotated_segments_batched,
