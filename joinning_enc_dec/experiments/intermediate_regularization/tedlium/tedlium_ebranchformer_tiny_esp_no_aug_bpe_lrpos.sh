@@ -25,7 +25,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=3 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
