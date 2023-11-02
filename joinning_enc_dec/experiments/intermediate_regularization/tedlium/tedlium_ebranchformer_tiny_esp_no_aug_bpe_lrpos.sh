@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_AED_ebranchformer_espnet_recipe6.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_bpe_lrpos.out
 
-EXPERIMENT="tedlium_AED_ebranchformer_espnet_recipe6"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_bpe_lrpos"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -25,7 +25,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=4 \
+  --nproc-per-node=3 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -34,7 +34,7 @@ torchrun --standalone \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
-  --tokenizer_name="Lakoc/ted_uni500" \
+  --tokenizer_name="Lakoc/ted_bpe500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
@@ -74,8 +74,6 @@ torchrun --standalone \
   --wandb_predictions_to_save=600 \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
-  --max_grad_norm="5.0" \
-  --disable_decoder_wpe \
-  --apply_spec_aug
+  --max_grad_norm="5.0"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
