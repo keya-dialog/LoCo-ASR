@@ -1,5 +1,6 @@
 import math
 
+import numpy as np
 import torch
 from torch import Tensor, nn
 
@@ -15,11 +16,12 @@ class PositionalEmbeddingWPELike(nn.Module):
         pe = torch.zeros(max_len, d_model)
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
+        self.scaler = 1 / np.sqrt(d_model)
         self.register_buffer('pe', pe)
 
     def forward(self, x_pos: Tensor) -> Tensor:
         """
         Arguments:
-            x_pos: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+            x_pos: Tensor, shape ``[1, seq_len]``
         """
-        return self.pe[:x_pos.size(1)]
+        return self.dropout(self.scaler * self.pe[:x_pos.size(1)])
