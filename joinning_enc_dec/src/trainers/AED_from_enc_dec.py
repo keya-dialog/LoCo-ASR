@@ -81,7 +81,7 @@ if __name__ == '__main__':
         "encoder_layerdrop": 0.0,
         "min_length": 0,
         "no_repeat_ngram_size": 0,
-        "early_stopping": True,
+        "early_stopping": False,
         "length_penalty": gen_args.length_penalty,
         "max_length": gen_args.max_len,
         "num_beams": gen_args.num_beams,
