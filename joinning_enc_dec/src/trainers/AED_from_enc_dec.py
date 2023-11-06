@@ -117,17 +117,10 @@ if __name__ == '__main__':
         )
 
     if model_args.disable_decoder_wpe:
-        from per_utterance.embeddings import PositionalEmbeddingWPELike
+        from per_utterance.embeddings import PositionalEmbeddingWPELike, scale_hook
 
-        model.decoder.transformer.wpe = PositionalEmbeddingWPELike(model.config.decoder.hidden_size)
-
-    if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
-        external_lm = None
-        if gen_args.external_lm is not None:
-            external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
-            external_lm.eval()
-        activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
-                                base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
+        model.decoder.transformer.wpe = PositionalEmbeddingWPELike(model.config.decoder.hidden_size, max_len=1000)
+        model.decoder.transformer.wte.register_forward_hook(scale_hook)
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],
@@ -135,8 +128,6 @@ if __name__ == '__main__':
                                   length_penalty=base_model_config['length_penalty'],
                                   early_stopping=base_model_config['early_stopping'],
                                   eos_token_id=base_model_config['eos_token_id'],
-                                  bad_words_ids=[[base_model_config['pad_token_id']],
-                                                 [base_model_config['bos_token_id']]],
                                   max_length=base_model_config['max_length'],
                                   output_hidden_states=base_model_config['output_hidden_states'],
                                   num_beams=base_model_config['num_beams'])
@@ -178,8 +169,13 @@ if __name__ == '__main__':
     # 6. Train
     trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
-    tokenizer.save_pretrained(os.path.join(training_args.output_dir, 'tokenizer'))
-    feature_extractor.save_pretrained(os.path.join(training_args.output_dir, 'feature_extractor'))
+    if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
+        external_lm = None
+        if gen_args.external_lm is not None:
+            external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
+            external_lm.eval()
+        activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
+                                base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
 
     predictions = trainer.predict(dataset[data_args.validation_split])
     logger.info(compute_metrics(tokenizer, predictions))

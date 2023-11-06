@@ -14,9 +14,6 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
 
     if tokenizer_type == 'BPE':
         tokenizer = Tokenizer(BPE())
-        tokenizer.normalizer = normalizers.Sequence(
-            [normalizers.Replace("``", '"'), normalizers.Replace("''", '"'), normalizers.Lowercase()]
-        )
         tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
         trainer = trainers.BpeTrainer(vocab_size=vocab_size,
                                       special_tokens=["<s>", "</s>", "<unk>", "<pad>", "<mask>"],
@@ -24,9 +21,6 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
         tokenizer.decoder = decoders.ByteLevel()
     elif tokenizer_type == 'unigram':
         tokenizer = Tokenizer(Unigram())
-        tokenizer.normalizer = normalizers.Sequence(
-            [normalizers.Replace("``", '"'), normalizers.Replace("''", '"'), normalizers.Lowercase()]
-        )
         tokenizer.pre_tokenizer = pre_tokenizers.Metaspace()
         trainer = trainers.UnigramTrainer(vocab_size=vocab_size,
                                           special_tokens=["<s>", "</s>", "<unk>", "<pad>", "<mask>"],
@@ -43,6 +37,12 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
         # trainer = WordLevelTrainer(special_tokens=spl_tokens)
         raise NotImplementedError
 
+    tokenizer.normalizer = normalizers.Sequence(
+        [normalizers.Replace("``", '"'),
+         normalizers.Replace("''", '"'),
+         normalizers.Lowercase()
+         ]
+    )
     tokenizer.train_from_iterator(text_iterator, trainer=trainer)
 
     tokenizer.post_processor = processors.TemplateProcessing(

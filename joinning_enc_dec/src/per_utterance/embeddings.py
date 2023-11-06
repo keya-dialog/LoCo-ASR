@@ -4,6 +4,10 @@ import torch
 from torch import Tensor, nn
 
 
+def scale_hook(module, __, output):
+    return output * math.sqrt(module.embedding_dim)
+
+
 class PositionalEmbeddingWPELike(nn.Module):
 
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):

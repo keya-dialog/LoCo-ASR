@@ -252,10 +252,6 @@ class Seq2SeqDataCollatorWithPadding:
                                     apply_freq_mask=True, freq_mask_width_range=(0, 27), num_freq_mask=2,
                                     apply_time_mask=True, time_mask_width_ratio_range=(0, 0.05), num_time_mask=5)
 
-    def _encapsulate_utterance(self, utterance):
-        utterance = utterance.lower()
-        return utterance
-
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
@@ -265,7 +261,7 @@ class Seq2SeqDataCollatorWithPadding:
             sampling_rate=self.sampling_rate)
 
         labels = self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(feature[self.text_path]) for feature in features],
+            [feature[self.text_path] for feature in features],
             return_attention_mask=True,
             padding='longest',
             return_tensors='pt')
@@ -299,7 +295,7 @@ class Seq2SeqDataCollatorWithPaddingAndConvId(Seq2SeqDataCollatorWithPadding):
         input_features = self.feature_extractor([feature["input_values"] for feature in features], padding=True,
                                                 sampling_rate=self.sampling_rate)
         labels = self.tokenizer.batch_encode_plus(
-            [self._encapsulate_utterance(feature['labels']) for feature in features], return_attention_mask=True,
+            [feature['labels'] for feature in features], return_attention_mask=True,
             padding='longest', return_tensors='pt')
 
         batch = self.feature_extractor.pad(
