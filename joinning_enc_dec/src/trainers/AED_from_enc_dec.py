@@ -97,6 +97,7 @@ if __name__ == '__main__':
         "num_mel_bins": feature_extractor.num_mel_bins if hasattr(feature_extractor, "num_mel_bins") else None,
         "output_hidden_states": True,
         "decoder_start_token_id": tokenizer.bos_token_id,
+        "encoder_apply_spec_augment": training_args.apply_spec_augment,
     }
 
     # 4. Initialize seq2seq model
@@ -153,7 +154,6 @@ if __name__ == '__main__':
                                                    sampling_rate=model_args.sampling_rate,
                                                    audio_path=data_args.audio_column_name,
                                                    text_path=data_args.text_column_name,
-                                                   apply_spec_aug=training_args.apply_spec_aug
                                                    )
 
     trainer = AdditionalLossTrackerTrainer(

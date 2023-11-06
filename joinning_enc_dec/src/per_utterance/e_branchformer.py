@@ -888,6 +888,12 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
 
         self.adapter = Wav2Vec2EBranchformerAdapter(config) if config.add_adapter else None
 
+        if config.apply_spec_augment:
+            # TODO: Rewrite this
+            from espnet2.asr.specaug.specaug import SpecAug
+            self.spec_aug = SpecAug(apply_time_warp=True, time_warp_window=5, time_warp_mode="bicubic",
+                                    apply_freq_mask=True, freq_mask_width_range=(0, 27), num_freq_mask=2,
+                                    apply_time_mask=True, time_mask_width_ratio_range=(0, 0.05), num_time_mask=5)
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -906,34 +912,38 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         if not getattr(self.config, "apply_spec_augment", True):
             return hidden_states
 
-        # generate indices & apply SpecAugment along time axis
-        batch_size, sequence_length, hidden_size = hidden_states.size()
+        if self.training:
+            # TODO: Rewrite this
+            hidden_states = self.spec_aug(hidden_states, attention_mask.sum(-1).long())
 
-        if mask_time_indices is not None:
-            # apply SpecAugment along time axis with given mask_time_indices
-            hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
-        elif self.config.mask_time_prob > 0 and self.training:
-            mask_time_indices = _compute_mask_indices(
-                (batch_size, sequence_length),
-                mask_prob=self.config.mask_time_prob,
-                mask_length=self.config.mask_time_length,
-                attention_mask=attention_mask,
-                min_masks=self.config.mask_time_min_masks,
-            )
-            mask_time_indices = torch.tensor(mask_time_indices, device=hidden_states.device, dtype=torch.bool)
-            hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
-
-        if self.config.mask_feature_prob > 0 and self.training:
-            # generate indices & apply SpecAugment along feature axis
-            mask_feature_indices = _compute_mask_indices(
-                (batch_size, hidden_size),
-                mask_prob=self.config.mask_feature_prob,
-                mask_length=self.config.mask_feature_length,
-                min_masks=self.config.mask_feature_min_masks,
-            )
-            mask_feature_indices = torch.tensor(mask_feature_indices, device=hidden_states.device, dtype=torch.bool)
-            mask_feature_indices = mask_feature_indices[:, None].expand(-1, sequence_length, -1)
-            hidden_states[mask_feature_indices] = 0
+        # # generate indices & apply SpecAugment along time axis
+        # batch_size, sequence_length, hidden_size = hidden_states.size()
+        #
+        # if mask_time_indices is not None:
+        #     # apply SpecAugment along time axis with given mask_time_indices
+        #     hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
+        # elif self.config.mask_time_prob > 0 and self.training:
+        #     mask_time_indices = _compute_mask_indices(
+        #         (batch_size, sequence_length),
+        #         mask_prob=self.config.mask_time_prob,
+        #         mask_length=self.config.mask_time_length,
+        #         attention_mask=attention_mask,
+        #         min_masks=self.config.mask_time_min_masks,
+        #     )
+        #     mask_time_indices = torch.tensor(mask_time_indices, device=hidden_states.device, dtype=torch.bool)
+        #     hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
+        #
+        # if self.config.mask_feature_prob > 0 and self.training:
+        #     # generate indices & apply SpecAugment along feature axis
+        #     mask_feature_indices = _compute_mask_indices(
+        #         (batch_size, hidden_size),
+        #         mask_prob=self.config.mask_feature_prob,
+        #         mask_length=self.config.mask_feature_length,
+        #         min_masks=self.config.mask_feature_min_masks,
+        #     )
+        #     mask_feature_indices = torch.tensor(mask_feature_indices, device=hidden_states.device, dtype=torch.bool)
+        #     mask_feature_indices = mask_feature_indices[:, None].expand(-1, sequence_length, -1)
+        #     hidden_states[mask_feature_indices] = 0
 
         return hidden_states
 
