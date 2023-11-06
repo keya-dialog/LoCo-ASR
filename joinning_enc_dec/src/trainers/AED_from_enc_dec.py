@@ -118,10 +118,9 @@ if __name__ == '__main__':
         )
 
     if model_args.disable_decoder_wpe:
-        from per_utterance.embeddings import PositionalEmbeddingWPELike, scale_hook
+        from per_utterance.embeddings import PositionalEmbeddingWPELike
 
         model.decoder.transformer.wpe = PositionalEmbeddingWPELike(model.config.decoder.hidden_size, max_len=1000)
-        model.decoder.transformer.wte.register_forward_hook(scale_hook)
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],

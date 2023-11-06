@@ -914,7 +914,7 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
 
         if self.training:
             # TODO: Rewrite this
-            hidden_states = self.spec_aug(hidden_states, attention_mask.sum(-1).long())
+            hidden_states, _ = self.spec_aug(hidden_states, attention_mask.sum(-1).long())
 
         # # generate indices & apply SpecAugment along time axis
         # batch_size, sequence_length, hidden_size = hidden_states.size()
