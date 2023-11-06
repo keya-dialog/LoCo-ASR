@@ -46,8 +46,8 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
     tokenizer.train_from_iterator(text_iterator, trainer=trainer)
 
     tokenizer.post_processor = processors.TemplateProcessing(
-        single="<s> $A </s>",
-        pair="<s> $A </s> <s>:1 $B:1 </s>:1",
+        single="$A </s>",
+        pair="$A </s> $B:1 </s>:1",
         special_tokens=[
             ("<s>", tokenizer.token_to_id("<s>")),
             ("</s>", tokenizer.token_to_id("</s>")),
