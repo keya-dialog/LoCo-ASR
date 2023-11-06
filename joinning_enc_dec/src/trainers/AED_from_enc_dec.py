@@ -135,6 +135,8 @@ if __name__ == '__main__':
                                   length_penalty=base_model_config['length_penalty'],
                                   early_stopping=base_model_config['early_stopping'],
                                   eos_token_id=base_model_config['eos_token_id'],
+                                  bad_words_ids=[[base_model_config['pad_token_id']],
+                                                 [base_model_config['bos_token_id']]],
                                   max_length=base_model_config['max_length'],
                                   output_hidden_states=base_model_config['output_hidden_states'],
                                   num_beams=base_model_config['num_beams'])
