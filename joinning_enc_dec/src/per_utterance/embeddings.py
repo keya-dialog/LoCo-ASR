@@ -26,4 +26,4 @@ class PositionalEmbeddingWPELike(nn.Module):
         Arguments:
             x_pos: Tensor, shape ``[1, seq_len]``
         """
-        return self.scaler * self.pe[:x_pos.size(1)] - self.mean_scaler
+        return self.var_scaler * self.pe[:x_pos.size(1)] - self.mean_scaler
