@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_40s.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_40s2.out
 
-EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_40s"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_40s2"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -40,8 +40,8 @@ torchrun --standalone \
   --learning_rate="2e-3" \
   --warmup_steps="15000" \
   --logging_steps="10" \
-  --evaluation_strategy="steps" \
-  --eval_steps="10" \
+  --save_strategy="epoch" \
+  --evaluation_strategy="epoch" \
   --per_device_train_batch_size="48" \
   --per_device_eval_batch_size="16" \
   --report_to="wandb" \
