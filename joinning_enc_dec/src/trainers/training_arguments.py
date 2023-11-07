@@ -45,7 +45,7 @@ class ModelArguments:
     from_encoder_decoder_config: Optional[bool] = field(
         default=False, metadata={"help": "Whether to create model from encoder and decoder configs."}
     )
-    disable_decoder_wpe: Optional[bool] = field(
+    decoder_pos_emb_fixed: Optional[bool] = field(
         default=False, metadata={"help": "Whether to disable decoder WPE."}
     )
     average_checkpoints: Optional[bool] = field(

@@ -97,6 +97,7 @@ if __name__ == '__main__':
         "output_hidden_states": True,
         "decoder_start_token_id": tokenizer.bos_token_id,
         "encoder_apply_spec_augment": training_args.apply_spec_augment,
+        "decoder_pos_emb_fixed": model_args.decoder_pos_emb_fixed
     }
 
     # 4. Initialize seq2seq model
@@ -118,23 +119,6 @@ if __name__ == '__main__':
             decoder_pretrained_model_name_or_path=model_args.base_decoder_model,
             **base_model_config
         )
-
-    if model_args.disable_decoder_wpe:
-        from transformers.models.transfo_xl.modeling_transfo_xl import AdaptiveEmbedding, PositionalEmbedding
-
-        model.decoder.transformer.wte = AdaptiveEmbedding(n_token=model.config.decoder.vocab_size,
-                                                          d_embed=model.config.decoder.hidden_size,
-                                                          d_proj=model.config.decoder.hidden_size,
-                                                          cutoffs=[])
-
-
-        class PositionalEmbeddingM(PositionalEmbedding):
-            def forward(self, pos_seq, bsz=None):
-                return super().forward(pos_seq.squeeze(0), bsz=bsz).squeeze(1)
-
-
-        model.decoder.transformer.wpe = PositionalEmbeddingM(demb=model.config.decoder.hidden_size)
-        model.decoder.post_init()
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],
