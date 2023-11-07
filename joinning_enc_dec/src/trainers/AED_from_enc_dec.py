@@ -10,8 +10,8 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
     JointCTCAttentionEncoderDecoderConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
-from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, FrozenLayersManager, \
-    Seq2SeqDataCollatorWithPadding, activate_joint_decoding, compute_metrics, fetch_AED_config, prepare_dataset
+from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, Seq2SeqDataCollatorWithPadding, \
+    activate_joint_decoding, compute_metrics, fetch_AED_config, prepare_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -118,9 +118,21 @@ if __name__ == '__main__':
         )
 
     if model_args.disable_decoder_wpe:
-        from per_utterance.embeddings import PositionalEmbeddingWPELike
+        from transformers.models.transfo_xl.modeling_transfo_xl import AdaptiveEmbedding, PositionalEmbedding
 
-        model.decoder.transformer.wpe = PositionalEmbeddingWPELike(model.config.decoder.hidden_size, max_len=1000)
+        model.decoder.transformer.wte = AdaptiveEmbedding(n_token=model.config.decoder.vocab_size,
+                                                          d_embed=model.config.decoder.hidden_size,
+                                                          d_proj=model.config.decoder.hidden_size,
+                                                          cutoffs=[])
+
+
+        class PositionalEmbeddingM(PositionalEmbedding):
+            def forward(self, pos_seq, bsz=None):
+                return super().forward(pos_seq.squeeze(0), bsz=bsz).squeeze(1)
+
+
+        model.decoder.transformer.wpe = PositionalEmbeddingM(demb=model.config.decoder.hidden_size)
+        model.decoder.post_init()
 
     gen_config = GenerationConfig(bos_token_id=base_model_config['bos_token_id'],
                                   pad_token_id=base_model_config['pad_token_id'],
@@ -143,8 +155,6 @@ if __name__ == '__main__':
         model.decoder.train_adapter("dec_adapters")
 
     # 5. Init trainer
-    layer_training_manager = FrozenLayersManager(training_args.enc_layers_to_freeze, training_args.dec_layers_to_freeze,
-                                                 training_args.steps_to_freeze_enc, training_args.steps_to_freeze_dec)
     early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
     printing_callback = AdditionalLossPrinterCallback()
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
@@ -158,7 +168,7 @@ if __name__ == '__main__':
     trainer = AdditionalLossTrackerTrainer(
         args=training_args,
         model=model,
-        callbacks=[layer_training_manager, early_stopping, printing_callback],
+        callbacks=[early_stopping, printing_callback],
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
