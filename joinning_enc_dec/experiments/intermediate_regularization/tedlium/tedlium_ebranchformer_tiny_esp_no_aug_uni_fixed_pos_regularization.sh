@@ -78,6 +78,6 @@ torchrun --standalone \
   --decoder_pos_emb_fixed \
   --do_train \
   --do_eval \
-  --decoding_ctc_weight=0.3 \
+  --decoding_ctc_weight=0.3
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
