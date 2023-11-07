@@ -1,5 +1,4 @@
 import os
-import pickle
 
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
@@ -11,7 +10,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, Seq2SeqDataCollatorWithPadding, \
-    activate_joint_decoding, compute_metrics, fetch_AED_config, prepare_dataset
+    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -104,8 +103,11 @@ if __name__ == '__main__':
     if model_args.from_pretrained:
         config = AutoConfig.from_pretrained(model_args.from_pretrained)
         config.update(base_model_config)
+        model_path = model_args.from_pretrained
+        if model_args.average_checkpoints:
+            model_path = average_checkpoints(model_path)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
-            model_args.from_pretrained,
+            model_path,
             config=config)
     elif model_args.from_encoder_decoder_config:
         config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config)
@@ -176,23 +178,27 @@ if __name__ == '__main__':
     )
 
     # 6. Train
-    trainer.train(resume_from_checkpoint=training_args.restart_from or None)
+    if training_args.do_train:
+        trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
-    if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
-        external_lm = None
-        if gen_args.external_lm is not None:
-            external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
-            external_lm.eval()
-        activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
-                                base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
+    # 7. Evaluation
+    if training_args.do_eval:
+        if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
+            external_lm = None
+            if gen_args.external_lm is not None:
+                external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
+                external_lm.eval()
+            activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
+                                    base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
 
-    predictions = trainer.predict(dataset[data_args.validation_split])
-    logger.info(compute_metrics(tokenizer, predictions))
-    with open(os.path.join(training_args.output_dir, 'val_predictions'), 'wb') as fp:  # Overwrites any existing file.
-        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
+        predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=True)
+        logger.info(compute_metrics(tokenizer, predictions))
+        with open(os.path.join(training_args.output_dir, 'val_predictions'),
+                  'w') as fp:  # Overwrites any existing file.
+            fp.write(str(predictions))
 
-    # 7. Eval on test
-    predictions = trainer.predict(dataset[data_args.test_split])
-    logger.info(compute_metrics(tokenizer, predictions))
-    with open(os.path.join(training_args.output_dir, 'test_predictions'), 'wb') as fp:  # Overwrites any existing file.
-        pickle.dump(predictions, fp, pickle.HIGHEST_PROTOCOL)
+        predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True)
+        logger.info(compute_metrics(tokenizer, predictions))
+        with open(os.path.join(training_args.output_dir, 'test_predictions'),
+                  'w') as fp:  # Overwrites any existing file.
+            fp.write(str(predictions))

@@ -1,3 +1,6 @@
+import glob
+import os
+import shutil
 from dataclasses import dataclass, field, make_dataclass
 from typing import Dict, List, Optional, Union
 
@@ -540,6 +543,7 @@ def activate_joint_decoding(model, ctc_weight, ctc_margin, num_tokens, eos_token
 
     model.beam_search = new_beam
 
+
 # def unpack_predictions(file_path, tokenizer_name):
 #     import pickle
 #     from transformers import AutoTokenizer
@@ -549,3 +553,32 @@ def activate_joint_decoding(model, ctc_weight, ctc_margin, num_tokens, eos_token
 #         predictions = pickle.load(f)
 #     ref = tokenizer.batch_decode(predictions.label_ids, skip_special_tokens=True)
 #     hyp = tokenizer.batch_decode(predictions.predictions, skip_special_tokens=True)
+
+def average_dicts(*dicts):
+    result = {}
+
+    # Count the number of dictionaries
+    num_dicts = len(dicts)
+
+    for d in dicts:
+        for key, value in d.items():
+            if key in result:
+                result[key] += value
+            else:
+                result[key] = value
+
+    return result, num_dicts
+
+
+def average_checkpoints(experiment_dir):
+    checkpoints = glob.glob(f"{experiment_dir}/checkpoint*/pytorch_model.bin")
+    state_dicts = [torch.load(checkpoint) for checkpoint in checkpoints]
+    sum_state_dict, n_checkpoints = average_dicts(*state_dicts)
+    del state_dicts
+    average_dict = {key: sum_state_dict[key].div(n_checkpoints) for key in sum_state_dict}
+    dst_path = os.path.join(experiment_dir, "average_checkpoint")
+    shutil.copytree(os.path.dirname(checkpoints[0]), dst_path, dirs_exist_ok=True)
+    shutil.copytree(os.path.join(experiment_dir, "tokenizer"), dst_path, dirs_exist_ok=True)
+    shutil.copytree(os.path.join(experiment_dir, "feature_extractor"), dst_path, dirs_exist_ok=True)
+    torch.save(average_dict, os.path.join(dst_path, "pytorch_model.bin"))
+    return dst_path

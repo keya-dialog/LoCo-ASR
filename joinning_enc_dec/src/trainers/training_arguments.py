@@ -48,6 +48,9 @@ class ModelArguments:
     disable_decoder_wpe: Optional[bool] = field(
         default=False, metadata={"help": "Whether to disable decoder WPE."}
     )
+    average_checkpoints: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to average checkpoints."}
+    )
 
 
 @dataclass
@@ -100,6 +103,12 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     apply_spec_augment: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply spec augmentations."}
     )
+    do_train: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to run training."}
+    )
+    do_eval: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to run evaluation."}
+    )
 
 
 @dataclass
@@ -128,7 +137,6 @@ class GenerationArguments:
     external_lm_weight: Optional[float] = field(
         default=0.0, metadata={"help": "Weight of external LM."}
     )
-
 
 
 @dataclass
@@ -219,7 +227,6 @@ class GeneralTrainingArgumentsContext(GeneralTrainingArguments):
     turn_index_column_name: str = field(
         default=None, metadata={"help": "Turn index column."}
     )
-
 
 
 @dataclass

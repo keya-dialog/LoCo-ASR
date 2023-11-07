@@ -614,7 +614,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         ctc_beam_width = model_kwargs['ctc_beam_width']
         ctc_states = None
         att_w = None
-        external_lm = model_kwargs['external_lm'].to(self.device)
+        external_lm = model_kwargs['external_lm']
+        if external_lm is not None:
+            external_lm = external_lm.to(self.device)
         external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
