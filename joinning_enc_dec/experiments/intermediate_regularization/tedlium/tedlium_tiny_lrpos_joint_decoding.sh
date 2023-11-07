@@ -72,4 +72,4 @@ python \
   --max_grad_norm="5.0" \
   --do_eval \
   --decoding_ctc_weight=0.3 \
-  --from_pretrained="Loading best model from /mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED_tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos_proper_scoring_fixed/checkpoint-38759"
+  --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED_tedlium_ebranchformer_tiny_esp_no_aug_uni_lrpos_proper_scoring_fixed/checkpoint-38759"
