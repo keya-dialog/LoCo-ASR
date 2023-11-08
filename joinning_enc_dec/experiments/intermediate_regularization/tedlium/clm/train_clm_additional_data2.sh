@@ -42,7 +42,7 @@ torchrun --standalone \
   --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/train_clm.py \
   --model_type gpt2 \
-  --config_overrides="n_embd=512,n_head=8,n_layer=16,vocab_size=500,bos_token_id=0,eos_token_id=1,n_positions=1024" \
+  --config_overrides="n_embd=512,n_head=8,n_layer=16,vocab_size=500,bos_token_id=0,eos_token_id=1,n_positions=512" \
   --tokenizer_name="${USER}/${TOKENIZER_NAME}" \
   --dataset_name LIUM/tedlium \
   --pad_token_id=3 \
