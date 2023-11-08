@@ -111,7 +111,8 @@ if __name__ == '__main__':
             model_path,
             config=config)
     elif model_args.from_encoder_decoder_config:
-        config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config)
+        config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config,
+                                  training_args.config_overrides)
         model = JointCTCAttentionEncoderDecoder(config=config)
     else:
         model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(
@@ -174,14 +175,15 @@ if __name__ == '__main__':
                 external_lm.eval()
             activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
                                     base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
-
-        predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=True)
+        predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=True,
+                                      num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
         logger.info(compute_metrics(tokenizer, predictions))
         with open(os.path.join(training_args.output_dir, 'val_predictions'),
                   'w') as fp:  # Overwrites any existing file.
             fp.write(str(predictions))
 
-        predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True)
+        predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True,
+                                      num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
         logger.info(compute_metrics(tokenizer, predictions))
         with open(os.path.join(training_args.output_dir, 'test_predictions'),
                   'w') as fp:  # Overwrites any existing file.

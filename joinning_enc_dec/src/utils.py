@@ -420,10 +420,14 @@ def write_wandb_pred(pred_str, label_str, rows_to_log=10):
                                                                              label_str)])}, current_step)
 
 
-def fetch_AED_config(enc_config_path, dec_config_path, base_config):
+def fetch_AED_config(enc_config_path, dec_config_path, base_config, config_overrides):
     enc_config = AutoConfig.from_pretrained(enc_config_path)
     dec_config = AutoConfig.from_pretrained(dec_config_path)
     config = JointCTCAttentionEncoderDecoderConfig.from_encoder_decoder_configs(enc_config, dec_config)
+    if config_overrides is not None:
+        logger.info(f"Overriding config: {config_overrides}")
+        d = dict(x.split("=") for x in config_overrides.split(","))
+        base_config.update(d)
     kwargs_encoder = {
         argument[len("encoder_"):]: value for argument, value in base_config.items() if
         argument.startswith("encoder_")

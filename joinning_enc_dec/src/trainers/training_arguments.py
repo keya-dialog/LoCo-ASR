@@ -109,6 +109,15 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     do_eval: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run evaluation."}
     )
+    config_overrides: Optional[str] = field(
+        default=None,
+        metadata={
+            "help": (
+                "Override some existing default config settings when a model is trained from scratch. Example: "
+                "n_embd=10,resid_pdrop=0.2,scale_attn_weights=false,summary_type=cls_index"
+            )
+        },
+    )
 
 
 @dataclass
@@ -136,6 +145,9 @@ class GenerationArguments:
     )
     external_lm_weight: Optional[float] = field(
         default=0.0, metadata={"help": "Weight of external LM."}
+    )
+    eval_beam_factor: Optional[int] = field(
+        default=1, metadata={"help": "Factor to increase beam size for evaluation."}
     )
 
 
