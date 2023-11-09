@@ -51,6 +51,12 @@ class ModelArguments:
     average_checkpoints: Optional[bool] = field(
         default=False, metadata={"help": "Whether to average checkpoints."}
     )
+    language: Optional[str] = field(
+        default=None, metadata={"help": "Language of the model."}
+    )
+    task: Optional[str] = field(
+        default=None, metadata={"help": "Task of the model."}
+    )
 
 
 @dataclass
@@ -117,6 +123,17 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
                 "n_embd=10,resid_pdrop=0.2,scale_attn_weights=false,summary_type=cls_index"
             )
         },
+    )
+    collator_rename_features: Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": (
+                "Rename input_features to input_values in collator."
+            )
+        },
+    )
+    track_ctc_loss: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to log CTC loss."}
     )
 
 

@@ -632,6 +632,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         external_lm = model_kwargs['external_lm']
         if external_lm is not None:
             external_lm = external_lm.to(self.device)
+            from transformers import AutoTokenizer
+            tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
+            tokenizer.decoder.replacement = "+"
         external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
@@ -684,7 +687,17 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 external_lm_scores = nn.functional.log_softmax(
                     external_lm_logits, dim=-1
                 )
+                print()
+
+                print("Input:", tokenizer.batch_decode(input_ids.tolist()))
+                print("Accustic:", torch.topk(next_token_scores, 5).values,
+                      tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
+                print("LM:", torch.topk(external_lm_scores, 5).values,
+                      tokenizer.batch_decode(torch.topk(external_lm_scores, 5).indices.tolist()))
                 next_token_scores = next_token_scores + external_lm_weight * external_lm_scores
+                print("LM+Accustic:", torch.topk(next_token_scores, 5).values,
+                      tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
+
 
             """
             Sample next tokens that will be used for CTC prefix computation and compute CTC cumulative prefix scores

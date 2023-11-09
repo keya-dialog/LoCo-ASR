@@ -246,13 +246,13 @@ class Seq2SeqDataCollatorWithPadding:
     sampling_rate: Optional[int] = 16_000
     audio_path: str = None
     text_path: str = None
+    rename_features: bool = True
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> BatchFeature:
         # split inputs and labels since they have to be of different lengths and need
         # different padding methods
         input_features = self.feature_extractor(
             [audio_object_stripper(feature[self.audio_path]) for feature in features],
-            padding=True,
             sampling_rate=self.sampling_rate)
 
         labels = self.tokenizer.batch_encode_plus(
@@ -272,7 +272,7 @@ class Seq2SeqDataCollatorWithPadding:
         labels = labels["input_ids"].masked_fill(labels.attention_mask.ne(1), -100)
         batch["labels"] = labels
 
-        if "input_features" in batch:
+        if self.rename_features and "input_features" in batch:
             batch["input_values"] = batch["input_features"]
             del batch["input_features"]
 

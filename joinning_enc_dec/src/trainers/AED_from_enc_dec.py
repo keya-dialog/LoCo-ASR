@@ -2,7 +2,7 @@ import os
 
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
-    AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser
+    AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
@@ -93,12 +93,13 @@ if __name__ == '__main__':
         "lsm_factor": training_args.lsm_factor,
         "shared_lm_head": training_args.shared_lm_head,
         "use_fbanks": training_args.use_fbanks,
-        "num_mel_bins": feature_extractor.num_mel_bins if hasattr(feature_extractor, "num_mel_bins") else None,
         "output_hidden_states": True,
         "decoder_start_token_id": tokenizer.bos_token_id,
         "encoder_apply_spec_augment": training_args.apply_spec_augment,
         "decoder_pos_emb_fixed": model_args.decoder_pos_emb_fixed
     }
+    if hasattr(feature_extractor, "num_mel_bins"):
+        base_model_config["num_mel_bins"] = feature_extractor.num_mel_bins
 
     # 4. Initialize seq2seq model
     if model_args.from_pretrained:
@@ -133,6 +134,11 @@ if __name__ == '__main__':
     logger.info(f'Model updated gen config:\n {str(gen_config)}')
     model.generation_config = gen_config
 
+    if model_args.task and model_args.language:
+        model.config.suppress_tokens = []
+        model.config.forced_decoder_ids = tokenizer.get_decoder_prompt_ids(language=model_args.language,
+                                                                           task=model_args.task)
+
     if training_args.decoder_cold_start:
         logger.info('Reinitializing decoder weights')
         model.decoder.apply(model.decoder._init_weights)
@@ -142,20 +148,23 @@ if __name__ == '__main__':
         model.decoder.train_adapter("dec_adapters")
 
     # 5. Init trainer
-    early_stopping = EarlyStoppingCallback(training_args.early_stopping_patience)
-    printing_callback = AdditionalLossPrinterCallback()
+    callbacks = []
+    if training_args.early_stopping_patience > -1:
+        callbacks.append(EarlyStoppingCallback(early_stopping_patience=training_args.early_stopping_patience))
+    if training_args.track_ctc_loss:
+        callbacks.append(AdditionalLossPrinterCallback())
     data_collator = Seq2SeqDataCollatorWithPadding(feature_extractor=feature_extractor,
                                                    tokenizer=tokenizer,
                                                    padding=True,
                                                    sampling_rate=model_args.sampling_rate,
                                                    audio_path=data_args.audio_column_name,
                                                    text_path=data_args.text_column_name,
-                                                   )
-
-    trainer = AdditionalLossTrackerTrainer(
+                                                   rename_features=training_args.collator_rename_features)
+    trainer_class = AdditionalLossTrackerTrainer if training_args.track_ctc_loss else Seq2SeqTrainer
+    trainer = trainer_class(
         args=training_args,
         model=model,
-        callbacks=[early_stopping, printing_callback],
+        callbacks=callbacks,
         train_dataset=dataset[data_args.train_split],
         eval_dataset=dataset[data_args.validation_split],
         data_collator=data_collator,
