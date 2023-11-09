@@ -113,7 +113,7 @@ if __name__ == '__main__':
             config=config)
     elif model_args.from_encoder_decoder_config:
         config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config,
-                                  training_args.config_overrides)
+                                  model_args.config_overrides)
         model = JointCTCAttentionEncoderDecoder(config=config)
     else:
         model = JointCTCAttentionEncoderDecoder.from_encoder_decoder_pretrained(

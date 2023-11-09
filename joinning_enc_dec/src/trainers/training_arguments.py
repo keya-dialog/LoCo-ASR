@@ -57,6 +57,15 @@ class ModelArguments:
     task: Optional[str] = field(
         default=None, metadata={"help": "Task of the model."}
     )
+    config_overrides: Optional[str] = field(
+        default=None,
+        metadata={
+            "help": (
+                "Override some existing default config settings when a model is trained from scratch. Example: "
+                "n_embd=10,resid_pdrop=0.2,scale_attn_weights=false,summary_type=cls_index"
+            )
+        },
+    )
 
 
 @dataclass
@@ -114,15 +123,6 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     )
     do_eval: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run evaluation."}
-    )
-    config_overrides: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": (
-                "Override some existing default config settings when a model is trained from scratch. Example: "
-                "n_embd=10,resid_pdrop=0.2,scale_attn_weights=false,summary_type=cls_index"
-            )
-        },
     )
     collator_rename_features: Optional[bool] = field(
         default=True,
