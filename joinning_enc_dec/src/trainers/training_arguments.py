@@ -240,6 +240,7 @@ class ModelArgumentsContext(ModelArguments):
     enc_memory_dim: int = field(
         default=None, metadata={"help": "Size of memory on encoder size"}
     )
+
     dec_memory_dim: int = field(
         default=None, metadata={"help": "Size of memory on decoder size"}
     )
