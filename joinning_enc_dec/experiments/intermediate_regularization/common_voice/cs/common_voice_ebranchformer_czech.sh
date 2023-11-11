@@ -2,12 +2,12 @@
 #SBATCH --job-name CommonVoice
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qgpu
-#SBATCH --gpus 4
+#SBATCH --gpus 1
 #SBATCH --nodes 1
-#SBATCH --time 04:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer6.out
+#SBATCH --time 06:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer8.out
 
-EXPERIMENT="common_voice_AED_ebranchformer6"
+EXPERIMENT="common_voice_AED_ebranchformer8"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -38,9 +38,7 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="cs" \
@@ -51,9 +49,9 @@ torchrun --standalone \
   --base_decoder_model="Lakoc/gpt2_256h_6l_add_head3" \
   --tokenizer_name="Lakoc/CV_cs_uni500" \
   --output_dir=$EXPERIMENT_PATH \
-  --gradient_accumulation_steps="1" \
-  --learning_rate="3e-4" \
-  --warmup_steps="500" \
+  --gradient_accumulation_steps="2" \
+  --learning_rate="1e-3" \
+  --warmup_steps="2000" \
   --logging_steps="5" \
   --save_strategy="steps" \
   --save_steps="300" \
@@ -75,7 +73,7 @@ torchrun --standalone \
   --greater_is_better="False" \
   --group_by_length="True" \
   --bf16 \
-  --ctc_weight="0.3" \
+  --ctc_weight="0.6" \
   --bos_token="<s>" \
   --eos_token="</s>" \
   --pad_token="<pad>" \
@@ -93,9 +91,12 @@ torchrun --standalone \
   --max_grad_norm="5.0" \
   --decoder_pos_emb_fixed \
   --do_train \
+  --evaluation_splits validation test \
   --do_eval \
-  --decoding_ctc_weight="0.3" \
+  --decoding_ctc_weight="0.6" \
   --eval_beam_factor="5" \
-  --validation_slice 500
+  --validation_slice 500 \
+  --track_ctc_loss \
+  --joint_decoding_during_training
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
