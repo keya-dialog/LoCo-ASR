@@ -52,7 +52,6 @@ if __name__ == '__main__':
         preprocessing_num_workers=data_args.preprocessing_num_workers,
         writer_batch_size=data_args.writer_batch_size,
         train_split=data_args.train_split,
-        validation_split=data_args.validation_split,
         fix_apostrophes=data_args.fix_apostrophes,
         remove_train_unks=data_args.remove_train_unks,
         apply_augmentations=data_args.apply_augmentations,
@@ -60,7 +59,6 @@ if __name__ == '__main__':
         sampling_rate=sampling_rate,
         max_input_len=max_input_len,
         min_input_len=min_input_len,
-        validation_slice=data_args.validation_slice
     )
 
     if training_args.preprocess_dataset_only:
@@ -161,12 +159,14 @@ if __name__ == '__main__':
                                                    text_path=data_args.text_column_name,
                                                    rename_features=training_args.collator_rename_features)
     trainer_class = AdditionalLossTrackerTrainer if training_args.track_ctc_loss else Seq2SeqTrainer
+    training_eval_dataset = dataset[data_args.validation_split].select(
+        range(data_args.validation_slice)) if data_args.validation_slice else dataset[data_args.validation_split]
     trainer = trainer_class(
         args=training_args,
         model=model,
         callbacks=callbacks,
         train_dataset=dataset[data_args.train_split],
-        eval_dataset=dataset[data_args.validation_split],
+        eval_dataset=training_eval_dataset,
         data_collator=data_collator,
         compute_metrics=lambda pred: compute_metrics(tokenizer, pred, gen_args.wandb_predictions_to_save),
     )

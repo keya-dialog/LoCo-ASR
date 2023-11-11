@@ -353,9 +353,7 @@ def preprocess_cv_labels(batch: List[str], label_column: str):
             # we can remove trailing quotation marks as they do not affect the transcription
             transcription = transcription[1:-1]
 
-        if transcription[-1] not in [".", "?", "!"]:
-            # append a full-stop to sentences that do not end in punctuation
-            transcription = transcription + "."
+        transcription = transcription.replace(r"[,.?!:;]", "")
         transcription = transcription.replace('""', '"')
         processed.append(transcription)
 
@@ -445,9 +443,8 @@ def fetch_AED_config(enc_config_path, dec_config_path, base_config, config_overr
 def prepare_dataset(dataset, dataset_name,
                     length_column_name, text_column_name, audio_column_name,
                     preprocessing_num_workers, writer_batch_size,
-                    train_split, validation_split,
-                    fix_apostrophes, remove_train_unks, apply_augmentations,
-                    unk_token, sampling_rate, max_input_len, min_input_len, validation_slice):
+                    train_split, fix_apostrophes, remove_train_unks, apply_augmentations,
+                    unk_token, sampling_rate, max_input_len, min_input_len):
     if length_column_name not in dataset[train_split].column_names:
         logger.info(f'Extracting audio lens.')
         dataset = dataset.map(extract_lens_batched,
@@ -524,11 +521,6 @@ def prepare_dataset(dataset, dataset_name,
             augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=sampling_rate)
             for audio in batch[audio_column_name]]}, columns=[audio_column_name],
                                            output_all_columns=True)
-
-    if validation_slice:
-        logger.info(f'Selecting specified part of validation indexes.')
-        dataset[validation_split] = dataset[validation_split].select(
-            range(validation_slice))
     return dataset
 
 

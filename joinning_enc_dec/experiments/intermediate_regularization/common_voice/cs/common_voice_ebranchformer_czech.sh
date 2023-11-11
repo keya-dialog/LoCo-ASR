@@ -4,10 +4,10 @@
 #SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer.out
+#SBATCH --time 04:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer6.out
 
-EXPERIMENT="common_voice_AED_ebranchformer2"
+EXPERIMENT="common_voice_AED_ebranchformer6"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -33,41 +33,14 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --tokenizer_name=$TOKENIZER_NAME \
   --vocab_size=500 \
   --tokenizer_type="unigram" \
-  --text_column_name="text" \
+  --text_column_name="sentence" \
   --train_split="train" \
-#  --skip_if_exists="${USER}/${TOKENIZER_NAME}"
-
-EXPERIMENT="common_voice_AED_ebranchformer2"
-PROJECT="CommonVoice"
-WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
-USER="lakoc"
-TOKENIZER_NAME="CV_cs_uni500"
-
-export WANDB_PROJECT=$PROJECT
-export WANDB_RUN_ID=$EXPERIMENT
-export HF_HOME="${WORK_DIR}/huggingface_cache"
-export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
-export OMP_NUM_THREADS=64
+  --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
 
-conda deactivate
-source activate loco_asr
-
-cd $WORK_DIR
-
-
-python joinning_enc_dec/src/trainers/train_tokenizer.py \
-  --dataset_name="mozilla-foundation/common_voice_13_0" \
-  --dataset_config="cs" \
-  --tokenizer_name=$TOKENIZER_NAME \
-  --vocab_size=500 \
-  --tokenizer_type="unigram" \
-  --text_column_name="text" \
-  --train_split="train" \
-#  --skip_if_exists="${USER}/${TOKENIZER_NAME}"
-
-python \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="cs" \
@@ -79,23 +52,25 @@ python \
   --tokenizer_name="Lakoc/CV_cs_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="2e-3" \
-  --warmup_steps="25000" \
+  --learning_rate="3e-4" \
+  --warmup_steps="500" \
   --logging_steps="5" \
-  --save_strategy="epoch" \
-  --evaluation_strategy="epoch" \
+  --save_strategy="steps" \
+  --save_steps="300" \
+  --evaluation_strategy="steps" \
+  --eval_steps="300" \
   --per_device_train_batch_size="64" \
-  --per_device_eval_batch_size="32" \
+  --per_device_eval_batch_size="48" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="4" \
+  --dataloader_num_workers="24" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
   --num_train_epochs="100" \
-  --num_beams="1" \
+  --num_beams="4" \
   --max_len="512" \
   --greater_is_better="False" \
   --group_by_length="True" \
@@ -121,20 +96,6 @@ python \
   --do_eval \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="5" \
-  --validation_slice 100
-  --early_stopping_patience="100" \
-  --text_column_name="sentence" \
-  --preprocessing_num_workers="128" \
-  --fix_apostrophes \
-  --wandb_predictions_to_save=100 \
-  --from_encoder_decoder_config \
-  --weight_decay="1e-6" \
-  --max_grad_norm="5.0" \
-  --decoder_pos_emb_fixed \
-  --do_train \
-  --do_eval \
-  --decoding_ctc_weight="0.3" \
-  --eval_beam_factor="5" \
-  --validation_slice 100
+  --validation_slice 500
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
