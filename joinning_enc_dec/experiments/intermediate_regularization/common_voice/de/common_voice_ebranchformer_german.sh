@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 #SBATCH --job-name CommonVoice
-#SBATCH --account OPEN-28-58
+#SBATCH --account OPEN-28-57
 #SBATCH --partition qgpu
-#SBATCH --gpus 1
+#SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 06:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_ebranchformer_german.out
+#SBATCH --time 2-00:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_ebranchformer_german3.out
 
-EXPERIMENT="common_voice_ebranchformer_german"
+EXPERIMENT="common_voice_ebranchformer_german3"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -52,7 +52,7 @@ torchrun --standalone \
   --tokenizer_name="Lakoc/CV_de_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-3" \
+  --learning_rate="2e-4" \
   --warmup_steps="5000" \
   --logging_steps="5" \
   --save_strategy="epoch" \
@@ -94,7 +94,7 @@ torchrun --standalone \
   --evaluation_splits validation test \
   --do_eval \
   --decoding_ctc_weight="0.3" \
-  --eval_beam_factor="5" \
+  --eval_beam_factor="2" \
   --validation_slice 500 \
   --track_ctc_loss
 
