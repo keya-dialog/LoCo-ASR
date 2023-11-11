@@ -138,6 +138,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     track_ctc_loss: Optional[bool] = field(
         default=False, metadata={"help": "Whether to log CTC loss."}
     )
+    joint_decoding_during_training: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to use joint decoding during training."}
+    )
 
 
 @dataclass

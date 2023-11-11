@@ -172,6 +172,9 @@ if __name__ == '__main__':
 
     # 6. Train
     if training_args.do_train:
+        if gen_args.decoding_ctc_weight > 0 and training_args.joint_decoding_during_training:
+            activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
+                                    base_model_config['eos_token_id'], None, 0)
         trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
     # 7. Evaluation
