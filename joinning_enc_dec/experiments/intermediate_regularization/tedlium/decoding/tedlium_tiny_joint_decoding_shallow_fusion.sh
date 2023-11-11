@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 2:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion2.out
 
-EXPERIMENT="joint_decoding_wer_test_shallow_fusion"
+EXPERIMENT="joint_decoding_wer_test_shallow_fusion2"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -74,5 +74,6 @@ python \
   --do_eval \
   --decoding_ctc_weight=0.3 \
   --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED_tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring/checkpoint-39550" \
-  --external_lm="Lakoc/TED_CLM_gpt2_tedlium_bigger_lr" \
-  --external_lm_weight=0.5
+  --external_lm="Lakoc/TED_CLM_gpt2_tedlium3" \
+  --external_lm_weight=0.5 \
+  --validation_slice 10
