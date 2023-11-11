@@ -124,6 +124,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     do_eval: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run evaluation."}
     )
+    evaluation_splits: Optional[List[str]] = field(
+        default=None, metadata={"help": "Splits to use for evaluation."}
+    )
     collator_rename_features: Optional[bool] = field(
         default=True,
         metadata={

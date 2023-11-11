@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, make_dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+import pandas as pd
 import torch
 import wandb
 from audiomentations import Compose, TimeStretch
@@ -66,6 +67,19 @@ def compute_metrics(tokenizer, pred, wandb_pred_to_save=10):
         write_wandb_pred(pred_str, label_str, rows_to_log=wandb_pred_to_save)
 
     return {"cer": cer(label_str, pred_str), **metrics}
+
+
+def save_predictions(tokenizer, predictions, path):
+    pred_ids = predictions.predictions
+
+    label_ids = predictions.label_ids
+    label_ids[label_ids == -100] = tokenizer.pad_token_id
+
+    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    label_str = [label if label else '-' for label in
+                 tokenizer.batch_decode(label_ids, skip_special_tokens=True)]
+    df = pd.DataFrame({'label': label_str, 'prediction': pred_str})
+    df.to_csv(path, index=False)
 
 
 class FrozenLayersManager(TrainerCallback):

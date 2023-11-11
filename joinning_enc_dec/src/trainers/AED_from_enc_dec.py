@@ -1,5 +1,3 @@
-import os
-
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
     AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
@@ -10,7 +8,8 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, Seq2SeqDataCollatorWithPadding, \
-    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset
+    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset, \
+    save_predictions
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -184,16 +183,11 @@ if __name__ == '__main__':
                 external_lm.eval()
             activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
                                     base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
-        predictions = trainer.predict(dataset[data_args.validation_split], output_hidden_states=True,
-                                      num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
-        logger.info(compute_metrics(tokenizer, predictions))
-        with open(os.path.join(training_args.output_dir, 'val_predictions'),
-                  'w') as fp:  # Overwrites any existing file.
-            fp.write(str(predictions))
 
-        predictions = trainer.predict(dataset[data_args.test_split], output_hidden_states=True,
-                                      num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
-        logger.info(compute_metrics(tokenizer, predictions))
-        with open(os.path.join(training_args.output_dir, 'test_predictions'),
-                  'w') as fp:  # Overwrites any existing file.
-            fp.write(str(predictions))
+        for split in training_args.evaluation_splits:
+            predictions = trainer.predict(dataset[split], output_hidden_states=True,
+                                          num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
+            logger.info(f"Metrics for {split} split: {predictions.metrics}")
+            save_predictions(tokenizer, predictions,
+                             f'{training_args.output_dir}/'
+                             f'predictions_{split}_wer{100 * predictions.metrics["test_wer"]:.2f}.csv')
