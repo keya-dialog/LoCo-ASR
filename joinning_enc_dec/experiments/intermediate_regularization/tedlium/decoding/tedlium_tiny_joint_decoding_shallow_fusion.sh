@@ -27,6 +27,8 @@ torchrun --standalone \
   --nnodes=1 \
   --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
+  --max_duration_in_seconds="20.0" \
+  --min_duration_in_seconds="0.0" \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
@@ -37,6 +39,7 @@ torchrun --standalone \
   --per_device_eval_batch_size="8" \
   --dataloader_num_workers="4" \
   --length_column_name="input_len" \
+  --preprocessing_num_workers="128" \
   --remove_unused_columns="False" \
   --group_by_length="True" \
   --bf16 \
@@ -54,5 +57,5 @@ torchrun --standalone \
   --max_len="512" \
   --external_lm_weight="0.5" \
   --decoding_ctc_weight="0.3" \
-  --do_eval \
-  --evaluation_splits=validation test
+  --evaluation_splits test \
+  --do_eval
