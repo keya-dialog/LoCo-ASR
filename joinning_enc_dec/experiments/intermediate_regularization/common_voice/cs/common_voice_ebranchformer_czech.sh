@@ -2,7 +2,7 @@
 #SBATCH --job-name CommonVoice
 #SBATCH --account OPEN-28-58
 #SBATCH --partition qgpu
-#SBATCH --gpus 1
+#SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 06:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_cs.out
