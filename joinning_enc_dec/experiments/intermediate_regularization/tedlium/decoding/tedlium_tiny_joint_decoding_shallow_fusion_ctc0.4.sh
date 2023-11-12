@@ -7,7 +7,7 @@
 #SBATCH --time 4:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion0.4ctc.out
 
-EXPERIMENT="joint_decoding_wer_test_shallow_fusion4"
+EXPERIMENT="joint_decoding_wer_test_shallow_fusion0.4ctc"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"

@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 4:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion0.4lm.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion0.6lm.out
 
-EXPERIMENT="joint_decoding_wer_test_shallow_fusion0.4lm"
+EXPERIMENT="joint_decoding_wer_test_shallow_fusion0.6lm"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -55,7 +55,7 @@ torchrun --standalone \
   --predict_with_generate \
   --num_beams="40" \
   --max_len="512" \
-  --external_lm_weight="0.4" \
+  --external_lm_weight="0.6" \
   --decoding_ctc_weight="0.3" \
   --evaluation_splits validation \
   --do_eval
