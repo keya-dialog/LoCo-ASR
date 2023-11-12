@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_12l_256h_gpt2_6l_256h_uni500.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_12l_256h_gpt2_6l_256h_uni500_regularized.out
 
-EXPERIMENT="ebranchformer_12l_256h_gpt2_6l_256h_uni500"
+EXPERIMENT="ebranchformer_12l_256h_gpt2_6l_256h_uni500_regularized"
 PROJECT="CommonVoice_de"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -20,12 +20,10 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-
 conda deactivate
 source activate loco_asr
 
 cd $WORK_DIR
-
 
 python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
@@ -37,7 +35,6 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --train_split="train" \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
-
 torchrun --standalone \
   --nnodes=1 \
   --nproc-per-node=4 \
@@ -48,7 +45,7 @@ torchrun --standalone \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
+  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head3" \
   --tokenizer_name="Lakoc/CV_de_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
@@ -96,6 +93,7 @@ torchrun --standalone \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="2" \
   --validation_slice 768 \
-  --track_ctc_loss
+  --track_ctc_loss \
+  --config_overrides="decoder_average_logits=True"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
