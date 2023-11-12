@@ -20,12 +20,10 @@ export HF_HOME="${WORK_DIR}/huggingface_cache"
 export PYTHONPATH="${PYTHONPATH}:${WORK_DIR}/joinning_enc_dec/src"
 export OMP_NUM_THREADS=64
 
-
 conda deactivate
 source activate loco_asr
 
 cd $WORK_DIR
-
 
 python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
@@ -36,7 +34,6 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --text_column_name="sentence" \
   --train_split="train" \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
-
 
 torchrun --standalone \
   --nnodes=1 \
@@ -63,7 +60,7 @@ torchrun --standalone \
   --per_device_eval_batch_size="48" \
   --report_to="wandb" \
   --optim="adamw_torch" \
-  --dataloader_num_workers="24" \
+  --dataloader_num_workers="8" \
   --length_column_name="input_len" \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_wer" \
@@ -98,6 +95,7 @@ torchrun --standalone \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="5" \
   --validation_slice 500 \
-  --track_ctc_loss
+  --track_ctc_loss \
+  --config_overrides="decoder_average_logits=True,decoder_n_layer=4,encoder_num_hidden_layers=8"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
