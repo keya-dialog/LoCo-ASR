@@ -34,7 +34,7 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
 python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
-  --dataset_config="cs" \
+  --dataset_config="pl" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
