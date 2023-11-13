@@ -80,7 +80,7 @@ python \
   --predict_with_generate \
   --early_stopping_patience="100" \
   --text_column_name="sentence" \
-  --preprocessing_num_workers="64" \
+  --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --wandb_predictions_to_save=100 \
   --from_encoder_decoder_config \
