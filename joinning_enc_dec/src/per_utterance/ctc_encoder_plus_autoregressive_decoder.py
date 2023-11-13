@@ -137,7 +137,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         if config.shared_lm_head:
             self.encoder.lm_head.weight = self.decoder.lm_head.weight
 
-        if config.decoder_pos_emb_fixed:
+        if config.decoder.pos_emb_fixed:
             from transformers.models.transfo_xl.modeling_transfo_xl import AdaptiveEmbedding, PositionalEmbedding
 
             self.decoder.transformer.wte = AdaptiveEmbedding(n_token=config.decoder.vocab_size,

@@ -432,6 +432,37 @@ def write_wandb_pred(pred_str, label_str, rows_to_log=10):
                                                                              label_str)])}, current_step)
 
 
+def load_types(original_dict, new_dict):
+    for k, v in new_dict.items():
+        k_orig = k
+        if k.startswith("encoder_"):
+            d = original_dict.encoder
+            k = k.split("encoder_")[1]
+        elif k.startswith("decoder_"):
+            d = original_dict.decoder
+            k = k.split("decoder_")[1]
+        else:
+            d = original_dict
+
+        old_v = getattr(d, k, None)
+        if old_v is not None:
+            if isinstance(old_v, bool):
+                if v.lower() in ["true", "1", "y", "yes"]:
+                    v = True
+                elif v.lower() in ["false", "0", "n", "no"]:
+                    v = False
+                else:
+                    raise ValueError(f"can't derive true or false from {v} (key {k})")
+            elif isinstance(old_v, int):
+                v = int(v)
+            elif isinstance(old_v, float):
+                v = float(v)
+            new_dict[k_orig] = v
+
+        else:
+            raise ValueError(f"key {k} isn't in the original config dict")
+
+
 def fetch_AED_config(enc_config_path, dec_config_path, base_config, config_overrides):
     enc_config = AutoConfig.from_pretrained(enc_config_path)
     dec_config = AutoConfig.from_pretrained(dec_config_path)
@@ -439,6 +470,7 @@ def fetch_AED_config(enc_config_path, dec_config_path, base_config, config_overr
     if config_overrides is not None:
         logger.info(f"Overriding config: {config_overrides}")
         d = dict(x.split("=") for x in config_overrides.split(","))
+        load_types(config, d)
         base_config.update(d)
     kwargs_encoder = {
         argument[len("encoder_"):]: value for argument, value in base_config.items() if
@@ -450,7 +482,8 @@ def fetch_AED_config(enc_config_path, dec_config_path, base_config, config_overr
     }
     config.encoder.update(kwargs_encoder)
     config.decoder.update(kwargs_decoder)
-    config.update(base_config)
+    config.update({k: v for k, v in base_config.items() if
+                   not (k.startswith("encoder_") or k.startswith("decoder_")) or k == "decoder_start_token_id"})
     return config
 
 

@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v2.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v4.out
 
-EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v2"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v4"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
