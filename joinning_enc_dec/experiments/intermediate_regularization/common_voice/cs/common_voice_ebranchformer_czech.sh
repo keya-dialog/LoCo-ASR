@@ -93,7 +93,6 @@ python \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="5" \
   --validation_slice 500 \
-  --track_ctc_loss \
-  --config_overrides="decoder_average_logits=True"
+  --track_ctc_loss
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
