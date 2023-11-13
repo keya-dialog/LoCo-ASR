@@ -4,12 +4,12 @@
 #SBATCH --partition qcpu
 #SBATCH --time 24:00:00
 
-EXPERIMENT="common_voice_AED_ebranchformer_cs3"
+EXPERIMENT="common_voice_AED_ebranchformer_pl"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 USER="lakoc"
-TOKENIZER_NAME="CV_cs_uni500"
+TOKENIZER_NAME="CV_pl_uni500"
 
 export WANDB_PROJECT=$PROJECT
 export WANDB_RUN_ID=$EXPERIMENT
@@ -24,23 +24,23 @@ cd $WORK_DIR
 
 python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
-  --dataset_config="cs" \
+  --dataset_config="pl" \
   --tokenizer_name=$TOKENIZER_NAME \
   --vocab_size=500 \
   --tokenizer_type="unigram" \
   --text_column_name="sentence" \
   --train_split="other"
-
+  
 python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="cs" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="0.0" \
-  --base_encoder_model="Lakoc/ebranchformer_enc_8_layers" \
+  --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_tiny_decoder_4_layers" \
-  --tokenizer_name="Lakoc/CV_cs_uni500" \
+  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
+  --tokenizer_name="${USER}/${TOKENIZER_NAME}" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="1e-3" \
@@ -83,7 +83,7 @@ python \
   --weight_decay="1e-6" \
   --max_grad_norm="5.0" \
   --do_train \
-  --train_split other \
+  --train_split train \
   --evaluation_splits validation test \
   --do_eval \
   --decoding_ctc_weight="0.3" \
