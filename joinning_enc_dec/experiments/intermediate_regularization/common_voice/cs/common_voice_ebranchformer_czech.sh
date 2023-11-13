@@ -7,7 +7,7 @@
 #SBATCH --time 06:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_cs.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_cs"
+EXPERIMENT="common_voice_AED_ebranchformer_cs2"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -43,9 +43,9 @@ torchrun --standalone \
   --dataset_config="cs" \
   --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="0.0" \
-  --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
+  --base_encoder_model="Lakoc/ebranchformer_enc_8_layers" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
+  --base_decoder_model="Lakoc/gpt2_tiny_decoder_4_layers" \
   --tokenizer_name="Lakoc/CV_cs_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
@@ -96,6 +96,6 @@ torchrun --standalone \
   --eval_beam_factor="5" \
   --validation_slice 500 \
   --track_ctc_loss \
-  --config_overrides="decoder_average_logits=True,decoder_n_layer=4,encoder_num_hidden_layers=8"
+  --config_overrides="decoder_average_logits=True"
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
