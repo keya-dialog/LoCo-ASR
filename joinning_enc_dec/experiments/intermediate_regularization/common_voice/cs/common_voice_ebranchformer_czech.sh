@@ -4,10 +4,10 @@
 #SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 06:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_cs.out
+#SBATCH --time 24:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_cs4.out
 
-EXPERIMENT="common_voice_AED_ebranchformer_cs2"
+EXPERIMENT="common_voice_AED_ebranchformer_cs4"
 PROJECT="CommonVoice"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -32,12 +32,10 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --vocab_size=500 \
   --tokenizer_type="unigram" \
   --text_column_name="sentence" \
-  --train_split="train" \
+  --train_split="other" \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="cs" \
@@ -82,14 +80,14 @@ torchrun --standalone \
   --predict_with_generate \
   --early_stopping_patience="100" \
   --text_column_name="sentence" \
-  --preprocessing_num_workers="128" \
+  --preprocessing_num_workers="64" \
   --fix_apostrophes \
   --wandb_predictions_to_save=100 \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
   --max_grad_norm="5.0" \
-  --decoder_pos_emb_fixed \
   --do_train \
+  --train_split other \
   --evaluation_splits validation test \
   --do_eval \
   --decoding_ctc_weight="0.3" \
