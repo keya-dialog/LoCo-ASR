@@ -35,7 +35,9 @@ python joinning_enc_dec/src/trainers/train_tokenizer.py \
   --train_split="other" \
   --skip_if_exists="${USER}/${TOKENIZER_NAME}"
 
-python \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="mozilla-foundation/common_voice_13_0" \
   --dataset_config="cs" \
