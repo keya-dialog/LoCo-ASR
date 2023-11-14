@@ -888,7 +888,8 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
 
         # model only needs masking vector if mask prob is > 0.0
         if config.mask_time_prob > 0.0 or config.mask_feature_prob > 0.0:
-            self.masked_spec_embed = nn.Parameter(torch.FloatTensor(config.hidden_size).uniform_())
+            self.masked_spec_embed = nn.Parameter(
+                torch.FloatTensor(config.num_mel_bins if config.use_fbanks else config.hidden_size).uniform_())
 
         self.encoder = Wav2Vec2EBranchformerEncoder(config)
 
@@ -1007,6 +1008,24 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+        if self.config.apply_time_warp:
+            x_lengths = attention_mask.sum(-1).long()
+            if x_lengths is None or all(le == x_lengths[0] for le in x_lengths):
+                # Note that applying same warping for each sample
+                input_values = self.time_warp(input_values, window=self.config.time_warp_window,
+                                              mode=self.config.time_warp_mode)
+            else:
+                for i in range(input_values.size(0)):
+                    input_values[i, :x_lengths[i]] = self.time_warp(
+                        input_values[i][None, : x_lengths[i]],
+                        window=self.config.time_warp_window,
+                        mode=self.config.time_warp_mode,
+                    )[0]
+
+        input_values = self._mask_hidden_states(
+            input_values, mask_time_indices=mask_time_indices, attention_mask=attention_mask
+        )
+
         extract_features = self.feature_extractor(input_values)
         extract_features = extract_features.transpose(1, 2)
 
@@ -1017,24 +1036,6 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
             )
 
         hidden_states, extract_features = self.feature_projection(extract_features)
-
-        if self.config.apply_time_warp:
-            x_lengths = attention_mask.sum(-1).long()
-            if x_lengths is None or all(le == x_lengths[0] for le in x_lengths):
-                # Note that applying same warping for each sample
-                hidden_states = self.time_warp(hidden_states, window=self.config.time_warp_window,
-                                               mode=self.config.time_warp_mode)
-            else:
-                for i in range(hidden_states.size(0)):
-                    hidden_states[i, :x_lengths[i]] = self.time_warp(
-                        hidden_states[i][None, : x_lengths[i]],
-                        window=self.config.time_warp_window,
-                        mode=self.config.time_warp_mode,
-                    )[0]
-
-        hidden_states = self._mask_hidden_states(
-            hidden_states, mask_time_indices=mask_time_indices, attention_mask=attention_mask
-        )
 
         encoder_outputs = self.encoder(
             hidden_states,
