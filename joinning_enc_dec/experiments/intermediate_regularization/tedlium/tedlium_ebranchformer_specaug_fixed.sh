@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 #SBATCH --job-name TED
 #SBATCH --account OPEN-28-57
-#SBATCH --partition qgpu_exp
+#SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
-#SBATCH --time 1:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_specaug_notmask.out
+#SBATCH --time 2-00:00:00
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_specaug_fixed.out
 
-EXPERIMENT="tedlium_ebranchformer_specaug_notmask"
+EXPERIMENT="tedlium_ebranchformer_specaug_fixed"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -33,7 +33,7 @@ torchrun --standalone \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head3" \
+  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
@@ -83,7 +83,7 @@ torchrun --standalone \
   --external_lm_weight="0.5" \
   --apply_spec_augment \
   --external_lm="Lakoc/TED_CLM_gpt2_tedlium3" \
-  --config_overrides="encoder_apply_time_warp=True,encoder_mask_feature_prob=0.05,encoder_mask_time_prob=0.00" \
+  --config_overrides="encoder_apply_time_warp=True,encoder_mask_feature_prob=0.05,encoder_mask_time_prob=0.05" \
   --evaluation_splits validation test
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

@@ -137,7 +137,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         if config.shared_lm_head:
             self.encoder.lm_head.weight = self.decoder.lm_head.weight
 
-        if config.decoder.pos_emb_fixed:
+        if (hasattr(config, "decoder_pos_emb_fixed") and config.decoder_pos_emb_fixed) or (
+                hasattr(config.decoder, "pos_emb_fixed") and config.decoder.pos_emb_fixed):
             from transformers.models.transfo_xl.modeling_transfo_xl import AdaptiveEmbedding, PositionalEmbedding
 
             self.decoder.transformer.wte = AdaptiveEmbedding(n_token=config.decoder.vocab_size,
@@ -632,6 +633,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         external_lm = model_kwargs['external_lm']
         if external_lm is not None:
             external_lm = external_lm.to(self.device)
+            # from transformers import AutoTokenizer
+            # tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
+            # tokenizer.decoder.replacement = "+"
         external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
@@ -639,6 +643,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         beam_scores = torch.zeros((batch_size, num_beams), dtype=torch.float, device=input_ids.device)
         beam_scores[:, 1:] = -1e9
         beam_scores = beam_scores.view((batch_size * num_beams,))
+        # print("Input:", tokenizer.batch_decode(model_kwargs["labels"].tolist()))
 
         this_peer_finished = False  # used by synced_gpus only
         while True:
@@ -676,20 +681,14 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
-            if external_lm is not None:
-                external_lm_logits = external_lm(input_ids, labels=None, output_hidden_states=False,
-                                                 return_dict=True).logits
-                external_lm_logits = external_lm_logits[:, -1, :]
-                external_lm_logits = self.adjust_logits_during_generation(external_lm_logits, cur_len=cur_len)
-                external_lm_scores = nn.functional.log_softmax(
-                    external_lm_logits, dim=-1
-                )
-                next_token_scores = next_token_scores + external_lm_weight * external_lm_scores
-
-
             """
             Sample next tokens that will be used for CTC prefix computation and compute CTC cumulative prefix scores
             """
+            # print()
+            # print("Input:", tokenizer.batch_decode(input_ids.tolist()))
+            # print("Accustic:",
+            #       torch.topk(next_token_scores, 5).values,
+            #       tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
             next_token_scores[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
             local_best_scores, local_best_ids = torch.topk(
                 next_token_scores, ctc_beam_width, dim=1
@@ -700,6 +699,27 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             )
             next_token_scores = (1 - ctc_weight) * next_token_scores + ctc_weight * ctc_scores
 
+            # print("CTC:",
+            #       torch.topk(ctc_scores, 5).values,
+            #       tokenizer.batch_decode(torch.topk(ctc_scores, 5).indices.tolist()))
+
+            if external_lm is not None:
+                external_lm_logits = external_lm(input_ids, labels=None, output_hidden_states=False,
+                                                 return_dict=True).logits
+                external_lm_logits = external_lm_logits[:, -1, :]
+                external_lm_logits = self.adjust_logits_during_generation(external_lm_logits, cur_len=cur_len)
+                external_lm_scores = nn.functional.log_softmax(
+                    external_lm_logits, dim=-1
+                )
+                external_lm_scores[:, self.generation_config.eos_token_id] = external_lm_scores[:, 16]
+                next_token_scores = next_token_scores + external_lm_weight * external_lm_scores
+
+            #     print("LM:",
+            #           torch.topk(external_lm_scores, 5).values,
+            #           tokenizer.batch_decode(torch.topk(external_lm_scores, 5).indices.tolist()))
+            # print("LM+Accustic:",
+            #       torch.topk(next_token_scores, 5).values,
+            #       tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
             next_token_scores_processed = logits_processor(input_ids, next_token_scores)
 
             next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)

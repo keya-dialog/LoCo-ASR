@@ -77,7 +77,7 @@ if __name__ == '__main__':
         "encoder_layerdrop": 0.0,
         "min_length": 0,
         "no_repeat_ngram_size": 0,
-        "early_stopping": "never",
+        "early_stopping": False,
         "length_penalty": gen_args.length_penalty,
         "max_length": gen_args.max_len,
         "num_beams": gen_args.num_beams,
@@ -107,6 +107,7 @@ if __name__ == '__main__':
             model_path = average_checkpoints(model_path)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_path,
+            ignore_mismatched_sizes=True,
             config=config)
     elif model_args.from_encoder_decoder_config:
         config = fetch_AED_config(model_args.base_encoder_model, model_args.base_decoder_model, base_model_config,

@@ -1008,7 +1008,7 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        if self.config.apply_time_warp:
+        if self.config.apply_time_warp and self.training:
             x_lengths = attention_mask.sum(-1).long()
             if x_lengths is None or all(le == x_lengths[0] for le in x_lengths):
                 # Note that applying same warping for each sample
