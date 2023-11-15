@@ -566,9 +566,9 @@ def prepare_dataset(dataset, dataset_name,
         #     Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
         #     TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
         # ])
-        speed_perturb = SpeedPerturbation(sampling_rate, [0.9, 1.1, 1.0]).to('cpu')
+        speed_perturb = SpeedPerturbation(sampling_rate, [0.9, 1.1, 1.0])
         dataset[train_split].set_transform(lambda batch: {audio_column_name: [
-            speed_perturb(torch.tensor(audio_object_stripper(audio)))[0].detach().numpy()
+            speed_perturb(torch.tensor(audio_object_stripper(audio), dtype=torch.float32))[0].detach().numpy()
             for audio in batch[audio_column_name]]}, columns=[audio_column_name],
                                            output_all_columns=True)
     logger.info(str(dataset))
