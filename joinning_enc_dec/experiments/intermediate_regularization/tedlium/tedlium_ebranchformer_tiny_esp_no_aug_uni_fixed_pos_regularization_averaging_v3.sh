@@ -7,7 +7,7 @@
 #SBATCH --time 2-00:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v5.out
 
-EXPERIMENT="asdadas"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v5"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
