@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 #SBATCH --job-name TED
-#SBATCH --account OPEN-28-58
+#SBATCH --account OPEN-28-57
 #SBATCH --partition qgpu
-#SBATCH --gpus 4
+#SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 4:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/joint_decoding_wer_test_shallow_fusion_6.out
