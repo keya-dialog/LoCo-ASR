@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 import torch
 import wandb
-from audiomentations import Compose, TimeStretch
 from datasets import Dataset
 from jiwer import cer, compute_measures
+from torchaudio.transforms import SpeedPerturbation
 from transformers import AutoConfig, BatchFeature, LogitsProcessor, LogitsProcessorList, PreTrainedTokenizerFast, \
     Seq2SeqTrainer, SpeechEncoderDecoderModel, TrainerCallback, TrainerControl, TrainerState, TrainingArguments, \
     Wav2Vec2FeatureExtractor
@@ -216,7 +216,9 @@ class AdditionalLossTrackerTrainer(Seq2SeqTrainer):
 
 
 def audio_object_stripper(audio, key="array"):
-    return audio[key] if isinstance(audio, dict) and key in audio else audio
+    audio_array = audio[key] if isinstance(audio, dict) and key in audio else audio
+    trimmed = np.trim_zeros(audio_array)
+    return trimmed
 
 
 @dataclass
@@ -553,21 +555,23 @@ def prepare_dataset(dataset, dataset_name,
 
     if apply_augmentations:
         logger.info(f'Setting augmentations transform.')
-        augmenter = Compose([
-            #     TimeMask(max_band_part=0.05, p=0.05),
-            #     TimeMask(max_band_part=0.05, p=0.05),
-            #     TimeMask(max_band_part=0.05, p=0.05),
-            #     TimeMask(max_band_part=0.05, p=0.05),
-            #     AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
-            TimeStretch(min_rate=0.9, max_rate=1.1, p=0.5),
-            #     PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
-            #     Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
-            #     TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
-        ])
+        # augmenter = Compose([
+        #     TimeMask(max_band_part=0.05, p=0.05),
+        #     TimeMask(max_band_part=0.05, p=0.05),
+        #     TimeMask(max_band_part=0.05, p=0.05),
+        #     TimeMask(max_band_part=0.05, p=0.05),
+        #     AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.2),
+        # TimeStretch(min_rate=0.9, max_rate=1.1, p=0.5),
+        #     PitchShift(min_semitones=-4, max_semitones=4, p=0.2),
+        #     Shift(min_fraction=-0.5, max_fraction=0.5, p=0.2),
+        #     TanhDistortion(min_distortion=0, max_distortion=0.2, p=0.2)
+        # ])
+        speed_perturb = SpeedPerturbation(sampling_rate, [0.9, 1.1, 1.0])
         dataset[train_split].set_transform(lambda batch: {audio_column_name: [
-            augmenter(np.array(audio_object_stripper(audio), dtype=np.float32), sample_rate=sampling_rate)
+            speed_perturb(torch.tensor(audio_object_stripper(audio)))[0].detach().numpy()
             for audio in batch[audio_column_name]]}, columns=[audio_column_name],
                                            output_all_columns=True)
+    logger.info(str(dataset))
     return dataset
 
 

@@ -891,6 +891,13 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
             self.masked_spec_embed = nn.Parameter(
                 torch.FloatTensor(config.num_mel_bins if config.use_fbanks else config.hidden_size).uniform_())
 
+        if config.apply_spec_augment:
+            # TODO: Rewrite this
+            from espnet2.asr.specaug.specaug import SpecAug
+            self.spec_aug = SpecAug(apply_time_warp=True, time_warp_window=5, time_warp_mode="bicubic",
+                                    apply_freq_mask=True, freq_mask_width_range=(0, 27), num_freq_mask=2,
+                                    apply_time_mask=True, time_mask_width_ratio_range=(0, 0.05), num_time_mask=5)
+
         self.encoder = Wav2Vec2EBranchformerEncoder(config)
 
         self.adapter = Wav2Vec2EBranchformerAdapter(config) if config.add_adapter else None
@@ -898,91 +905,91 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-    @staticmethod
-    def time_warp(x: torch.Tensor, window: int = 80, mode: str = "bicubic"):
-        """Time warping using torch.interpolate.
+    # @staticmethod
+    # def time_warp(x: torch.Tensor, window: int = 80, mode: str = "bicubic"):
+    #     """Time warping using torch.interpolate.
+    #
+    #     Args:
+    #         x: (Batch, Time, Freq)
+    #         window: time warp parameter
+    #         mode: Interpolate mode
+    #     """
+    #
+    #     # bicubic supports 4D or more dimension tensor
+    #     org_size = x.size()
+    #     if x.dim() == 3:
+    #         # x: (Batch, Time, Freq) -> (Batch, 1, Time, Freq)
+    #         x = x[:, None]
+    #
+    #     t = x.shape[2]
+    #     if t - window <= window:
+    #         return x.view(*org_size)
+    #
+    #     center = torch.randint(window, t - window, (1,))[0]
+    #     warped = torch.randint(center - window, center + window, (1,))[0] + 1
+    #
+    #     # left: (Batch, Channel, warped, Freq)
+    #     # right: (Batch, Channel, time - warped, Freq)
+    #     left = torch.nn.functional.interpolate(
+    #         x[:, :, :center], (warped, x.shape[3]), mode=mode, align_corners=False
+    #     )
+    #     right = torch.nn.functional.interpolate(
+    #         x[:, :, center:], (t - warped, x.shape[3]), mode=mode, align_corners=False
+    #     )
+    #
+    #     if x.requires_grad:
+    #         x = torch.cat([left, right], dim=-2)
+    #     else:
+    #         x[:, :, :warped] = left
+    #         x[:, :, warped:] = right
+    #
+    #     return x.view(*org_size)
 
-        Args:
-            x: (Batch, Time, Freq)
-            window: time warp parameter
-            mode: Interpolate mode
-        """
-
-        # bicubic supports 4D or more dimension tensor
-        org_size = x.size()
-        if x.dim() == 3:
-            # x: (Batch, Time, Freq) -> (Batch, 1, Time, Freq)
-            x = x[:, None]
-
-        t = x.shape[2]
-        if t - window <= window:
-            return x.view(*org_size)
-
-        center = torch.randint(window, t - window, (1,))[0]
-        warped = torch.randint(center - window, center + window, (1,))[0] + 1
-
-        # left: (Batch, Channel, warped, Freq)
-        # right: (Batch, Channel, time - warped, Freq)
-        left = torch.nn.functional.interpolate(
-            x[:, :, :center], (warped, x.shape[3]), mode=mode, align_corners=False
-        )
-        right = torch.nn.functional.interpolate(
-            x[:, :, center:], (t - warped, x.shape[3]), mode=mode, align_corners=False
-        )
-
-        if x.requires_grad:
-            x = torch.cat([left, right], dim=-2)
-        else:
-            x[:, :, :warped] = left
-            x[:, :, warped:] = right
-
-        return x.view(*org_size)
-
-    def _mask_hidden_states(
-            self,
-            hidden_states: torch.FloatTensor,
-            mask_time_indices: Optional[torch.FloatTensor] = None,
-            attention_mask: Optional[torch.LongTensor] = None,
-    ):
-        """
-        Masks extracted features along time axis and/or along feature axis according to
-        [SpecAugment](https://arxiv.org/abs/1904.08779).
-        """
-
-        # `config.apply_spec_augment` can set masking to False
-        if not getattr(self.config, "apply_spec_augment", True):
-            return hidden_states
-
-        # # generate indices & apply SpecAugment along time axis
-        batch_size, sequence_length, hidden_size = hidden_states.size()
-
-        if mask_time_indices is not None:
-            # apply SpecAugment along time axis with given mask_time_indices
-            hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
-        elif self.config.mask_time_prob > 0 and self.training:
-            mask_time_indices = _compute_mask_indices(
-                (batch_size, sequence_length),
-                mask_prob=self.config.mask_time_prob,
-                mask_length=self.config.mask_time_length,
-                attention_mask=attention_mask,
-                min_masks=self.config.mask_time_min_masks,
-            )
-            mask_time_indices = torch.tensor(mask_time_indices, device=hidden_states.device, dtype=torch.bool)
-            hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
-
-        if self.config.mask_feature_prob > 0 and self.training:
-            # generate indices & apply SpecAugment along feature axis
-            mask_feature_indices = _compute_mask_indices(
-                (batch_size, hidden_size),
-                mask_prob=self.config.mask_feature_prob,
-                mask_length=self.config.mask_feature_length,
-                min_masks=self.config.mask_feature_min_masks,
-            )
-            mask_feature_indices = torch.tensor(mask_feature_indices, device=hidden_states.device, dtype=torch.bool)
-            mask_feature_indices = mask_feature_indices[:, None].expand(-1, sequence_length, -1)
-            hidden_states[mask_feature_indices] = 0
-
-        return hidden_states
+    # def _mask_hidden_states(
+    #         self,
+    #         hidden_states: torch.FloatTensor,
+    #         mask_time_indices: Optional[torch.FloatTensor] = None,
+    #         attention_mask: Optional[torch.LongTensor] = None,
+    # ):
+    #     """
+    #     Masks extracted features along time axis and/or along feature axis according to
+    #     [SpecAugment](https://arxiv.org/abs/1904.08779).
+    #     """
+    #
+    #     # `config.apply_spec_augment` can set masking to False
+    #     if not getattr(self.config, "apply_spec_augment", True):
+    #         return hidden_states
+    #
+    #     # # generate indices & apply SpecAugment along time axis
+    #     batch_size, sequence_length, hidden_size = hidden_states.size()
+    #
+    #     if mask_time_indices is not None:
+    #         # apply SpecAugment along time axis with given mask_time_indices
+    #         hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
+    #     elif self.config.mask_time_prob > 0 and self.training:
+    #         mask_time_indices = _compute_mask_indices(
+    #             (batch_size, sequence_length),
+    #             mask_prob=self.config.mask_time_prob,
+    #             mask_length=self.config.mask_time_length,
+    #             attention_mask=attention_mask,
+    #             min_masks=self.config.mask_time_min_masks,
+    #         )
+    #         mask_time_indices = torch.tensor(mask_time_indices, device=hidden_states.device, dtype=torch.bool)
+    #         hidden_states[mask_time_indices] = self.masked_spec_embed.to(hidden_states.dtype)
+    #
+    #     if self.config.mask_feature_prob > 0 and self.training:
+    #         # generate indices & apply SpecAugment along feature axis
+    #         mask_feature_indices = _compute_mask_indices(
+    #             (batch_size, hidden_size),
+    #             mask_prob=self.config.mask_feature_prob,
+    #             mask_length=self.config.mask_feature_length,
+    #             min_masks=self.config.mask_feature_min_masks,
+    #         )
+    #         mask_feature_indices = torch.tensor(mask_feature_indices, device=hidden_states.device, dtype=torch.bool)
+    #         mask_feature_indices = mask_feature_indices[:, None].expand(-1, sequence_length, -1)
+    #         hidden_states[mask_feature_indices] = 0
+    #
+    #     return hidden_states
 
     # Copied from transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2Model.freeze_feature_encoder
     def freeze_feature_encoder(self):
@@ -1008,23 +1015,25 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        if self.config.apply_time_warp and self.training:
-            x_lengths = attention_mask.sum(-1).long()
-            if x_lengths is None or all(le == x_lengths[0] for le in x_lengths):
-                # Note that applying same warping for each sample
-                input_values = self.time_warp(input_values, window=self.config.time_warp_window,
-                                              mode=self.config.time_warp_mode)
-            else:
-                for i in range(input_values.size(0)):
-                    input_values[i, :x_lengths[i]] = self.time_warp(
-                        input_values[i][None, : x_lengths[i]],
-                        window=self.config.time_warp_window,
-                        mode=self.config.time_warp_mode,
-                    )[0]
-
-        input_values = self._mask_hidden_states(
-            input_values, mask_time_indices=mask_time_indices, attention_mask=attention_mask
-        )
+        # if self.config.apply_time_warp and self.training:
+        #     x_lengths = attention_mask.sum(-1).long()
+        #     if x_lengths is None or all(le == x_lengths[0] for le in x_lengths):
+        #         # Note that applying same warping for each sample
+        #         input_values = self.time_warp(input_values, window=self.config.time_warp_window,
+        #                                       mode=self.config.time_warp_mode)
+        #     else:
+        #         for i in range(input_values.size(0)):
+        #             input_values[i, :x_lengths[i]] = self.time_warp(
+        #                 input_values[i][None, : x_lengths[i]],
+        #                 window=self.config.time_warp_window,
+        #                 mode=self.config.time_warp_mode,
+        #             )[0]
+        #
+        # input_values = self._mask_hidden_states(
+        #     input_values, mask_time_indices=mask_time_indices, attention_mask=attention_mask
+        # )
+        if self.config.apply_spec_augment and self.training:
+            input_values, _ = self.spec_aug(input_values, attention_mask.sum(-1).long())
 
         extract_features = self.feature_extractor(input_values)
         extract_features = extract_features.transpose(1, 2)
