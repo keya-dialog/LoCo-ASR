@@ -1,5 +1,6 @@
 import math
 
+import tqdm
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
     AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
@@ -10,7 +11,7 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, Seq2SeqDataCollatorWithPadding, \
-    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset, \
+    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset, save_nbests, \
     save_predictions
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
@@ -181,7 +182,7 @@ if __name__ == '__main__':
         trainer.train(resume_from_checkpoint=training_args.restart_from or None)
 
     # 7. Evaluation
-    if training_args.do_eval:
+    if training_args.do_evaluate:
         if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
             external_lm = None
             if gen_args.external_lm is not None:
@@ -199,3 +200,29 @@ if __name__ == '__main__':
             save_predictions(tokenizer, predictions,
                              f'{training_args.output_dir}/'
                              f'predictions_{split}_wer{100 * predictions.metrics["test_wer"]:.2f}.csv')
+    if training_args.do_generate:
+        if gen_args.decoding_ctc_weight > 0 or gen_args.external_lm_weight > 0:
+            external_lm = None
+            if gen_args.external_lm is not None:
+                external_lm = AutoModelForCausalLM.from_pretrained(gen_args.external_lm)
+                external_lm.eval()
+            activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
+                                    base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
+
+        gen_config.num_return_sequences = gen_args.num_predictions_to_return
+        gen_config.return_dict_in_generate = True
+        gen_config.num_beams = model.generation_config.num_beams * gen_args.eval_beam_factor
+        gen_config.output_scores = True
+        trainer.args.per_device_eval_batch_size = math.ceil(
+            trainer.args.per_device_eval_batch_size / gen_args.eval_beam_factor)
+        for split in training_args.evaluation_splits:
+            logger.info(f"Generating predictions for split: {split}")
+            dataloader = trainer.get_eval_dataloader(dataset[split].select(range(4)))
+            n_bests = []
+            scores = []
+            for sample in tqdm.tqdm(dataloader):
+                outputs = model.generate(generation_config=gen_config, **sample)
+                n_bests.append(outputs.sequences)
+                scores.append(outputs.sequences_scores)
+            save_nbests(gen_args.nbest_path_to_save + "_" + split, n_bests, scores, tokenizer,
+                        group_size=gen_args.num_predictions_to_return)

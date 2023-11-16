@@ -121,8 +121,11 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     do_train: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run training."}
     )
-    do_eval: Optional[bool] = field(
+    do_evaluate: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run evaluation."}
+    )
+    do_generate: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to run generation."}
     )
     evaluation_splits: Optional[List[str]] = field(
         default=None, metadata={"help": "Splits to use for evaluation."}
@@ -171,6 +174,12 @@ class GenerationArguments:
     )
     eval_beam_factor: Optional[int] = field(
         default=1, metadata={"help": "Factor to increase beam size for evaluation."}
+    )
+    num_predictions_to_return: Optional[int] = field(
+        default=1, metadata={"help": "Number of predictions to return."}
+    )
+    nbest_path_to_save: Optional[str] = field(
+        default="nbests", metadata={"help": "Path to save nbest hypotheses."}
     )
 
 

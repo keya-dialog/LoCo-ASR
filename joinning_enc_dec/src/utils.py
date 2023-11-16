@@ -82,6 +82,17 @@ def save_predictions(tokenizer, predictions, path):
     df.to_csv(path, index=False)
 
 
+def save_nbests(path, nbests, scores, tokenizer, group_size=1):
+    nbests = [tokenizer.decode(elem.tolist(), skip_special_tokens=True) for item in nbests for elem in item.unbind()]
+    scores = [float(elem) for item in scores for elem in item.unbind()]
+    with open(path + "_scores.txt", 'w') as f1:
+        with open(path + "_hyps.txt", 'w') as f2:
+            for item, (sample, score) in enumerate(zip(nbests, scores)):
+                utterance_id = f"utterance{item // group_size}-{item % group_size + 1}"
+                f1.write(f'{utterance_id} {score}\n')
+                f2.write(f'{utterance_id} {sample}\n')
+
+
 class FrozenLayersManager(TrainerCallback):
     def __init__(self, enc_layers_to_freeze, dec_layers_to_freeze, steps_to_freeze_enc, steps_to_freeze_dec,
                  freeze_cross_attention=False, freeze_others=False, callbacks=None):

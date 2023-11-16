@@ -368,10 +368,58 @@ if __name__ == '__main__':
     configuration.merge_conv_kernel = 31
     configuration.use_macaron_ff = True
     configuration.use_fbanks = True
-    configuration.fe_position_embeddings = False
     configuration.ctc_zero_infinity = True
     configuration.apply_spec_augment = False
     configuration.push_to_hub("fisher_ebranchformer_enc_12_layers_fixed")
+
+    from transformers import Wav2Vec2ConformerConfig, Wav2Vec2ConformerModel
+
+    configuration = Wav2Vec2ConformerConfig()
+    configuration.num_hidden_layers = 12
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 1024
+    configuration.conv_dim = [256, 256]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 80
+    configuration.max_source_positions = 1024
+    configuration.use_fbanks = True
+    configuration.ctc_zero_infinity = True
+    configuration.fe_position_embeddings = False
+
+    # Initializing a model (with random weights) from the facebook/wav2vec2-base-960h style configuration
+    encoder = Wav2Vec2ConformerModel(configuration)
+    print(encoder.num_parameters())
+    encoder.push_to_hub("conformer_6l_256h")
+
+    from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerModel
+
+    configuration = Wav2Vec2EBranchformerConfig()
+    configuration.num_hidden_layers = 8
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 1024
+    configuration.conv_dim = [256, 256]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 80
+    configuration.max_source_positions = 1024
+    configuration.ebranchformer_conv_dropout = 0.1
+    configuration.csgu_activation = "identity"
+    configuration.csgu_kernel_size = 31
+    configuration.csgu_use_linear_after_conv = False
+    configuration.merge_conv_kernel = 31
+    configuration.use_macaron_ff = True
+    configuration.use_fbanks = True
+    configuration.fe_position_embeddings = False
+    configuration.ctc_zero_infinity = True
+    configuration.apply_spec_augment = False
+    configuration.push_to_hub("ebranchformer_enc_8_layers")
 
     # encoder = Wav2Vec2EBranchformerModel(configuration)
     # print(encoder.num_parameters())
@@ -504,6 +552,20 @@ if __name__ == '__main__':
     configuration.tie_word_embeddings = False
 
     configuration.push_to_hub("gpt2_tiny_decoder_6_layers")
+
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 4
+    configuration.n_inner = 2048
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 256
+    configuration.output_hidden_size = 256
+    configuration.n_head = 4
+    configuration.tie_word_embeddings = False
+
+    configuration.push_to_hub("gpt2_tiny_decoder_4_layers")
 
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
