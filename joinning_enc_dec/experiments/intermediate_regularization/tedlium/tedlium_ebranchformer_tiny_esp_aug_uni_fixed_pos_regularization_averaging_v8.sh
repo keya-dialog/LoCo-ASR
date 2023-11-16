@@ -40,10 +40,8 @@ torchrun --standalone \
   --learning_rate="2e-3" \
   --warmup_steps="15000" \
   --logging_steps="10" \
-  --save_steps="10000" \
-  --save_strategy="steps" \
-  --evaluation_strategy="steps" \
-    --eval_steps="10000" \
+  --save_strategy="epoch" \
+  --evaluation_strategy="epoch" \
   --per_device_train_batch_size="64" \
   --per_device_eval_batch_size="48" \
   --report_to="wandb" \
@@ -86,6 +84,7 @@ torchrun --standalone \
   --external_lm="Lakoc/TED_CLM_gpt2_tedlium4" \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
-  --num_steps_to_activate_spec_augment=4500
+  --apply_spec_augment \
+  --num_steps_to_activate_spec_augment=5000
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/

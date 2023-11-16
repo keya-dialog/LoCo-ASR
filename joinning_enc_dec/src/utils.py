@@ -187,7 +187,7 @@ class AugmentationManagerCallback(TrainerCallback):
         if state.global_step == self.activate_aug_after_steps:
             model = kwargs['model']
             model.encoder.config.apply_spec_augment = True
-            logger.info(f'Step: {state.global_step} augmentation activated.')
+            logger.info(f'Step: {state.global_step} augmentations activated.')
 
 
 class AdditionalLossPrinterCallback(TrainerCallback):
