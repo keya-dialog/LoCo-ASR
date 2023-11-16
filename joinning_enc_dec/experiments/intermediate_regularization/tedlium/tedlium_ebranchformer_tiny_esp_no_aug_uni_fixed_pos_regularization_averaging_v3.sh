@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v5.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v7.out
 
-EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v5"
+EXPERIMENT="tedlium_ebranchformer_tiny_esp_no_aug_uni500_fixed_pos_proper_scoring_regularization_averaging_v7"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -33,7 +33,7 @@ torchrun --standalone \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head3" \
+  --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
@@ -52,7 +52,7 @@ torchrun --standalone \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs="100" \
+  --num_train_epochs="150" \
   --num_beams="4" \
   --max_len="512" \
   --greater_is_better="False" \
@@ -67,7 +67,7 @@ torchrun --standalone \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --early_stopping_patience="10" \
+  --early_stopping_patience="50" \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
@@ -81,9 +81,7 @@ torchrun --standalone \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="10" \
   --external_lm_weight="0.5" \
-  --apply_spec_augment \
-  --external_lm="Lakoc/TED_CLM_gpt2_tedlium3" \
-  --config_overrides="decoder_average_logits=True" \
+  --external_lm="Lakoc/TED_CLM_gpt2_tedlium4" \
   --evaluation_splits validation test \
   --joint_decoding_during_training
 

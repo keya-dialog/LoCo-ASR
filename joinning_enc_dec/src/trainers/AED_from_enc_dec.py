@@ -1,3 +1,5 @@
+import math
+
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
     AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
@@ -188,6 +190,8 @@ if __name__ == '__main__':
             activate_joint_decoding(model, gen_args.decoding_ctc_weight, gen_args.ctc_margin, len(tokenizer),
                                     base_model_config['eos_token_id'], external_lm, gen_args.external_lm_weight)
 
+        trainer.args.per_device_eval_batch_size = math.ceil(
+            trainer.args.per_device_eval_batch_size / gen_args.eval_beam_factor)
         for split in training_args.evaluation_splits:
             predictions = trainer.predict(dataset[split], output_hidden_states=True,
                                           num_beams=model.generation_config.num_beams * gen_args.eval_beam_factor)
