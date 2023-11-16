@@ -31,8 +31,7 @@ python \
   --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
-   --length_column_name="input_len" \
-  --load_best_model_at_end="True" \
+  --length_column_name="input_len" \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
