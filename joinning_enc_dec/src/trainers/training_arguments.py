@@ -118,6 +118,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     apply_spec_augment: Optional[bool] = field(
         default=False, metadata={"help": "Whether to apply spec augmentations."}
     )
+    num_steps_to_activate_spec_augment: Optional[int] = field(
+        default=0, metadata={"help": "Number of steps to activate spec augmentations."}
+    )
     do_train: Optional[bool] = field(
         default=False, metadata={"help": "Whether to run training."}
     )

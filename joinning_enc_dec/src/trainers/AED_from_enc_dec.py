@@ -10,9 +10,9 @@ from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttent
     JointCTCAttentionEncoderDecoderConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
-from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, Seq2SeqDataCollatorWithPadding, \
-    activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, prepare_dataset, save_nbests, \
-    save_predictions
+from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, AugmentationManagerCallback, \
+    Seq2SeqDataCollatorWithPadding, activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, \
+    prepare_dataset, save_nbests, save_predictions
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -150,6 +150,8 @@ if __name__ == '__main__':
 
     # 5. Init trainer
     callbacks = []
+    if training_args.apply_spec_augment:
+        callbacks.append(AugmentationManagerCallback(training_args.num_steps_to_activate_spec_augment))
     if training_args.early_stopping_patience > -1:
         callbacks.append(EarlyStoppingCallback(early_stopping_patience=training_args.early_stopping_patience))
     if training_args.track_ctc_loss:

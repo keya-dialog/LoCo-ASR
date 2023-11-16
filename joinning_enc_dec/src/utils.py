@@ -174,6 +174,22 @@ class FrozenLayersManager(TrainerCallback):
             f'{sum([np.prod(p.size()) for p in filter(lambda p: p.requires_grad, curr_model.parameters())])}')
 
 
+class AugmentationManagerCallback(TrainerCallback):
+    def __init__(self, activate_aug_after_steps):
+        super().__init__()
+        self.activate_aug_after_steps = activate_aug_after_steps
+
+    def on_init_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        model = kwargs['model']
+        model.encoder.config.apply_spec_augment = False
+
+    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        if state.global_step == self.activate_aug_after_steps:
+            model = kwargs['model']
+            model.encoder.config.apply_spec_augment = True
+            logger.info(f'Step: {state.global_step} augmentation activated.')
+
+
 class AdditionalLossPrinterCallback(TrainerCallback):
     def on_train_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         state.__class__ = make_dataclass('state_derived',
