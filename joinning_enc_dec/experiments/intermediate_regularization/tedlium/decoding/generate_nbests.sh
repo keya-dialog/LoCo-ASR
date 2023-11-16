@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 6:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_nbests.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_nbests2.out
 
-EXPERIMENT="ebranchformer_nbests"
+EXPERIMENT="ebranchformer_nbests2"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -37,7 +37,6 @@ python \
   --per_device_eval_batch_size="8" \
   --dataloader_num_workers="4" \
   --length_column_name="input_len" \
-  --preprocessing_num_workers="128" \
   --remove_unused_columns="False" \
   --group_by_length="True" \
   --bf16 \
@@ -51,11 +50,11 @@ python \
   --fix_apostrophes \
   --remove_train_unks \
   --predict_with_generate \
-  --num_beams="40" \
+  --num_beams="50" \
   --max_len="512" \
   --external_lm_weight="0.5" \
   --decoding_ctc_weight="0.3" \
-  --num_predictions_to_return="100" \
+  --num_predictions_to_return="50" \
   --do_generate \
-  --evaluation_splits validation test
+  --evaluation_splits validation test \
   --nbest_path_to_save="${EXPERIMENT_PATH}/nbests"

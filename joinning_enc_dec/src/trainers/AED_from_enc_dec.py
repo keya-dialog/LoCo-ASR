@@ -217,7 +217,7 @@ if __name__ == '__main__':
             trainer.args.per_device_eval_batch_size / gen_args.eval_beam_factor)
         for split in training_args.evaluation_splits:
             logger.info(f"Generating predictions for split: {split}")
-            dataloader = trainer.get_eval_dataloader(dataset[split].select(range(4)))
+            dataloader = trainer.get_eval_dataloader(dataset[split])
             n_bests = []
             scores = []
             for sample in tqdm.tqdm(dataloader):

@@ -24,7 +24,7 @@ python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
-  --max_duration_in_seconds="40.0" \
+  --max_duration_in_seconds="20.0" \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
@@ -44,4 +44,5 @@ python \
   --from_encoder_decoder_config \
   --fix_apostrophes \
   --remove_train_unks \
-  --preprocess_dataset_only
+  --preprocess_dataset_only \
+  --preprocessing_num_workers="128"
