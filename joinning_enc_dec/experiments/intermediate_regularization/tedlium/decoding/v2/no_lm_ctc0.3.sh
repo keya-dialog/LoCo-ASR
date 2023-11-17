@@ -75,7 +75,7 @@ python \
   --do_evaluate \
   --decoding_ctc_weight="0.3" \
   --eval_beam_factor="1" \
-  --evaluation_splits validation \
+  --evaluation_splits validation test\
   --joint_decoding_during_training \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=5000

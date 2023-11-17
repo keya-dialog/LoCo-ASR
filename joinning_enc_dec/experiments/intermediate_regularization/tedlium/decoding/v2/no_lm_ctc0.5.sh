@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 08:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer8_ctc04.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer8_ctc05.out
 
-EXPERIMENT="ebranchformer8_ctc04"
+EXPERIMENT="ebranchformer8_ctc05"
 PROJECT="TED"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -75,7 +75,7 @@ python \
   --do_evaluate \
   --decoding_ctc_weight="0.4" \
   --eval_beam_factor="1" \
-  --evaluation_splits validation \
+  --evaluation_splits validation test \
   --joint_decoding_during_training \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=5000
