@@ -222,9 +222,11 @@ if __name__ == '__main__':
             dataloader = trainer.get_eval_dataloader(dataset[split])
             n_bests = []
             scores = []
+            labels = []
             for sample in tqdm.tqdm(dataloader):
                 outputs = model.generate(generation_config=gen_config, **sample)
                 n_bests.append(outputs.sequences)
                 scores.append(outputs.sequences_scores)
-            save_nbests(gen_args.nbest_path_to_save + "_" + split, n_bests, scores, tokenizer,
+                labels.append(sample['labels'])
+            save_nbests(gen_args.nbest_path_to_save + "_" + split, n_bests, scores, labels, tokenizer,
                         group_size=gen_args.num_predictions_to_return)

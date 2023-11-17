@@ -82,15 +82,22 @@ def save_predictions(tokenizer, predictions, path):
     df.to_csv(path, index=False)
 
 
-def save_nbests(path, nbests, scores, tokenizer, group_size=1):
+def save_nbests(path, nbests, scores, labels, tokenizer, group_size=1):
     nbests = [tokenizer.decode(elem.tolist(), skip_special_tokens=True) for item in nbests for elem in item.unbind()]
+    processed_labels = []
+    for label in labels:
+        label[label == -100] = tokenizer.pad_token_id
+        processed_labels.extend([tokenizer.decode(elem.tolist(), skip_special_tokens=True) for elem in
+                                 label.repeat_interleave(group_size, dim=0)])
     scores = [float(elem) for item in scores for elem in item.unbind()]
     with open(path + "_scores.txt", 'w') as f1:
         with open(path + "_hyps.txt", 'w') as f2:
-            for item, (sample, score) in enumerate(zip(nbests, scores)):
-                utterance_id = f"utterance{item // group_size}-{item % group_size + 1}"
-                f1.write(f'{utterance_id} {score}\n')
-                f2.write(f'{utterance_id} {sample}\n')
+            with open(path + "_refs.txt", 'w') as f3:
+                for item, (sample, score, ref) in enumerate(zip(nbests, scores, processed_labels)):
+                    utterance_id = f"utterance{item // group_size}-{item % group_size + 1}"
+                    f1.write(f'{utterance_id} {score}\n')
+                    f2.write(f'{utterance_id} {sample}\n')
+                    f3.write(f'{utterance_id} {ref}\n')
 
 
 class FrozenLayersManager(TrainerCallback):
