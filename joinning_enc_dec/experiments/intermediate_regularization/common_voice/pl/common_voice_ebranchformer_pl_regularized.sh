@@ -8,7 +8,7 @@
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/common_voice_AED_ebranchformer_pl_regularized.out
 
 EXPERIMENT="common_voice_AED_ebranchformer_pl_regularized"
-PROJECT="CommonVoice"
+PROJECT="CommonVoicePL"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 USER="lakoc"
