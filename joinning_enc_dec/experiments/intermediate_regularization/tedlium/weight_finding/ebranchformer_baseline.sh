@@ -82,7 +82,6 @@ torchrun --standalone \
   --eval_beam_factor="10" \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
-  --config_overrides="decoder_average_logits=False" \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=5000
 
