@@ -570,8 +570,24 @@ if __name__ == '__main__':
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
     config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[3], head_weights=[0.5, 0.5], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head3_05")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[3], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head3_04")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
                                  head_locations=[3], head_weights=[0.7, 0.3], n_embd=256, tie_word_embeddings=False)
-    config.push_to_hub("gpt2_256h_6l_add_head3")
+    config.push_to_hub("gpt2_256h_6l_add_head3_03")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[3], head_weights=[0.8, 0.2], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head3_02")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[3], head_weights=[0.9, 0.1], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head3_01")
 
 
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
