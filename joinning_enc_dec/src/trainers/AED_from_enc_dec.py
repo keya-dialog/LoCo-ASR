@@ -12,7 +12,7 @@ from trainers.training_arguments import DataTrainingArguments, GeneralTrainingAr
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, AugmentationManagerCallback, \
     Seq2SeqDataCollatorWithPadding, activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, \
-    prepare_dataset, save_nbests, save_predictions
+    postprocess_beam_outputs, prepare_dataset, save_nbests, save_predictions
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -223,10 +223,13 @@ if __name__ == '__main__':
             n_bests = []
             scores = []
             labels = []
+            outputs_agg = []
             for sample in tqdm.tqdm(dataloader):
                 outputs = model.generate(generation_config=gen_config, **sample)
+                outputs_agg.append(postprocess_beam_outputs(outputs))
                 n_bests.append(outputs.sequences)
                 scores.append(outputs.sequences_scores)
                 labels.append(sample['labels'])
             save_nbests(gen_args.nbest_path_to_save + "_" + split, n_bests, scores, labels, tokenizer,
-                        group_size=gen_args.num_predictions_to_return)
+                        group_size=gen_args.num_predictions_to_return, outputs=outputs_agg,
+                        batch_size=trainer.args.per_device_eval_batch_size)

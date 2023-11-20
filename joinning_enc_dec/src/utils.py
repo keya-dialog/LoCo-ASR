@@ -1,5 +1,6 @@
 import glob
 import os
+import pickle
 import shutil
 from dataclasses import dataclass, field, make_dataclass
 from typing import Dict, List, Optional, Union
@@ -82,9 +83,14 @@ def save_predictions(tokenizer, predictions, path):
     df.to_csv(path, index=False)
 
 
-def save_nbests(path, nbests, scores, labels, tokenizer, group_size=1):
+def save_nbests(path, nbests, scores, labels, tokenizer, group_size=1, batch_size=1, outputs=None):
     nbests = [tokenizer.decode(elem.tolist(), skip_special_tokens=True) for item in nbests for elem in item.unbind()]
     processed_labels = []
+    if outputs is not None:
+        for index, output in enumerate(outputs):
+            with open(path + f"_utterance{index * batch_size}-{(index + 1) * batch_size - 1}.pkl", 'wb') as f:
+                pickle.dump(output, f, protocol=pickle.HIGHEST_PROTOCOL)
+
     for label in labels:
         label[label == -100] = tokenizer.pad_token_id
         processed_labels.extend([tokenizer.decode(elem.tolist(), skip_special_tokens=True) for elem in
@@ -98,6 +104,31 @@ def save_nbests(path, nbests, scores, labels, tokenizer, group_size=1):
                     f1.write(f'{utterance_id} {score}\n')
                     f2.write(f'{utterance_id} {sample}\n')
                     f3.write(f'{utterance_id} {ref}\n')
+
+
+def move_to_cpu(obj):
+    if isinstance(obj, torch.Tensor):
+        return obj.cpu()
+    elif isinstance(obj, dict):
+        return {key: move_to_cpu(value) for key, value in obj.items()}
+    elif isinstance(obj, tuple):
+        return tuple(move_to_cpu(item) for item in obj)
+    else:
+        return obj
+
+
+def postprocess_beam_outputs(outputs):
+    for key in outputs:
+        outputs[key] = move_to_cpu(outputs[key])
+    outputs['joint_scores'] = outputs['scores'][::4]
+    outputs['dec_scores'] = outputs['scores'][1::4]
+    outputs['ctc_scores'] = outputs['scores'][2::4]
+    outputs['external_lm_scores'] = outputs['scores'][3::4]
+    outputs = dict(outputs)
+    del outputs['scores']
+    del outputs['encoder_hidden_states']
+    del outputs['decoder_hidden_states']
+    return outputs
 
 
 class FrozenLayersManager(TrainerCallback):

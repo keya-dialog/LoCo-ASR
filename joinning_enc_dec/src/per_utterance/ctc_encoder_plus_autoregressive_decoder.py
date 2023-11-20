@@ -677,7 +677,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             # hack: adjust tokens for Marian. For Marian we have to make sure that the `pad_token_id`
             # cannot be generated both before and after the `nn.functional.log_softmax` operation.
             next_token_logits = self.adjust_logits_during_generation(next_token_logits, cur_len=cur_len)
-            next_token_scores = nn.functional.log_softmax(
+            next_token_scores_dec = nn.functional.log_softmax(
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
@@ -689,15 +689,15 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             # print("Accustic:",
             #       torch.topk(next_token_scores, 5).values, "\n",
             #       tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
-            next_token_scores[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
+            next_token_scores_dec[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
             local_best_scores, local_best_ids = torch.topk(
-                next_token_scores, ctc_beam_width, dim=1
+                next_token_scores_dec, ctc_beam_width, dim=1
             )
 
             ctc_scores, ctc_states = ctc_prefix_scorer(
                 input_ids, ctc_states, local_best_ids, att_w
             )
-            next_token_scores = (1 - ctc_weight) * next_token_scores + ctc_weight * ctc_scores
+            next_token_scores = (1 - ctc_weight) * next_token_scores_dec + ctc_weight * ctc_scores
 
             # print("CTC:",
             #       torch.topk(ctc_scores, 5).values, "\n",
@@ -712,6 +712,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                     external_lm_logits, dim=-1
                 )
                 next_token_scores = next_token_scores + external_lm_weight * external_lm_scores
+            else:
+                external_lm_scores = torch.zeros_like(next_token_scores)
 
             #     print("LM:",
             #           torch.topk(external_lm_scores, 5).values, "\n",
@@ -726,7 +728,7 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
                 if output_scores:
-                    scores += (next_token_scores_processed,)
+                    scores += (next_token_scores_processed, next_token_scores_dec, ctc_scores, external_lm_scores)
                 if output_attentions:
                     decoder_attentions += (
                         (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
