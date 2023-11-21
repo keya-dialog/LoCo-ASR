@@ -2,12 +2,12 @@
 #SBATCH --job-name TED
 #SBATCH --account OPEN-28-57
 #SBATCH --partition qgpu
-#SBATCH --gpus 4
+#SBATCH --gpus 6
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium.out
+#SBATCH --output=/mnt/proj1/open-2  8-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium2.out
 
-EXPERIMENT="tedlium_ebranchformer_medium"
+EXPERIMENT="tedlium_ebranchformer_medium2"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -25,7 +25,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=4 \
+  --nproc-per-node=6 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -42,8 +42,8 @@ torchrun --standalone \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
-  --per_device_train_batch_size="64" \
-  --per_device_eval_batch_size="48" \
+  --per_device_train_batch_size="48" \
+  --per_device_eval_batch_size="32" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="24" \
