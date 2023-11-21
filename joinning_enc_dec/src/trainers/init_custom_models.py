@@ -592,6 +592,22 @@ if __name__ == '__main__':
 
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[0], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head0_04")
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[1], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head1_04")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[2], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head2_04")
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[4], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head4_04")
+
+    from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+
     config = GPT2MultiHeadConfig(n_head=8, n_layer=16, vocab_size=500, bos_token_id=0, eos_token_id=1, n_positions=256,
                                  head_locations=[8], head_weights=[0.7, 0.3], n_embd=512)
     config.push_to_hub("gpt2_512h_16l_add_head8")
@@ -601,3 +617,71 @@ if __name__ == '__main__':
     config = GPT2MultiHeadConfig(n_head=8, n_layer=16, vocab_size=500, bos_token_id=0, eos_token_id=1, n_positions=256,
                                  head_locations=[8], head_weights=[0.7, 0.3], n_embd=512, average_logits=True)
     config.push_to_hub("gpt2_512h_16l_add_head8_average")
+
+    ########################################################################################################################
+    # from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerModel
+    #
+    # configuration = Wav2Vec2EBranchformerConfig()
+    # configuration.num_hidden_layers = 12
+    # configuration.hidden_size = 256
+    # configuration.output_hidden_size = 256
+    # configuration.num_attention_heads = 4
+    # configuration.num_feat_extract_layers = 2
+    # configuration.intermediate_size = 1024
+    # configuration.conv_dim = [256, 256]
+    # configuration.conv_kernel = [3, 3]
+    # configuration.conv_stride = [2, 2]
+    # configuration.num_mel_bins = 80
+    # configuration.max_source_positions = 1024
+    # configuration.ebranchformer_conv_dropout = 0.1
+    # configuration.csgu_activation = "identity"
+    # configuration.csgu_kernel_size = 31
+    # configuration.csgu_use_linear_after_conv = False
+    # configuration.merge_conv_kernel = 31
+    # configuration.use_macaron_ff = True
+    # configuration.use_fbanks = True
+    # configuration.ctc_zero_infinity = True
+    # configuration.apply_spec_augment = False
+    #
+    # w = Wav2Vec2EBranchformerModel(configuration)
+    # w.num_parameters()
+
+    # MEDIUM model
+
+    configuration = Wav2Vec2EBranchformerConfig()
+    configuration.num_hidden_layers = 12
+    configuration.hidden_size = 384
+    configuration.output_hidden_size = 384
+    configuration.num_attention_heads = 4
+    configuration.num_feat_extract_layers = 2
+    configuration.intermediate_size = 1536
+    configuration.conv_dim = [384, 384]
+    configuration.conv_kernel = [3, 3]
+    configuration.conv_stride = [2, 2]
+    configuration.num_mel_bins = 80
+    configuration.max_source_positions = 1024
+    configuration.ebranchformer_conv_dropout = 0.1
+    configuration.csgu_activation = "identity"
+    configuration.csgu_kernel_size = 31
+    configuration.csgu_use_linear_after_conv = False
+    configuration.merge_conv_kernel = 31
+    configuration.use_macaron_ff = True
+    configuration.use_fbanks = True
+    configuration.ctc_zero_infinity = True
+    configuration.apply_spec_augment = False
+
+    configuration.push_to_hub("ebranchformer_12l_384h")
+
+    from transformers import GPT2Config, GPT2Model
+
+    # Initializing a GPT2 configuration
+    configuration = GPT2Config()
+    configuration.n_layer = 6
+    configuration.n_inner = 2048
+    configuration.vocab_size = 5000
+    configuration.hidden_size = 384
+    configuration.output_hidden_size = 384
+    configuration.n_head = 4
+    configuration.tie_word_embeddings = False
+
+    configuration.push_to_hub("gpt2_6l_384h")

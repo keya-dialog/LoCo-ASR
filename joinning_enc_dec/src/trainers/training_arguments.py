@@ -184,6 +184,10 @@ class GenerationArguments:
     nbest_path_to_save: Optional[str] = field(
         default="nbests", metadata={"help": "Path to save nbest hypotheses."}
     )
+    save_output_states: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to save output states."}
+    )
+
 
 
 @dataclass

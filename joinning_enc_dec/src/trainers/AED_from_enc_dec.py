@@ -226,7 +226,8 @@ if __name__ == '__main__':
             outputs_agg = []
             for sample in tqdm.tqdm(dataloader):
                 outputs = model.generate(generation_config=gen_config, **sample)
-                outputs_agg.append(postprocess_beam_outputs(outputs))
+                if gen_args.save_output_states:
+                    outputs_agg.append(postprocess_beam_outputs(outputs))
                 n_bests.append(outputs.sequences)
                 scores.append(outputs.sequences_scores)
                 labels.append(sample['labels'])
