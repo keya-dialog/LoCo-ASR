@@ -589,6 +589,13 @@ if __name__ == '__main__':
                                  head_locations=[3], head_weights=[0.9, 0.1], n_embd=256, tie_word_embeddings=False)
     config.push_to_hub("gpt2_256h_6l_add_head3_01")
 
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[2], head_weights=[0.6, 0.4], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head2_04")
+
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[2], head_weights=[0.7, 0.3], n_embd=256, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_256h_6l_add_head2_03")
 
     from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
 
