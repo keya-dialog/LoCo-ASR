@@ -2,12 +2,12 @@
 #SBATCH --job-name TED
 #SBATCH --account OPEN-28-57
 #SBATCH --partition qgpu
-#SBATCH --gpus 6
+#SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium_deeper.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium_deeper3.out
 
-EXPERIMENT="tedlium_ebranchformer_medium_deeper"
+EXPERIMENT="tedlium_ebranchformer_medium_deeper3"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -25,7 +25,7 @@ cd $WORK_DIR
 
 torchrun --standalone \
   --nnodes=1 \
-  --nproc-per-node=6 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -38,7 +38,7 @@ torchrun --standalone \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
-  --warmup_steps="15000" \
+  --warmup_steps="25000" \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
@@ -74,7 +74,7 @@ torchrun --standalone \
   --wandb_predictions_to_save=600 \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
-  --max_grad_norm="5.0" \
+  --max_grad_norm="2.0" \
   --decoder_pos_emb_fixed \
   --do_train \
   --do_evaluate \
@@ -83,6 +83,6 @@ torchrun --standalone \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
   --apply_spec_augment \
-  --num_steps_to_activate_spec_augment=5000
+  --num_steps_to_activate_spec_augment=10000
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
