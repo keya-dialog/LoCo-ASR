@@ -693,6 +693,11 @@ if __name__ == '__main__':
 
     configuration.push_to_hub("gpt2_6l_384h")
 
+    config = GPT2MultiHeadConfig(n_head=4, n_layer=6, n_inner=2048, vocab_size=500, bos_token_id=0, eos_token_id=1,
+                                 head_locations=[3], head_weights=[0.6, 0.4], n_embd=384, tie_word_embeddings=False)
+    config.push_to_hub("gpt2_384h_6l_add_head3_04")
+
+
     # MEDIUM_DEEP model
     from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerModel
 
