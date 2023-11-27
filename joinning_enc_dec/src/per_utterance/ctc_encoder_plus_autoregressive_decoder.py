@@ -633,8 +633,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         external_lm = model_kwargs['external_lm']
         if external_lm is not None:
             external_lm = external_lm.to(self.device)
-        from transformers import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
+        # from transformers import AutoTokenizer
+        # tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
         external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
@@ -825,11 +825,11 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             max_length=stopping_criteria.max_length,
             beam_indices=beam_indices,
         )
-        ref = tokenizer.decode(model_kwargs['labels'].tolist()[0], skip_special_tokens=True)
-        hyp = tokenizer.decode(sequence_outputs['sequences'][0].tolist(), skip_special_tokens=True)
-        print(f"Ref: {ref}\nHyp: {hyp}")
-        import jiwer
-        print(jiwer.compute_measures(ref, hyp))
+        # ref = tokenizer.decode(model_kwargs['labels'].tolist()[0], skip_special_tokens=True)
+        # hyp = tokenizer.decode(sequence_outputs['sequences'][0].tolist(), skip_special_tokens=True)
+        # print(f"Ref: {ref}\nHyp: {hyp}")
+        # import jiwer
+        # print(jiwer.compute_measures(ref, hyp))
 
         if return_dict_in_generate:
             if not output_scores:
