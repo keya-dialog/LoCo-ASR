@@ -103,11 +103,12 @@ if __name__ == '__main__':
 
     # 4. Initialize seq2seq model
     if model_args.from_pretrained:
-        config = AutoConfig.from_pretrained(model_args.from_pretrained)
-        config.update(base_model_config)
         model_path = model_args.from_pretrained
         if model_args.average_checkpoints:
             model_path = average_checkpoints(model_path)
+        config = AutoConfig.from_pretrained(model_path)
+        config.update(base_model_config)
+
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_path,
             ignore_mismatched_sizes=True,

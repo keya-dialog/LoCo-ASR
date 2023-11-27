@@ -690,7 +690,5 @@ def average_checkpoints(experiment_dir):
     average_dict = {key: sum_state_dict[key].div(n_checkpoints) for key in sum_state_dict}
     dst_path = os.path.join(experiment_dir, "average_checkpoint")
     shutil.copytree(os.path.dirname(checkpoints[0]), dst_path, dirs_exist_ok=True)
-    shutil.copytree(os.path.join(experiment_dir, "tokenizer"), dst_path, dirs_exist_ok=True)
-    shutil.copytree(os.path.join(experiment_dir, "feature_extractor"), dst_path, dirs_exist_ok=True)
     torch.save(average_dict, os.path.join(dst_path, "pytorch_model.bin"))
     return dst_path
