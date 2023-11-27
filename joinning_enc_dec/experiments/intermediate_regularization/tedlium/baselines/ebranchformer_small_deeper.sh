@@ -40,7 +40,7 @@ python \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
-  --per_device_train_batch_size="64" \
+  --per_device_train_batch_size="48" \
   --per_device_eval_batch_size="48" \
   --report_to="wandb" \
   --optim="adamw_torch" \
