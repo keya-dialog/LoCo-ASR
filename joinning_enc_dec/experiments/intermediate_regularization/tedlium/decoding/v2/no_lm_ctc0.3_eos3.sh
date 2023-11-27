@@ -1,10 +1,10 @@
 #!/usr/bin/bash
 #SBATCH --job-name TED
 #SBATCH --account OPEN-28-57
-#SBATCH --partition qgpu
+#SBATCH --partition qgpu_exp
 #SBATCH --gpus 1
 #SBATCH --nodes 1
-#SBATCH --time 08:00:00
+#SBATCH --time 01:00:00
 #SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer8_ctc03_eos3.out
 
 EXPERIMENT="ebranchformer8_ctc03_eos3"
