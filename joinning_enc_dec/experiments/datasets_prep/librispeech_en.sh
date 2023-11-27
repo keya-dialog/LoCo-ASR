@@ -25,7 +25,7 @@ cd $WORK_DIR
 python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="librispeech_asr" \
-  --dataset_config="" \
+  --dataset_config="all" \
   --feature_extractor_name="Lakoc/log_80mel_extractor_16k" \
   --tokenizer_name="${USER}/${TOKENIZER_NAME}" \
   --output_dir=$EXPERIMENT_PATH \
