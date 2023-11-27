@@ -5,7 +5,7 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium5.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium5_restart.out
 
 EXPERIMENT="tedlium_ebranchformer_medium5"
 PROJECT="TED2"
@@ -84,7 +84,8 @@ torchrun --standalone \
   --joint_decoding_during_training \
   --apply_spec_augment \
   --config_overrides="encoder_hidden_dropout=0.3,encoder_activation_dropout=0.3" \
-  --num_steps_to_activate_spec_augment=10000
+  --num_steps_to_activate_spec_augment=10000 \
+  --restart_from="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_medium5/checkpoint-93599"
 
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
