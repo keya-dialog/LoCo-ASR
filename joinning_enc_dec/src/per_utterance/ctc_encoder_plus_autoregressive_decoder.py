@@ -633,8 +633,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
         external_lm = model_kwargs['external_lm']
         if external_lm is not None:
             external_lm = external_lm.to(self.device)
-            # from transformers import AutoTokenizer
-            # tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained("Lakoc/ted_uni500")
         external_lm_weight = model_kwargs['external_lm_weight']
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
@@ -687,8 +687,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             # print("\n\n")
             # print("Input:", tokenizer.batch_decode(input_ids.tolist()))
             # print("Accustic:",
-            #       torch.topk(next_token_scores, 5).values, "\n",
-            #       tokenizer.batch_decode(torch.topk(next_token_scores, 5).indices.tolist()))
+            #       torch.topk(next_token_scores_dec, 5).values, "\n",
+            #       tokenizer.batch_decode(torch.topk(next_token_scores_dec, 5).indices.tolist()))
             next_token_scores_dec[:, self.generation_config.pad_token_id] = ctc_prefix_scorer.logzero
             local_best_scores, local_best_ids = torch.topk(
                 next_token_scores_dec, ctc_beam_width, dim=1
@@ -697,6 +697,18 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             ctc_scores, ctc_states = ctc_prefix_scorer(
                 input_ids, ctc_states, local_best_ids, att_w
             )
+
+            eos_mask = torch.argmax(next_token_scores_dec, dim=1) == self.generation_config.eos_token_id
+            if eos_mask.any() and hasattr(self.generation_config, "space_token_id"):
+                """Rescore eos token for CTC if space token was predicted, 
+                this is due to the CTC training objective being different."""
+                space_mask = torch.argmax(ctc_scores, dim=1) == self.generation_config.space_token_id
+                weights = torch.topk(next_token_scores_dec, 2, dim=1).values
+                enough_weight_mask = weights[:, 1] / weights[:, 0] > 2
+                mask = eos_mask & space_mask & enough_weight_mask
+                if mask.any():
+                    ctc_scores[mask, self.generation_config.eos_token_id] = ctc_scores[
+                                                                                mask, self.generation_config.space_token_id] + 1e-12
             next_token_scores = (1 - ctc_weight) * next_token_scores_dec + ctc_weight * ctc_scores
 
             # print("CTC:",
@@ -813,11 +825,11 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
             max_length=stopping_criteria.max_length,
             beam_indices=beam_indices,
         )
-        # ref = tokenizer.decode(model_kwargs['labels'].tolist()[0], skip_special_tokens=True)
-        # hyp = tokenizer.decode(sequence_outputs['sequences'][0].tolist(), skip_special_tokens=True)
-        # print(f"Ref: {ref}\nHyp: {hyp}")
-        # import jiwer
-        # print(jiwer.compute_measures(ref, hyp))
+        ref = tokenizer.decode(model_kwargs['labels'].tolist()[0], skip_special_tokens=True)
+        hyp = tokenizer.decode(sequence_outputs['sequences'][0].tolist(), skip_special_tokens=True)
+        print(f"Ref: {ref}\nHyp: {hyp}")
+        import jiwer
+        print(jiwer.compute_measures(ref, hyp))
 
         if return_dict_in_generate:
             if not output_scores:

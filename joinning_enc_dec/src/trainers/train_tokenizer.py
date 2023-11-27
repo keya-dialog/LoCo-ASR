@@ -40,7 +40,8 @@ def train_tokenizer(tokenizer_type, tokenizer_name, text_iterator, vocab_size=50
     tokenizer.normalizer = normalizers.Sequence(
         [normalizers.Replace("``", '"'),
          normalizers.Replace("''", '"'),
-         normalizers.Lowercase()
+         normalizers.Lowercase(),
+         normalizers.Strip(),
          ]
     )
     tokenizer.train_from_iterator(text_iterator, trainer=trainer)

@@ -187,6 +187,9 @@ class GenerationArguments:
     save_output_states: Optional[bool] = field(
         default=False, metadata={"help": "Whether to save output states."}
     )
+    rescore_ctc_eos: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to rescore CTC EOS if space token is predicted."}
+    )
 
 
 

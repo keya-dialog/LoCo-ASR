@@ -132,6 +132,10 @@ if __name__ == '__main__':
                                   max_length=base_model_config['max_length'],
                                   output_hidden_states=base_model_config['output_hidden_states'],
                                   num_beams=base_model_config['num_beams'])
+
+    if gen_args.rescore_ctc_eos:
+        gen_config.space_token_id = tokenizer("▁")['input_ids'][0]
+
     logger.info(f'Model updated gen config:\n {str(gen_config)}')
     model.generation_config = gen_config
 
