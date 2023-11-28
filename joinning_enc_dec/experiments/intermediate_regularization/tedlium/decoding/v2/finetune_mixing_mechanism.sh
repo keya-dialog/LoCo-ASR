@@ -31,16 +31,16 @@ python \
   --min_duration_in_seconds="0.0" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --tokenizer_name="Lakoc/ted_uni500" \
-  --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04" \
+  --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04/checkpoint-155104" \
   --output_dir=$EXPERIMENT_PATH \
-  --gradient_accumulation_steps="1" \
-  --learning_rate="2e-4" \
+  --gradient_accumulation_steps="2" \
+  --learning_rate="1e-4" \
   --warmup_steps="0" \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
-  --per_device_train_batch_size="256" \
-  --per_device_eval_batch_size="24" \
+  --per_device_train_batch_size="512" \
+  --per_device_eval_batch_size="48" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
@@ -49,8 +49,8 @@ python \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
   --save_total_limit="5" \
-  --num_train_epochs="5" \
-  --num_beams="40" \
+  --num_train_epochs="20" \
+  --num_beams="4" \
   --max_len="512" \
   --greater_is_better="False" \
   --group_by_length="True" \
@@ -64,7 +64,7 @@ python \
   --use_fbanks \
   --apply_augmentations \
   --predict_with_generate \
-  --early_stopping_patience="50" \
+  --early_stopping_patience="5" \
   --preprocessing_num_workers="128" \
   --fix_apostrophes \
   --remove_train_unks \
@@ -72,13 +72,15 @@ python \
   --weight_decay="1e-6" \
   --max_grad_norm="5.0" \
   --decoder_pos_emb_fixed \
+  --do_train \
   --do_evaluate \
   --decoding_ctc_weight="0.3" \
-  --eval_beam_factor="1" \
+  --eval_beam_factor="10" \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=5000 \
-  --finetune_layers_mixing
+  --finetune_intermediate_layers_mixing \
+  --track_ctc_loss
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
