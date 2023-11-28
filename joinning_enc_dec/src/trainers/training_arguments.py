@@ -147,6 +147,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     joint_decoding_during_training: Optional[bool] = field(
         default=False, metadata={"help": "Whether to use joint decoding during training."}
     )
+    finetune_intermediate_layers_mixing: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to only finetune layers mixing."}
+    )
 
 
 @dataclass

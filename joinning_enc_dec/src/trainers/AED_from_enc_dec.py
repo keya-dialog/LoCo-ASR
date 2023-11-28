@@ -12,7 +12,8 @@ from trainers.training_arguments import DataTrainingArguments, GeneralTrainingAr
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, AugmentationManagerCallback, \
     Seq2SeqDataCollatorWithPadding, activate_joint_decoding, average_checkpoints, compute_metrics, fetch_AED_config, \
-    postprocess_beam_outputs, prepare_dataset, save_nbests, save_predictions
+    freeze_model_for_token_mixing, postprocess_beam_outputs, prepare_dataset, reload_mixing_config, save_nbests, \
+    save_predictions
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
@@ -107,6 +108,8 @@ if __name__ == '__main__':
         if model_args.average_checkpoints:
             model_path = average_checkpoints(model_path)
         config = AutoConfig.from_pretrained(model_path)
+        if training_args.finetune_intermediate_layers_mixing:
+            reload_mixing_config(config)
         config.update(base_model_config)
 
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
@@ -152,6 +155,9 @@ if __name__ == '__main__':
     if model_args.dec_adapters:
         model.decoder.add_adapter("dec_adapters", set_active=True)
         model.decoder.train_adapter("dec_adapters")
+
+    if training_args.finetune_intermediate_layers_mixing:
+        freeze_model_for_token_mixing(model)
 
     # 5. Init trainer
     callbacks = []

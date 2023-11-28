@@ -20,6 +20,8 @@ from transformers.trainer_pt_utils import get_parameter_names
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoderConfig
+from per_utterance.multi_head_GPT2 import GPT2MultiHeadConfig
+from per_utterance.multi_head_GPT2_mixing import GPT2MultiHeadMixingConfig
 
 logger = logging.get_logger("transformers")
 
@@ -284,6 +286,20 @@ def audio_object_stripper(audio, key="array"):
     audio_array = audio[key] if isinstance(audio, dict) and key in audio else audio
     trimmed = np.trim_zeros(audio_array)
     return trimmed
+
+
+def reload_mixing_config(config):
+    if not isinstance(config.decoder, GPT2MultiHeadConfig):
+        raise ValueError("This function is only for GPT2LMMultiHeadModel")
+    config.decoder = GPT2MultiHeadMixingConfig(**config.decoder.to_dict())
+
+
+def freeze_model_for_token_mixing(model):
+    for name, param in model.named_parameters():
+        if name.startswith('decoder.lm_mixing'):
+            param.requires_grad = True
+        else:
+            param.requires_grad = False
 
 
 @dataclass

@@ -26,12 +26,16 @@ from evaluation.ctc_scorer import CTCPrefixScoreTH
 from per_utterance.branchformer import Wav2Vec2BranchformerConfig, Wav2Vec2BranchformerForCTC
 from per_utterance.e_branchformer import Wav2Vec2EBranchformerConfig, Wav2Vec2EBranchformerForCTC
 from per_utterance.multi_head_GPT2 import GPT2LMMultiHeadModel, GPT2MultiHeadConfig
+from per_utterance.multi_head_GPT2_mixing import GPT2LMMultiHeadModelMixing, GPT2MultiHeadMixingConfig
 from per_utterance.residual_clasiffier_GPT2 import GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel
 
 logger = logging.get_logger("transformers")
 
 AutoConfig.register("gpt2-multi-head", GPT2MultiHeadConfig)
 AutoModelForCausalLM.register(GPT2MultiHeadConfig, GPT2LMMultiHeadModel)
+
+AutoConfig.register("gpt2-multi-head-mixing", GPT2MultiHeadMixingConfig)
+AutoModelForCausalLM.register(GPT2MultiHeadMixingConfig, GPT2LMMultiHeadModelMixing)
 
 AutoConfig.register("gpt2-residuals-head", GPT2ResidualsLMHeadConfig)
 AutoModelForCausalLM.register(GPT2ResidualsLMHeadConfig, GPT2ResidualsLMHeadModel)
@@ -346,7 +350,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
             loss_fct = CrossEntropyLoss(label_smoothing=self.lsm_factor)
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
-            if isinstance(self.decoder, GPT2LMMultiHeadModel) and len(self.decoder.head_weights) > 1:
+            if isinstance(self.decoder, GPT2LMMultiHeadModel) and not isinstance(self.decoder,
+                                                                                 GPT2LMMultiHeadModelMixing) and len(
+                self.decoder.head_weights) > 1:
                 dec_loss = torch.zeros_like(enc_loss)
                 lm_logits_per_layer = []
                 for index, lm_head, lm_weight in zip([*self.decoder.head_locations, -1],
