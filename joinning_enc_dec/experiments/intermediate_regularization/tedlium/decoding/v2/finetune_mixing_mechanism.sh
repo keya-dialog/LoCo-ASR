@@ -5,10 +5,10 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 08:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_v2.out
 
-EXPERIMENT="ebranchformer_ctc03_finetune_mixing"
-PROJECT="TED"
+EXPERIMENT="ebranchformer_ctc03_finetune_mixing_v2"
+PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
 
@@ -33,13 +33,13 @@ python \
   --tokenizer_name="Lakoc/ted_uni500" \
   --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04/checkpoint-155104" \
   --output_dir=$EXPERIMENT_PATH \
-  --gradient_accumulation_steps="2" \
-  --learning_rate="1e-4" \
+  --gradient_accumulation_steps="1" \
+  --learning_rate="1e-5" \
   --warmup_steps="0" \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
-  --per_device_train_batch_size="512" \
+  --per_device_train_batch_size="256" \
   --per_device_eval_batch_size="48" \
   --report_to="wandb" \
   --optim="adamw_torch" \

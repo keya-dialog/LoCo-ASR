@@ -1,8 +1,8 @@
 # Regularization enhancements
 
-1. Show gain from joint decoding
-2. Scaling experiments (wider, deeper, wider+more tokens) + regularization's - WIP
-3. freeze everything add there another layer - regularization
+1. Show gain from joint decoding - DONE
+2. Scaling experiments (wider, deeper, wider + more tokens) + regularization's - WIP
+3. freeze everything add there another layer - DONE, but not better
 
 # Regularization real scenario
 
@@ -10,17 +10,17 @@
    1. Librispeech - 1000h - READY
    2. Tedlium - 450h - READY
    3. Voxpopuli - 550h - READY
-   4. Fisher+SW - 2000h - WIP
+   4. Fisher+SW - 2000h - READY
    5. Common voice - 1500h - READY
 2. Prepare evaluation datasets
    1. Common voice - READY
-   2. FLEURS - WIP
+   2. FLEURS - READY
    3. Librispeech test clean - READY
    4. Librispeech test other - READY
-   5. SWITCHBOARD - WIP
+   5. SWITCHBOARD - READY
    6. Tedlium - READY
    7. Voxpopuli - READY
-   8. WSJ
+   8. WSJ - READY
 3. Prepare common normalizations and evaluation protocol
 4. Train medium model - 16l 512 8l 512
 
