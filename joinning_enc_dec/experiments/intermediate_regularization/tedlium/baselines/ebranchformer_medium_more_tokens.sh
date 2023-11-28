@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium_more_tokens_spec_aug_fix_restart.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium_more_tokens_v2.out
 
-EXPERIMENT="tedlium_ebranchformer_medium_more_tokens_spec_aug_fix_restart"
+EXPERIMENT="tedlium_ebranchformer_medium_more_tokens_v2"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -83,9 +83,7 @@ torchrun --standalone \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
   --apply_spec_augment \
-  --num_steps_to_activate_spec_augment=10000 \
-  --restart_from="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_medium_more_tokens/checkpoint-11176"
-
+  --num_steps_to_activate_spec_augment=10000
 
 cp /mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/LoCo-$EXPERIMENT.out $EXPERIMENT_PATH/
 
