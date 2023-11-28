@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium5_restart.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_medium5_spec_aug_fix_restart.out
 
-EXPERIMENT="tedlium_ebranchformer_medium5"
+EXPERIMENT="tedlium_ebranchformer_medium5_spec_aug_fix_restart"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"

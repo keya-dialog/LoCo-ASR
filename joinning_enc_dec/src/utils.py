@@ -222,7 +222,7 @@ class AugmentationManagerCallback(TrainerCallback):
         model.encoder.config.apply_spec_augment = False
 
     def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        if state.global_step == self.activate_aug_after_steps:
+        if state.global_step >= self.activate_aug_after_steps and not kwargs['model'].encoder.config.apply_spec_augment:
             model = kwargs['model']
             model.encoder.config.apply_spec_augment = True
             logger.info(f'Step: {state.global_step} augmentations activated.')
