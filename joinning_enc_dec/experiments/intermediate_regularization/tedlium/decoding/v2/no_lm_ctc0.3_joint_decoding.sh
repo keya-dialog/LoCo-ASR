@@ -31,7 +31,7 @@ python \
   --min_duration_in_seconds="0.0" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --tokenizer_name="Lakoc/ted_uni500" \
-  --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04" \
+  --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04/checkpoint-155104" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
