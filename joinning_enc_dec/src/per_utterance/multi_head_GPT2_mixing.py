@@ -31,6 +31,7 @@ class GPT2LMMultiHeadModelMixing(GPT2LMMultiHeadModel):
         super().__init__(config)
         self.lm_mixing = nn.Linear(len(self.head_weights) * config.vocab_size, config.vocab_size, bias=False)
         self.post_init()
+        self.lm_mixing.weight = nn.Parameter(torch.eye(config.vocab_size).repeat(1, len(self.head_weights)) * 0.5)
 
     def forward(
             self,

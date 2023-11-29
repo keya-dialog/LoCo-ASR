@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 08:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_v4.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_newinit.out
 
-EXPERIMENT="ebranchformer_ctc03_finetune_mixing_v4"
+EXPERIMENT="ebranchformer_ctc03_finetune_mixing_newinit"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -34,7 +34,7 @@ python \
   --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04/checkpoint-155104" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-5" \
+  --learning_rate="1e-3" \
   --warmup_steps="0" \
   --logging_steps="10" \
   --save_strategy="epoch" \
@@ -79,7 +79,7 @@ python \
   --evaluation_splits validation test \
   --joint_decoding_during_training \
   --apply_spec_augment \
-  --num_steps_to_activate_spec_augment=5000 \
+  --num_steps_to_activate_spec_augment=0 \
   --finetune_intermediate_layers_mixing \
   --track_ctc_loss
 
