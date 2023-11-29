@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 08:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_v3.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_v4.out
 
-EXPERIMENT="ebranchformer_ctc03_finetune_mixing_v3"
+EXPERIMENT="ebranchformer_ctc03_finetune_mixing_v4"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"

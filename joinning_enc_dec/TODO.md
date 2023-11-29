@@ -45,3 +45,6 @@
 6. reproduce one of Junyis recipes with Zipformer (https://github.com/s3prl/s3prl/blob/main/example/run_asr.sh)
 7. CTC training on czech corpora (prepare KarelV datasets)
 8. Apply augmentations (RIRs, speed perturbation, specAugment, noise)
+
+# Whisper CTC
+

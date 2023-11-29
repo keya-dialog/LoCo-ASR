@@ -350,7 +350,9 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
 
             loss_fct = CrossEntropyLoss(label_smoothing=self.lsm_factor)
             enc_loss = encoder_outputs.loss if return_dict else encoder_outputs[0]
-            if isinstance(self.decoder, GPT2LMMultiHeadModel) and len(self.decoder.head_weights) > 1:
+            if isinstance(self.decoder, GPT2LMMultiHeadModel) and not isinstance(self.decoder,
+                                                                                 GPT2LMMultiHeadModelMixing) and len(
+                self.decoder.head_weights) > 1:
                 dec_loss = torch.zeros_like(enc_loss)
                 lm_logits_per_layer = []
                 for index, lm_head, lm_weight in zip([*self.decoder.head_locations, -1],
@@ -360,12 +362,8 @@ class JointCTCAttentionEncoderDecoder(SpeechEncoderDecoderModel):
                     dec_loss += lm_weight * loss_fct(lm_logits.reshape(-1, self.decoder.config.vocab_size),
                                                      labels.reshape(-1))
                     lm_logits_per_layer.append(lm_logits)
-                if isinstance(self.decoder, GPT2LMMultiHeadModelMixing):
-                    decoder_outputs.logits = self.decoder.lm_mixing(torch.concat(lm_logits_per_layer, dim=-1))
-                    dec_loss = loss_fct(decoder_outputs.logits.reshape(-1, self.decoder.config.vocab_size),
-                                        labels.reshape(-1))
 
-                elif self.decoder.config.average_logits:
+                if self.decoder.config.average_logits:
                     decoder_outputs.logits = torch.matmul(torch.stack(lm_logits_per_layer).T,
                                                           torch.tensor(self.decoder.head_weights,
                                                                        device=lm_logits_per_layer[-1].device)).T

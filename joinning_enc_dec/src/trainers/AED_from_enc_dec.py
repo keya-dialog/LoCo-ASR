@@ -3,11 +3,12 @@ import math
 import tqdm
 from datasets import load_dataset, load_from_disk
 from transformers import AutoConfig, AutoFeatureExtractor, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq, \
-    AutoTokenizer, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
+    AutoTokenizer, CONFIG_MAPPING, EarlyStoppingCallback, GenerationConfig, HfArgumentParser, Seq2SeqTrainer
 from transformers.utils import logging
 
 from per_utterance.ctc_encoder_plus_autoregressive_decoder import JointCTCAttentionEncoderDecoder, \
     JointCTCAttentionEncoderDecoderConfig
+from per_utterance.whisper_with_ctc import WhisperForConditionalGenerationWithCTC, WhisperWithCTCConfig
 from trainers.training_arguments import DataTrainingArguments, GeneralTrainingArguments, GenerationArguments, \
     ModelArguments
 from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, AugmentationManagerCallback, \
@@ -17,6 +18,9 @@ from utils import AdditionalLossPrinterCallback, AdditionalLossTrackerTrainer, A
 
 AutoConfig.register("joint_aed_ctc_speech-encoder-decoder", JointCTCAttentionEncoderDecoderConfig)
 AutoModelForSpeechSeq2Seq.register(JointCTCAttentionEncoderDecoderConfig, JointCTCAttentionEncoderDecoder)
+
+AutoConfig.register("whisper-with-ctc", WhisperWithCTCConfig)
+AutoModelForSpeechSeq2Seq.register(WhisperWithCTCConfig, WhisperForConditionalGenerationWithCTC)
 
 if __name__ == '__main__':
     logging.set_verbosity_debug()
@@ -110,6 +114,8 @@ if __name__ == '__main__':
         config = AutoConfig.from_pretrained(model_path)
         if training_args.finetune_intermediate_layers_mixing:
             reload_mixing_config(config)
+        if model_args.wrap_with_ctc:
+            config = CONFIG_MAPPING[config.model_type + '-with-ctc'](**config.to_dict())
         config.update(base_model_config)
 
         model = AutoModelForSpeechSeq2Seq.from_pretrained(

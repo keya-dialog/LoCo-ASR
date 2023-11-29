@@ -79,26 +79,19 @@ class GPT2LMMultiHeadModelMixing(GPT2LMMultiHeadModel):
             torch.cuda.set_device(self.transformer.first_device)
             hidden_states = hidden_states.to(self.lm_head.weight.device)
 
-        lm_logits = self.lm_head(hidden_states[-1])
         loss = None
+        lm_logits = self.lm_mixing(torch.concat([lm_head(hidden_states[index]) for index, lm_head, lm_weight in
+                                                 zip([*self.head_locations, -1],
+                                                     [*self.additional_lm_heads, self.lm_head],
+                                                     self.head_weights)], dim=-1))
+
         if labels is not None:
-            loss = torch.tensor(0.0, device=hidden_states[-1].device)
-            lm_logits = []
             loss_fct = CrossEntropyLoss()
 
-            for index, lm_head, lm_weight in zip([*self.head_locations, -1], [*self.additional_lm_heads, self.lm_head],
-                                                 self.head_weights):
-                lm_logits.append(lm_head(hidden_states[index]))
-                # Shift so that tokens < n predict n
-                shift_logits = lm_logits[-1][..., :-1, :].contiguous()
-                shift_labels = labels[..., 1:].contiguous()
-                # Flatten the tokens
-                loss += lm_weight * loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-
-            if self.config.average_logits:
-                lm_logits = self.lm_mixing(torch.vstack(lm_logits))
-            else:
-                lm_logits = lm_logits[-1]
+            shift_logits = lm_logits[-1][..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+            # Flatten the tokens
+            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
 
         if not return_dict:
             output = (lm_logits,) + transformer_outputs[1:]
