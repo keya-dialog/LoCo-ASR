@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 08:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_newinit.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_newinit_v2.out
 
-EXPERIMENT="ebranchformer_ctc03_finetune_mixing_newinit"
+EXPERIMENT="ebranchformer_ctc03_finetune_mixing_newinit_v2"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -34,13 +34,13 @@ python \
   --from_pretrained="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_add_head3_04/checkpoint-155104" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
-  --learning_rate="1e-3" \
+  --learning_rate="1e-5" \
   --warmup_steps="0" \
   --logging_steps="10" \
   --save_strategy="epoch" \
   --evaluation_strategy="epoch" \
   --per_device_train_batch_size="256" \
-  --per_device_eval_batch_size="48" \
+  --per_device_eval_batch_size="16" \
   --report_to="wandb" \
   --optim="adamw_torch" \
   --dataloader_num_workers="4" \
@@ -48,9 +48,9 @@ python \
   --load_best_model_at_end="True" \
   --metric_for_best_model="eval_wer" \
   --remove_unused_columns="False" \
-  --save_total_limit="5" \
+  --save_total_limit="1" \
   --num_train_epochs="20" \
-  --num_beams="4" \
+  --num_beams="40" \
   --max_len="512" \
   --greater_is_better="False" \
   --group_by_length="True" \
@@ -75,8 +75,8 @@ python \
   --do_train \
   --do_evaluate \
   --decoding_ctc_weight="0.3" \
-  --eval_beam_factor="10" \
-  --evaluation_splits validation test \
+  --eval_beam_factor="1" \
+  --evaluation_splits test \
   --joint_decoding_during_training \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=0 \
