@@ -48,3 +48,5 @@
 
 # Whisper CTC
 
+1. Prepare CTC training with Whisper - Done
+2. Implement joint decoding with Whisper 
