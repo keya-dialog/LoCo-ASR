@@ -23,9 +23,7 @@ source activate loco_asr
 
 cd $WORK_DIR
 
-torchrun --standalone \
-  --nnodes=1 \
-  --nproc-per-node=4 \
+python \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
@@ -33,7 +31,7 @@ torchrun --standalone \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_256h_8l_add_head5_04" \
+  --base_decoder_model="Lakoc/gpt2_256h_8l_add_head6_03" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
