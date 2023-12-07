@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v3_restarted_regularized.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v4_restarted_regularized.out
 
-EXPERIMENT="tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v3_restarted_regularized"
+EXPERIMENT="tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v4_restarted_regularized"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -23,7 +23,9 @@ source activate loco_asr
 
 cd $WORK_DIR
 
-python \
+torchrun --standalone \
+  --nnodes=1 \
+  --nproc-per-node=4 \
   joinning_enc_dec/src/trainers/AED_from_enc_dec.py \
   --dataset_name="LIUM/tedlium" \
   --dataset_config="release3" \
