@@ -5,12 +5,12 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v4_restarted_regularized.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v5_restarted_regularized.out
 
-EXPERIMENT="tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v4_restarted_regularized"
+EXPERIMENT="tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v5_restarted_regularized"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
-EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
+EXPERIMENT_PATH="${WORK_DIR}/experiments/TED2_tedlium_ebranchformer_16l_256h_gpt2_8l_256h_v3_regularized"
 
 export WANDB_PROJECT=$PROJECT
 export WANDB_RUN_ID="${EXPERIMENT}"
