@@ -98,7 +98,6 @@ if __name__ == '__main__':
         "lsm_factor": training_args.lsm_factor,
         "shared_lm_head": training_args.shared_lm_head,
         "use_fbanks": training_args.use_fbanks,
-        "output_hidden_states": True,
         "decoder_start_token_id": tokenizer.bos_token_id,
         "encoder_apply_spec_augment": training_args.apply_spec_augment,
         "decoder_pos_emb_fixed": model_args.decoder_pos_emb_fixed
@@ -140,7 +139,6 @@ if __name__ == '__main__':
                                   early_stopping=base_model_config['early_stopping'],
                                   eos_token_id=base_model_config['eos_token_id'],
                                   max_length=base_model_config['max_length'],
-                                  output_hidden_states=base_model_config['output_hidden_states'],
                                   num_beams=base_model_config['num_beams'])
 
     if gen_args.rescore_ctc_eos:
