@@ -5,9 +5,9 @@
 #SBATCH --gpus 1
 #SBATCH --nodes 1
 #SBATCH --time 4:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_full.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/ebranchformer_ctc03_finetune_mixing_scalar.out
 
-EXPERIMENT="ebranchformer_ctc03_finetune_mixing_full"
+EXPERIMENT="ebranchformer_ctc03_finetune_mixing_scalar"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -82,6 +82,6 @@ python \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=0 \
   --finetune_intermediate_layers_mixing \
-  --mixing_mode="full" \
+  --mixing_mode="scalar" \
   --track_ctc_loss \
   --train_split="validation"
