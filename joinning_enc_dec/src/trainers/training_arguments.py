@@ -153,6 +153,9 @@ class GeneralTrainingArguments(Seq2SeqTrainingArguments):
     finetune_intermediate_layers_mixing: Optional[bool] = field(
         default=False, metadata={"help": "Whether to only finetune layers mixing."}
     )
+    mixing_mode: Optional[str] = field(
+        default="full", metadata={"help": "Mode of mixing."}
+    )
 
 
 @dataclass

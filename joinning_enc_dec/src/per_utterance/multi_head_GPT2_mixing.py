@@ -16,12 +16,13 @@ class GPT2MultiHeadMixingConfig(GPT2Config):
     model_type = "gpt2-multi-head-mixing"
 
     def __init__(self, head_locations=None, head_weights=None, tie_additional_weights=False, average_logits=False,
-                 *args, **kwargs):
+                 mixing_mode="full", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.head_locations = head_locations
         self.head_weights = head_weights
         self.tie_additional_weights = tie_additional_weights
         self.average_logits = average_logits
+        self.mixing_mode = mixing_mode
 
 
 class GPT2LMMultiHeadModelMixing(GPT2LMMultiHeadModel):
@@ -29,9 +30,15 @@ class GPT2LMMultiHeadModelMixing(GPT2LMMultiHeadModel):
 
     def __init__(self, config):
         super().__init__(config)
-        self.lm_mixing = nn.Linear(len(self.head_weights) * config.vocab_size, config.vocab_size, bias=False)
+        if config.mixing_mode == "full":
+            self.lm_mixing = nn.Linear(len(self.head_weights) * config.vocab_size, config.vocab_size, bias=False)
         self.post_init()
-        self.lm_mixing.weight = nn.Parameter(torch.eye(config.vocab_size).repeat(1, len(self.head_weights)) * 0.5)
+        if config.mixing_mode == "linear":
+            self.lm_mixing = nn.Parameter(torch.full((config.vocab_size,), 0.5), requires_grad=True)
+        elif config.mixing_mode == "scalar":
+            self.lm_mixing = nn.Parameter(torch.tensor(0.5), requires_grad=True)
+        elif config.mixing_mode == "full":
+            self.lm_mixing.weight = nn.Parameter(torch.eye(config.vocab_size).repeat(1, len(self.head_weights)) * 0.5)
 
     def forward(
             self,
@@ -81,10 +88,18 @@ class GPT2LMMultiHeadModelMixing(GPT2LMMultiHeadModel):
             hidden_states = hidden_states.to(self.lm_head.weight.device)
 
         loss = None
-        lm_logits = self.lm_mixing(torch.concat([lm_head(hidden_states[index]) for index, lm_head, lm_weight in
-                                                 zip([*self.head_locations, -1],
-                                                     [*self.additional_lm_heads, self.lm_head],
-                                                     self.head_weights)], dim=-1))
+        if self.config.mixing_mode == "full" and isinstance(self.lm_mixing, nn.Linear):
+            lm_logits = self.lm_mixing(torch.concat([lm_head(hidden_states[index]) for index, lm_head, lm_weight in
+                                                     zip([*self.head_locations, -1],
+                                                         [*self.additional_lm_heads, self.lm_head],
+                                                         self.head_weights)], dim=-1))
+        elif self.config.mixing_mode == "linear" or self.config.mixing_mode == "scalar":
+            if len(self.head_weights) != 2:
+                raise NotImplementedError("Linear mixing is only implemented for more than two heads.")
+            lm_logits = (1 - self.lm_mixing) * self.additional_lm_heads[0](
+                hidden_states[self.head_locations[0]]) + self.lm_mixing * self.lm_head(hidden_states[-1])
+        else:
+            raise NotImplementedError(f"Mixing mode {self.config.mixing_mode} not implemented.")
 
         if labels is not None:
             loss_fct = CrossEntropyLoss()

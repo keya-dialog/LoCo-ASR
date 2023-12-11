@@ -288,10 +288,10 @@ def audio_object_stripper(audio, key="array"):
     return trimmed
 
 
-def reload_mixing_config(config):
+def reload_mixing_config(config, mixing_mode):
     if not isinstance(config.decoder, GPT2MultiHeadConfig):
         raise ValueError("This function is only for GPT2LMMultiHeadModel")
-    config.decoder = GPT2MultiHeadMixingConfig(**config.decoder.to_dict())
+    config.decoder = GPT2MultiHeadMixingConfig(**config.decoder.to_dict(), mixing_mode=mixing_mode)
 
 
 def freeze_model_for_token_mixing(model):

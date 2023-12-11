@@ -112,7 +112,7 @@ if __name__ == '__main__':
             model_path = average_checkpoints(model_path)
         config = AutoConfig.from_pretrained(model_path)
         if training_args.finetune_intermediate_layers_mixing:
-            reload_mixing_config(config)
+            reload_mixing_config(config, training_args.mixing_mode)
         if model_args.wrap_with_ctc:
             config = CONFIG_MAPPING[config.model_type + '-with-ctc'](**config.to_dict())
         config.update(base_model_config)
