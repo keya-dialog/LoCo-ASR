@@ -80,6 +80,8 @@ if __name__ == '__main__':
         "decoder_eos_token_id": tokenizer.eos_token_id,
         "encoder_eos_token_id": tokenizer.eos_token_id,
         "pad_token_id": tokenizer.pad_token_id,
+        "encoder_apply_adaptive_encoder": model_args.apply_adaptive_encoder,
+        "fe_chunk_size": model_args.fe_chunk_size,
         "mask_token_id": tokenizer.mask_token_id,
         "encoder_feat_proj_dropout": 0.0,
         "encoder_layerdrop": 0.0,

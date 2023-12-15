@@ -69,6 +69,12 @@ class ModelArguments:
     wrap_with_ctc: Optional[bool] = field(
         default=False, metadata={"help": "Whether to wrap model with CTC."}
     )
+    apply_adaptive_encoder: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply adaptive encoder."}
+    )
+    fe_chunk_size: Optional[int] = field(
+        default=250, metadata={"help": "Chunk size for feature extractor."}
+    )
 
 
 @dataclass

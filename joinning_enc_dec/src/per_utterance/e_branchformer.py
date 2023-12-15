@@ -44,7 +44,7 @@ from transformers.utils import (
     logging,
 )
 
-from per_utterance.extractors import MelFeatureExtractor
+from per_utterance.extractors import MelFeatureExtractor, MelFeatureExtractorAdaptive
 
 logger = logging.get_logger(__name__)
 
@@ -403,6 +403,8 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
             merge_conv_kernel=31,
             use_macaron_ff=True,
             fe_position_embeddings=True,
+            apply_adaptive_encoder=False,
+            fe_chunk_size=500,
             **kwargs
     ):
         super().__init__(**kwargs, pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id)
@@ -491,6 +493,8 @@ class Wav2Vec2EBranchformerConfig(PretrainedConfig):
         self.apply_time_warp = apply_time_warp
         self.time_warp_window = time_warp_window
         self.time_warp_mode = time_warp_mode
+        self.apply_adaptive_encoder = apply_adaptive_encoder
+        self.fe_chunk_size = fe_chunk_size
 
         # EBranchformer related params
         self.csgu_kernel_size = csgu_kernel_size
@@ -881,7 +885,10 @@ class Wav2Vec2EBranchformerModel(Wav2Vec2EBranchformerPreTrainedModel):
         super().__init__(config)
         self.config = config
         if config.use_fbanks:
-            self.feature_extractor = MelFeatureExtractor(config)
+            if config.apply_adaptive_encoder:
+                self.feature_extractor = MelFeatureExtractorAdaptive(config)
+            else:
+                self.feature_extractor = MelFeatureExtractor(config)
         else:
             self.feature_extractor = Wav2Vec2EBranchformerFeatureEncoder(config)
         self.feature_projection = Wav2Vec2EBranchformerFeatureProjection(config)
