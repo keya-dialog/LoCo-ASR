@@ -91,7 +91,7 @@ class MelFeatureExtractorAdaptive(nn.Module):
     def prepare_chunks(self, input_values: torch.FloatTensor) -> List[torch.FloatTensor]:
         """Split input values into chunks of size chunk_size"""
         x_chunked = list(input_values.unsqueeze(dim=1).split(self.config.fe_chunk_size, dim=2))
-        if x_chunked[-1].size(1) < self.min_conv_input_size:
+        if x_chunked[-1].size(1) < self.min_conv_input_size and len(x_chunked) > 1:
             last_chunk = x_chunked.pop()
             x_chunked[-1] = torch.cat([x_chunked[-1], last_chunk], dim=2)
         return x_chunked
