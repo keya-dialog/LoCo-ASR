@@ -99,7 +99,8 @@ class MelFeatureExtractorAdaptive(nn.Module):
     def forward(self, input_values: torch.FloatTensor) -> torch.FloatTensor:
         """Chunk input values and apply stack of conv layers with adaptive weights for each channel"""
         x_chunked = self.prepare_chunks(input_values)
-        alphas = [torch.ones(conv.weight.size(0), device=input_values.device) for (conv, _) in self.conv]
+        alphas = [torch.ones((input_values.size(0), conv.weight.size(0)), device=input_values.device) for (conv, _) in
+                  self.conv]
         chunks_processed = []
         non_processed = 0
         for index, chunk in enumerate(x_chunked):
@@ -114,7 +115,7 @@ class MelFeatureExtractorAdaptive(nn.Module):
                 # Apply conv layer and emphasize important channels by adaptive weights
                 chunk = activation(conv_layer(chunk)) * alphas[l_index].unsqueeze(-1).unsqueeze(-1)
                 # Alphas acts as residuals
-                alphas[l_index] = 1 + self.weight_fncs[l_index](chunk.flatten(2, 3)).squeeze(-1).mean(dim=0)
+                alphas[l_index] = 1 + self.weight_fncs[l_index](chunk.flatten(2, 3)).squeeze(-1)
             chunks_processed.append(self.out(chunk.transpose(1, 2).flatten(2, 3)))
         hidden_states = torch.concat(chunks_processed, dim=1).transpose(1, 2)
         return hidden_states
