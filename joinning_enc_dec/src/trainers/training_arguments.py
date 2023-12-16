@@ -70,7 +70,10 @@ class ModelArguments:
         default=False, metadata={"help": "Whether to wrap model with CTC."}
     )
     apply_adaptive_encoder: Optional[bool] = field(
-        default=False, metadata={"help": "Whether to apply adaptive encoder."}
+        default=False, metadata={"help": "Whether to apply adaptive fe."}
+    )
+    apply_gated_encoder: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to apply gated fe."}
     )
     fe_chunk_size: Optional[int] = field(
         default=250, metadata={"help": "Chunk size for feature extractor."}

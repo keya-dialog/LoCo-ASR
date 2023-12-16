@@ -121,6 +121,40 @@ class MelFeatureExtractorAdaptive(nn.Module):
         return hidden_states
 
 
+class GatedConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding):
+        super(GatedConv2d, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
+        self.gateway = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
+
+    def forward(self, x):
+        return self.conv(x) * torch.sigmoid(self.gateway(x))
+
+
+class MelFeatureExtractorGated(nn.Module):
+    """Module for extracting features from mel spectrogram using stack of conv layers."""
+
+    def __init__(self, config):
+        super().__init__()
+        self.conv = torch.nn.Sequential(
+            *[nn.Sequential(GatedConv2d(conv_in, out_channels=conv_out, kernel_size=(conv_kernel, conv_kernel),
+                                        stride=(conv_stride, conv_stride), padding=0),
+                            ACT2FN[config.feat_extract_activation]) for
+              conv_in, conv_out, conv_kernel, conv_stride in
+              zip([1, *config.conv_dim], config.conv_dim, config.conv_kernel,
+                  config.conv_stride)],
+        )
+
+        linear_in_dim = config.conv_dim[-1] * (((config.num_mel_bins - 1) // 2 - 1) // 2)
+        self.out = torch.nn.Linear(linear_in_dim, config.hidden_size, bias=True)
+
+    def forward(self, input_values: torch.FloatTensor) -> torch.FloatTensor:
+        """Apply stack of conv layers and linear layer to input values"""
+        hidden_states = self.conv(input_values[:, None, ...])
+        hidden_states = self.out(hidden_states.transpose(1, 2).flatten(2, 3))
+        return hidden_states.transpose(1, 2)
+
+
 class MelFeatureExtractor(nn.Module):
     """Module for extracting features from mel spectrogram using stack of conv layers."""
 
