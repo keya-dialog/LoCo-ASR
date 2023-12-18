@@ -24,7 +24,7 @@ class FilterWeights(nn.Module):
             batch_rep = nn.functional.pad(batch_rep, (0, self.W.in_features - batch_rep.size(-1)), mode="constant",
                                           value=0)
 
-        filter_w = nn.functional.sigmoid(self.W(batch_rep).squeeze(-1)).unsqueeze(-1)
+        filter_w = nn.functional.tanh(self.W(batch_rep).squeeze(-1)).unsqueeze(-1)
         return filter_w
 
 
@@ -128,7 +128,7 @@ class GatedConv2d(nn.Module):
         self.gateway = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
 
     def forward(self, x):
-        return self.conv(x) * torch.sigmoid(self.gateway(x))
+        return self.conv(x) * (1 + nn.functional.tanh(self.gateway(x)))
 
 
 class MelFeatureExtractorGated(nn.Module):
