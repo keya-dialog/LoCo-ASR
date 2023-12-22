@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh3.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh4.out
 
-EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh3"
+EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh4"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -35,7 +35,7 @@ torchrun --standalone \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
   --base_decoder_model="Lakoc/gpt2_tiny_decoder_6_layers" \
   --tokenizer_name="Lakoc/ted_uni500" \
-  --output_dir="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh" \
+  --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
   --learning_rate="2e-3" \
   --warmup_steps="15000" \
@@ -85,7 +85,5 @@ torchrun --standalone \
   --apply_spec_augment \
   --num_steps_to_activate_spec_augment=5000 \
   --apply_adaptive_encoder \
-  --fe_chunk_size=250 \
-  --ignore_data_skip \
-  --restart_from="/mnt/proj1/open-28-58/lakoc/LoCo-ASR/experiments/TED2_tedlium_ebranchformer_gpt2_256h_6l_adaptive_tanh/checkpoint-118424/"
+  --fe_chunk_size=250
 
