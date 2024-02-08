@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_add_head2_05.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_add_head2_05_v2.out
 
-EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_add_head2_05"
+EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_add_head2_05_v2"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -72,7 +72,7 @@ torchrun --standalone --nnodes=1 --nproc-per-node=$SLURM_GPUS_ON_NODE \
   --wandb_predictions_to_save=600 \
   --from_encoder_decoder_config \
   --weight_decay="1e-6" \
-  --max_grad_norm="5.0" \
+  --max_grad_norm="0.5" \
   --decoder_pos_emb_fixed \
   --do_train \
   --do_evaluate \
