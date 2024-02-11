@@ -31,7 +31,7 @@ torchrun --standalone --nnodes=1 --nproc-per-node=$SLURM_GPUS_ON_NODE \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_256h_8l_add_head4_05" \
+  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head4_05" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \
