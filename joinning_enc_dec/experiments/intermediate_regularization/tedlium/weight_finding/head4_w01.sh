@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_add_head4_03.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_add_head4_01.out
 
-EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_add_head4_03"
+EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_add_head4_01"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
@@ -31,7 +31,7 @@ torchrun --standalone --nnodes=1 --nproc-per-node=$SLURM_GPUS_ON_NODE \
   --min_duration_in_seconds="0.0" \
   --base_encoder_model="Lakoc/fisher_ebranchformer_enc_12_layers_fixed" \
   --feature_extractor_name="Lakoc/fisher_log_mel_extractor" \
-  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head4_03" \
+  --base_decoder_model="Lakoc/gpt2_256h_6l_add_head4_01" \
   --tokenizer_name="Lakoc/ted_uni500" \
   --output_dir=$EXPERIMENT_PATH \
   --gradient_accumulation_steps="1" \

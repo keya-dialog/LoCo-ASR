@@ -5,9 +5,9 @@
 #SBATCH --gpus 4
 #SBATCH --nodes 1
 #SBATCH --time 2-00:00:00
-#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_8l_add_head4_05.out
+#SBATCH --output=/mnt/proj1/open-28-58/lakoc/LoCo-ASR/outputs/tedlium_ebranchformer_gpt2_256h_6l_add_head4_05.out
 
-EXPERIMENT="tedlium_ebranchformer_gpt2_256h_8l_add_head4_05"
+EXPERIMENT="tedlium_ebranchformer_gpt2_256h_6l_add_head4_05"
 PROJECT="TED2"
 WORK_DIR="/mnt/proj1/open-28-58/lakoc/LoCo-ASR"
 EXPERIMENT_PATH="${WORK_DIR}/experiments/${PROJECT}_${EXPERIMENT}"
