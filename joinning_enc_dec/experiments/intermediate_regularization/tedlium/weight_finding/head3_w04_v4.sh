@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #SBATCH --job-name TED
-#SBATCH --account OPEN-28-57
+#SBATCH --account OPEN-30-35
 #SBATCH --partition qgpu
 #SBATCH --gpus 4
 #SBATCH --nodes 1
